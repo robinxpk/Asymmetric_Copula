@@ -1,0 +1,281 @@
+---
+output: pdf_document
+bibliography: book.bib  
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+<!-- For now I used: https://bookdown.org/yihui/rmarkdown-cookbook/bibliography.html to cite -->
+
+<!-- Github Repo: https://github.com/henrifnk/Seminar_ClimateNStatistics/blob/master/04-archimax.Rmd -->
+
+<!-- Book: https://henrifnk.github.io/Seminar_ClimateNStatistics/ac.html#ref-durante2016 -->
+
+Use: (see @nelsen2006, p. 1) or @nelsen2006 (p. 1)
+
+# TODO: title {#title}
+
+# TODOs:
+
+TODO: Mention "We assume continuous RVs only" All of the following only
+holds for continuous RV;
+
+TODO: I would like to compare rigid assumptions with more flexible ones.
+But for now, I will only focus on the rigid, easier ones. Do the
+flexible ones depending on the time I have.\
+e.g.: no empirical pit yet, stick to theoretical pit. I will only apply
+theoretical for now. After I see the data and check how much work
+empirical will be, I change the content. NOTE: Psuedo-observations are
+of empirical nature. i.e. they are calculated for a given data set.
+Thus, the plots I create based on real world data display pseudo
+observations. Also, the pseudo observations allow the construction of
+the empirical copula.
+
+TODO: The strong point about copulas is that the margins do not need to
+belong to the same distributional family This is WHY they are strong at
+all and this can also be seen from
+
+TODO: Do I spell out numbers or not? For now, I will not spell out any
+number
+
+TODO: If I have space left, I can put the derivation of the relationship between Kendall's tau and Copula (see p.86 in zhang), but derive it myself by deriving P_C = 2 integral(copula)
+
+*Author: TODO*
+
+*Supervisor: Henri Funk*
+
+```{r, echo=FALSE, include=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+library(kableExtra)
+library(bookdown)
+```
+
+## Introduction {#intro}
+
+## Theory {#theory}
+
+The first section gives a mathematical definition of copulas followed by
+Sklar's Theorem which is crucial in copula theory and also helps to
+understand the first sentences of my copula theory. lol.
+
+### Copulas {#cops}
+
+<!-- (see @grimaldi2005) - copula is a multivariate cdf defined in the unit -->
+
+<!-- cube with standard uniform margins -->
+
+@zhang2019 (p. 62) describe a copula as a cumulative distribution
+function with standard uniform margins. The dimensions $d$ of a copula
+denote the number of random variables it relates and hence there must be
+at least two dimensions ($d \geq 2$).\
+To give a mathematical definition, consider the vector
+$u = (u_1, ..., u_d) \in \mathbb{R}^d$ where $u_j \in [0, 1]$ for
+$j = \{1, .., d\}$. Then, a $d$ dimensional copula is defined by
+@durante2016 (p. 14) as function $C:[0,1]^d\to [0,1]$ if, and only if,
+the following conditions hold:
+
+i)  $C(u_1, ..., u_d) = 0$ if $u_j = 0$ for at least one
+    $j \in \{1,…,d\}$.
+
+ii) $C(1, 1, ..., 1, u_j, 1, ..., 1) = u_j$
+
+iii) $C$ is $d$-increasing
+
+The first two conditions make up the boundary conditions of a $d$
+copula. This notion is due to the fact the conditions use the least and
+the greatest element in the domain of the copula, respectively (see
+@nelsen2006, p. 9).
+
+The first condition: the copula is "grounded" Based on @nelsen2016 (p.
+9), this implies that setting just one variable its least possible value
+yields the least possible value of the copula, no matter the other
+variables.
+
+The second condition: (@nelsen2006, p.9) By plugging in the greatest
+possible element of the domain, we obtain the margins of the function
+$C$.
+
+The condition of $C$ to be $d$-increasing is cumbersome to map out in
+higher dimensions, which is why we restrict our focus on $d = 2$. As we
+will see later on, a $2$ dimensional point of view is sufficient for our
+purposes anyway because we consider trivariate copulas in a nested way.
+But more on that later.
+
+According to @nelsen2006 (p. 8), the copula function $C$ is
+$2$-increasing if for all $u_1, u_2, v_1, v_2 \in [0,1]$ with
+$u_1 \leq u_2$ and $v_1 \leq v_2$: $$
+C(u_2, v_2) - C(u_2, v_1) - C(u_1, v_2) + C(u_1, v_1) \geq 0
+$$ Simply put, 2-increasing means that the volume under the copula
+function over the rectangle $[u1, u2] \times [v_1, v_2]$ is
+non-negative. This intuition can be translated into higher dimensions.
+
+NOTE: In @zhang2019 p. 70 there also is a formulation of the conditions
+for the trivariate case
+
+In combination with groundedness, d-increasing implies nondecreasing in
+each argument (@nelson2006, p. 9)
+
+### Probability integral transform {#pit}
+
+ADD SOURCES FOR MY STATEMENTS
+
+The probability integral transform (pit) is a transformation that allows
+to map any random variable $X$ into standard uniform space $U(0, 1)$.
+
+It is a general theorem not specific to copulas as mentioned in
+@durante2016 (p. 6), but it helps to understand Sklar's theorem.
+
+The theorem is given by @angus1994: Let $X$ be a real-valued random
+variable defined on a probability space
+$(\Omega, \mathcal{F}, \mathbb{P})$. Let $F(x)$ define the continuous
+cdf of $X$. Then, the random variable $Y = F(X)$ has distribution
+$U(0, 1)$.
+
+ADD EMPRICAL?
+
+<!-- Thus, pit provides the mechanism to transform the marginals into standard uniform variables, which is required by Sklar's Theorem.  -->
+
+<!-- Pit is more of a prerequisit  -->
+
+<!-- The copula utilizes these transformed variables to describe the dependence structure independent of the original marginals.  -->
+
+### Sklar's Theorem {#sklarstheorem}
+
+<!-- @nelsen2006 (p. 1) introduces copulas as functions that join -->
+
+<!-- multivariate distributions to their one-dimensional marginal -->
+
+<!-- distributions. -->
+
+<!-- <!-- that represent the dependence structure between random variables independent of the marginal distribution functions, allowing the multivariate distribution to be expressed in separated terms. -->
+
+Sklar's Theorem is central to the theory of copulas because it proves
+that any multivariate model can be constructed using copulas
+(@nelsen2006 (p. 17), @durante2016, p. 42). Thereby, this theorem allows
+to separate the representation of the dependence structure and marginal
+distribution functions. The theorem is given by @nelsen2006 (p. 18):\
+Let $F_{1,..,d}$ be a $d$-dimensional joint distribution function with
+univariate margins $F_1, ..., F_d$. Then, there exists a $d$-dimensional
+copula $C$ such that $$
+F_{1, ..., d}(x_1, ..., x_d) = C(F_1(x_1), ..., F_d(x_d))\ \forall\ (x_1, ..., x_d)\in \mathbb{R}^d
+$$ Where $C$ is unique if $F_1, ..., F_d$ are continuous. (And because
+cdfs of continuous random variables are always continuous SOURCE (GPT so
+far), our analysis deals with unique copulas.)
+
+<!-- (continuous, but not "absolutely continuous") -->
+
+<!-- continuous: no jumps in function -->
+
+<!-- absolutely continous: no kinks in function bzw. function is differentiable everywhere -->
+
+EQUATION NUMBER (Sklar's Theorem) allows two important conclusion. One,
+any multivariate cdf can be expressed as a composition of a copula
+function $C$ and the univariate margins $F_1, ..., F_d$. Thereby,
+@zhang2019 (p. 66) conclude that $C$ connects the multivariate cdf to
+its marginals which reduces the problem of determining any multivariate
+cdf to determining the copula. And two, the marginal distributions do
+not need to be of the same family because Sklar's theorem holds
+regardless. This makes copulas more suitable in our case oder so
+ähnlich.
+
+In this context, the derivation of the copula density is simple (see
+@zhang2019, p. 66): $$
+c(u_1, ..., u_d) = \frac{\partial C(u_1, ..., u_d)}{\partial u_1 ... \partial u_d} = \frac{f(x_1, ..., x_d)}{\Pi_{i = 1}^df_i(x_i)}
+$$ where $f(x_1, ..., x_d)$ denotes the joint density of $X_1, ..., X_d$
+and $f_i(x_i)$ the marginal density of $X_i$ for all
+$i = \{1, ..., d\}$.
+
+The copula density function is used to draw the contour lines in our
+plots.
+
+### Symmetric Archimedean copulas and the generator function {#archcops}
+
+According to @zhang2019 p. (Chapt 4 first page), symmetric Archimedean
+copulas are widely used.
+
+Symmetric Archimedean copulas only allow for the same degree of
+dependence among all variables (@zhang2019 p. 124). However, by nesting
+symmetric Archimedean copulas, we are also able to model asymmetric
+relationships.
+
+Give table of the relevant copulas / generator functions for me and
+reference @zhang2019, p.129ff for further info on when some of them are
+suitable?
+
+Exchangeability
+
+Generator function
+
+Relationship Kendeall's tau, generator and parameter @zhang2019 p.134
+and 128
+
+### Nested Archimedean copulas {#nacs}
+
+As mentioned in the previous section, we use nested Archimedean copulas
+to model asymmetric relationships.
+
+### Kendall's $\tau$ {#kendallstau}
+
+According to @kendall1990 p.6, $\tau$ is a measure of association
+between two random variables that distinguishes between concordance and
+discordance. Concordance means that the two variables move in the same
+direction while discordance means moving in opposite directions. This
+becomes more clear by considering the probabilistic representation of
+Kendall's $\tau$ given by @zhang2019 (p. 85, 86).\
+Consider two continuous bivariate random vectors $X = (X_1, X_2)^T$ and
+$X^* = (X^*_1, X^*_2)^T$ that are independent, but follow the same
+distribution. In other words, the random vectors are iid. From $X$ to
+$X^*$, the random variables $X_1$ and $X_1^*$ move in the same direction
+as $X_2$ and $X_2^*$ if $(X_1 - X_1^*)(X_2 - X_2^*) > 0$. Because for
+the product to be larger than $0$, the sign of both terms must be the
+same. Analogously, discordance is given if
+$(X_1 - X_1^*)(X_2 - X_2^*) < 0$. Using 
+$$
+\mathbb{P}_{C} = \mathbb{P}\left(\left[(X_1 - X_1^*)(X_2 - X_2^*)\right] > 0 \right) \\
+\mathbb{P}_D = \mathbb{P} \left( \left[ (X_1 - X_1^*)(X_2 - X_2^*)\right] < 0  \right)
+$$
+
+Kendalls's $\tau$ is given by:
+
+$$
+\tau(X_1, X_2) = \mathbb{P}_C - \mathbb{P}_D
+$$ (#eq:pKendall)
+
+
+Based on @ref(eq:pKendall), @zhang2019 (p. 86) show that Kendall's
+$\tau$ may be expressed in term of a bivariate copula function. 
+
+$$
+\tau(X_1, X_2) = 4 \int_{[0, 1]^2} C(u, v)\ dC(u, v) - 1
+$$ (#eq:cKendall)
+
+Because equation @ref(eq:cKendall) allows us to express Kendall's $\tau$, a measure of association, only in terms of the copula function, it emphasizes once more that the copula captures the whole dependence structure between variables independent of any marginal distribution functions.
+
+
+
+
+Empirically, there are multiple versions of Kendall's $\tau$ depending on the data structure. 
+Since this paper focuses on continuous variables only, we use the following formula given by @kendall1990 (p. 5):
+$$
+t = \frac{P-Q}{\frac{1}{2}n(n-1)}
+$$(#eq:eKendall)
+
+Where $P$ denotes the number of concordant and $Q$ the number of discordant pairs in the data. 
+
+------------------------------------------------------------------------
+
+copulas as functions that represent the dependence structure between
+random variables, allowing the multivariate distribution to be expressed
+in terms of its marginal distributions and the copula
+
+
+## Diagnostics and Goodness of fit evaluation
+
+See @zhang2019 in chapter 3, 4, 5 I think. Also regarding MLE
+AIC
+
+## References {#ref}
+
+::: {#refs}
+:::
