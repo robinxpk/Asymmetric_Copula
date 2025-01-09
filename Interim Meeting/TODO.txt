@@ -1,0 +1,29 @@
+> Include hydrology graph on which we can explain the variables we want to exaime 
+(i.e. introduce hydrology variables graphically) 
+
+> Have simulation and simulation plots done
+
+> Keep theory low key; give basics on everything, but focus on interpretation of it in 
+presentation and give behavior of each depending on assumption / copula
+
+> Finally, give outlook on which river we want to apply these methods
+
+
+@Group
+- Which other methods than the ones I thought of would we like to apply?
+hypothesis test to test for significant differences due to slope?
+
+
+@Henri: 
+- Does that sound sufficient of a workload for this paper? 
+- How much are we supposed to dive into mathematics? 
+- In the paper, they identify the marginal distributions and even give the formula of the 
+density. This is super useless imo. 
+	Can we have an appendix where I put the densities? I mean, the density forumla 
+	itself is not relevant at all, right? 
+- Two ideas: 
+1) Give theory and simulation to check behavior of goodness of fit measures on 
+FNACs and then see them applied to real data
+2) Give theory on Vine copulas and maybe also include another variables to make 
+the model more complex and check how vine copula handle more complexity better?
+(Aparently they are more flexible?)
