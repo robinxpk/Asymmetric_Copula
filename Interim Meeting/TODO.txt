@@ -6,8 +6,12 @@
 > Keep theory low key; give basics on everything, but focus on interpretation of it in 
 presentation and give behavior of each depending on assumption / copula
 
-> Finally, give outlook on which river we want to apply these methods
+> Finally, give outlook on which river we want to apply these methods + 
+what we could add to our simulation / what we could examine 
 
+> For generators and copulas, use graphs of both while introducing them and 
+keep the mathematical properties to a minimum
+(See Hofert Fig. 3.8)
 
 @Group
 - Which other methods than the ones I thought of would we like to apply?
@@ -27,3 +31,7 @@ FNACs and then see them applied to real data
 2) Give theory on Vine copulas and maybe also include another variables to make 
 the model more complex and check how vine copula handle more complexity better?
 (Aparently they are more flexible?)
+BUT: How useful are Vine copulas (high flexibility) if we only consider trivariate anyway
+--> Vine copulas allow to represent all d(d-1)/2 relationships I think 
+Simulate using Vine and check how nested copula performs vs vine? 
+(( 3) mixed copulas?)
