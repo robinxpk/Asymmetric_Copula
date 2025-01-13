@@ -28,6 +28,38 @@ more than 3 and then see how they compare? Then I skip on all the
 estimation theory and stuff?\
 Note: Goal should be interesting from hydrology point of view and not too crazy from statistical point of view....
 
+1) 
+Effect verschiedener Einflussgrößen auf Zusammenhang von Volumen und Dauer
+(e.g. Slope, Kanalbreite, Oberflächenrauigkeit, Zuflüsse, etc.) 
+-> Grund: Für großflächige hydrologische Modellierungen kann man flussspezifische 
+Zusammenhänge von Volumen und Dauer ableiten 
+-> Fragen von uns dazu: 
+-- hydrologisch
+> Wie viele Variablen bzw. welche Variablen sind interessant? 
+-- statistisch
+> Variable selction using copulas? 
+	i.e. Based on the data, we can select the relevant variables 
+> Hypothese: Slope, Kanalbreite, etc haben Einfluss
+Wie kann das statistisch verlässlich untersucht werden? 
+	-> Idee (vorerst): mixed Copula?
+	Weil Problem: Konstante Variablen innerhalb einer Messstation für 
+	Vars wie slope, Kanalbreite... 
+STASTISCH PROBLEM: Slope, Kanalbretie, etc sind konstant innerhalb einer Station
+	Wie kann man den Effekt von den Konstanten untersuchen? 
+	Idee: Über verschiedene Flüsse hinweg die Daten assimilieren, damit nicht 
+	konstant ist
+	Problem: Keine Ahnung, wie sich dadruch der Zusammenhang ändert? 
+	Müssen dann mixed Copulas genutzt werden? 
+	Datensatz ändert sich: 1 Slope Punkte = Mehrere Peak, Volume, etc. Daten bzw. sogar 1 Slope Punkt = 1 eigene Copula
+2) 
+Statistischer Fokus:
+Vergleich NACs und Vines
+Hydrologischer Zusatz: 
+Minimum discharge zusätzlich untersuchen
+
+
+
+
 
 
 Presentation structure (idea): 
@@ -38,6 +70,8 @@ i.e. given our goal, we come across this data
 - Briefly go into copula theory
 - Go back to data and apply transformations + fit + gof
 - Give outlook
+
+> PIT graph
 
 For presentation
 
