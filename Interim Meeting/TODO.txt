@@ -1,3 +1,46 @@
+Before presentation
+- Be done with theory part (for now); exact wording egal, i.e.: 
+> empirical PIT / Copula
+> GOF 
+> Estimation (MLE)
+
+> Have plots:
+x simulated data
+x marginal distributions
+x pseudo-obs
+- copula (empirical and parametric based)
+x fitted copula
+- gof graphs
+(Can just focus on the visual comparison bc not sure of how to proceed)
+	-> @Henri: Paper asym vs sym bc usually sym. Now: the asym from paper vs vine? 
+	Can focus on limitation of NACs 
+	Can simulate how true vine is modelled by NAC and vice versa
+	Is this additional flexibility even relevant for hydrology? 	
+
+
+TODO: Define an actual goal we want to achieve; \
+Paper focuses on how much better asymmetric copulas are compared to symmetric ones\
+Another goal could be that we use that paper
+already showed FNAC are superior to common models, and I could compare
+vine copulas (more flex) with FNACs. I expect not too much improvement
+if we only focus on 3 variables, but we could extend our approach to
+more than 3 and then see how they compare? Then I skip on all the
+estimation theory and stuff?\
+Note: Goal should be interesting from hydrology point of view and not too crazy from statistical point of view....
+
+
+
+Presentation structure (idea): 
+- Why is the hydrology part important? 
+- Give intro to hydrology variables 
+- Show the simulated data as an example of how the hydrology data look in practice
+i.e. given our goal, we come across this data
+- Briefly go into copula theory
+- Go back to data and apply transformations + fit + gof
+- Give outlook
+
+For presentation
+
 > Include hydrology graph on which we can explain the variables we want to exaime 
 (i.e. introduce hydrology variables graphically) 
 
@@ -5,6 +48,16 @@
 
 > Keep theory low key; give basics on everything, but focus on interpretation of it in 
 presentation and give behavior of each depending on assumption / copula
+- Use graphs: 
+	"How does PIT work"   
+	-> "How does copula look like"
+	--> Based on the seen strucutre, where does this originate? 
+	NAC:-> Generators
+	-> How do generators look like -> Give that they depend on parameters 
+	-> How to estimate them
+	VINE: ?
+
+	-> Fit Copula and visually compare simulated / "real world" data to data from fitted copula 
 
 > Finally, give outlook on which river we want to apply these methods + 
 what we could add to our simulation / what we could examine 
@@ -25,7 +78,15 @@ hypothesis test to test for significant differences due to slope?
 density. This is super useless imo. 
 	Can we have an appendix where I put the densities? I mean, the density forumla 
 	itself is not relevant at all, right? 
-- Two ideas: 
+- Based on what I read and how nested copulas are estimated, 
+	separate conditions of nested copulas is valid (right?) 
+	I cannot find any source to cite tho. 
+	Can I just state "as seen from estimation process" (here I have sources)
+	"separate considerations are valid IF same family? 
+Or do you know a source? 
+Or is it not even valid? lol. 
+- Not really sure how to best proceed with this paper.. I think the theory part if quite big due to all the theory behind copulas 
+	and the additional methods I use with them (generator, MLE, test statistic)
 1) Give theory and simulation to check behavior of goodness of fit measures on 
 FNACs and then see them applied to real data
 2) Give theory on Vine copulas and maybe also include another variables to make 
@@ -34,4 +95,5 @@ the model more complex and check how vine copula handle more complexity better?
 BUT: How useful are Vine copulas (high flexibility) if we only consider trivariate anyway
 --> Vine copulas allow to represent all d(d-1)/2 relationships I think 
 Simulate using Vine and check how nested copula performs vs vine? 
-(( 3) mixed copulas?)
+ISSUE: Also, not sure if we can fit VineCopulas AND NACs into the paper of just 15 pages
+(( 3) mixed copulas? Not sure how useful they even are. I barely look into them)

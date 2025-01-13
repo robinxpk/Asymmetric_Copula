@@ -13,6 +13,7 @@
 library(ggplot2) # Fot plots
 library(patchwork) # Fot plots
 # library(copula) # For copula methods; https://cran.r-project.org/web/packages/copula/index.html
+# library(HAC) # For fitting which is NOT IMPLEMENTED in copula package. wtf is this
 
 # Global parameters --------------------------------------------------------------
 n = 5000 # as in paper
@@ -129,7 +130,6 @@ cor.test(dat$vol, dat$dur, method = "kendall")
 # Get pseudo-observations:
 pdat = tibble::as_tibble(copula::pobs(dat))
 plot(pdat)
-names(pdat) = c("1", "2", "3")
 # Compare to true sample:
 # plot(tibble::as_tibble(u_gumbel))
 
@@ -138,31 +138,90 @@ names(pdat) = c("1", "2", "3")
 # ML estimation as in @yan p. 9
 # Show how likelihood looks in my case (it is depicted in zhang)
 
-library(copula)
-library(HAC)
 
 # !!! estimation_via_HAC.R file; cannot fit onacopula via copula package, require HAC package
-cop = onacopula("Gumbel", C(1, 3, C(1, c(1, 2))))
+cop = copula::onacopula("Gumbel", C(1, 3, C(1, c(1, 2))))
 hac_cop = HAC::nacopula2hac(cop)
 plot(hac_cop)
 
-hac.fix = HAC::estimate.copula(pdat, hac = hac_cop)
+hac.fix = HAC::estimate.copula(pdat |> dplyr::rename("1" = peak, "2" = vol, "3" = dur), hac = hac_cop)
 hac.fix
 plot(hac.fix)
 
-hac.flex = HAC::estimate.copula(pdat, type = hac_cop$type)
+hac.flex = HAC::estimate.copula(pdat |> dplyr::rename("1" = peak, "2" = vol, "3" = dur), type = hac_cop$type)
 hac.flex
 plot(hac.flex)
-fit = HAC::hac2nacopula(hac.flex)
-fit
+c_fit = HAC::hac2nacopula(hac.flex)
+c_fit
 
 # 2.3) Diagnostics / Goodness of fit / Comparisons ------------------------
 
-copula::gofCopula(fit)
+# Typical gof things: 
+
+# Cramer-von Mises statistic
+# Rosenblatt transform
+# Anderson-Darling statistic
+# Empircal comparison
+# Simulated data from fitted vs actual data
+# Check other paper
+# Out of sample performance / validation?
+
+# compare CDF's between empirical copula and copula based on parametrical assumptions
+# They shood look somewhat similar I guess
+# (HAC doku Abbildung 6)
 
 # Comparing the empirical PIT or empirical copula to theoretical counterparts helps assess the goodness 
 # of fit of multivariate models.
 # Actually, visual and then comparing by likelihood should work, right? 
 
+# General thought: 
+# Can I not just look at the nested copulas individually (like the likelihood does?)
+# i.e. 1st look at the fitted copula between more correlated
+#      2nd look at the fitted copula between copula values for inner 2 and pseudo obs of 3rd variable
+# Is this valid? 
+# -> How do other paper approach? 
+# -> How are the gof metrics defined?  
+# ALSO if I do this, I can use this damn copula shit package!
+# General thoughts on validity: 
+# Hierarchical strucutre implies that we model relationship inner independent of the outer one
+# -> partial exchangeability
+# But for sure it is valid to assess wheather a sub-copula is valid. And if that is the case
+# it should be valid approach generally. lol. reasoning. 
+outer_theta = c_fit@copula@theta
+inner_theta = c_fit@childCops[[1]]@copula@theta
+
+c_outer = copula::gumbelCopula(outer_theta)
+c_inner = copula::gumbelCopula(inner_theta)
+
+copula::gofCopula(c_inner, pdat[1:100, 1:2])
+
+# Copula values of fitted joint copula
+pdat["inner_cdf"] = copula::pCopula(as.matrix(pdat |> dplyr::select(peak, vol)), c_inner)
+
+copula::gofCopula(c_outer, pdat[1:100, 3:4])
+
+# Checking what happens if I estimate stuff sequentially
+test = copula::fitCopula(copula::gumbelCopula(dim = 2), pdat[, 1:2])
+summary(test)
+
+inner = copula::pCopula(as.matrix(pdat |> dplyr::select(peak, vol)), copula::gumbelCopula(param = test@estimate, dim = 2))
+test_pdat = tibble::as_tibble(
+  list(dur = pdat$dur, inner = inner)
+)
+
+test_outer = copula::fitCopula(copula::gumbelCopula(dim = 2), test_pdat)
+summary(test_outer)
+
+# I THINK THE ÜARAMETER CONDITION ONLY APPLY IF SAME FAMILY!!!!
+# p. 2 @hofert "On strucutre..."
+# TODO: 
+# Use HAC to estimate nested bc it ensures this condition to be fulfilled
+# THEN: use estimates for bivariate ACs? 
+# Then I can use some gof-evaluation of the bivariate stuff (I think)
+# Remaining: Issue of not having the variance of the estimate
+
+# 2.4 MAYBE Simulation study thingy ---------------------------------------
+# Maybe let run for 1k times, each copula, each sample size, each method and give distribution of the error or something
+# BEFORE doing so, check HAC doku. There is some simulation stuff in the end
 
 

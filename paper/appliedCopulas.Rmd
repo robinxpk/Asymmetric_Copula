@@ -18,16 +18,15 @@ Use: (see @nelsen2006, p. 1) or @nelsen2006 (p. 1)
 
 ## TODOs:
 
-TODO: Define an actual goal we want to achieve; COULD BE that paper
+TODO: Define an actual goal we want to achieve; \
+Paper focuses on how much better asymmetric copulas are compared to symmetric ones\
+Another goal could be that I use that paper
 already showed FNAC are superior to common models, and I could compare
 vine copulas (more flex) with FNACs. I expect not too much improvement
-if we only focus on 4 variables, but we could extend our approach to
+if we only focus on 3 variables, but we could extend our approach to
 more than 3 and then see how they compare? Then I skip on all the
-estimation theory and stuff?\
-NOTE: (GPT:) FNACs are effective in low to moderate dimensions. So for
-trivariate, I should be fine. Maybe Our goal can be more hydrology
-based? Then I can focus on some estimation theory and not care too much
-about fancy application? not sure...
+estimation theory and stuff?
+
 
 TODO: Mention: "Sklar’s Theorem tells us that we can decompose any given
 multivariate distribution function into its margins and a copula. By
@@ -199,7 +198,10 @@ The theorem is given by @hofert (p. 3): Let $F$ be a continuous CDF and
 let random variable $X$ have CDF $F$, that is $X \sim F$. Then $F(X)$ is
 a standard uniform random variable, that is, $F(X) \sim U(0, 1)$.
 
-ADD EMPRICAL?
+TODO: Empirical PIT
+Empirical PIT is based on the empirical distribution function\
+introduce pseudo-obs
+
 
 <!-- Thus, pit provides the mechanism to transform the marginals into standard uniform variables, which is required by Sklar's Theorem.  -->
 
@@ -208,6 +210,7 @@ ADD EMPRICAL?
 <!-- The copula utilizes these transformed variables to describe the dependence structure independent of the original marginals.  -->
 
 ### Identifying marginals
+Can just drop this one if I choose vine. Then I only focus on the pseudo-obs
 
 TODO
 
@@ -392,6 +395,8 @@ can only display positive dependence for d larger 3.
 
 ### Fully Nested Archimedean copulas {#nacs}
 
+TODO: As I understand right now, the condition of increasing theta only yields valid NAC if from the same familty. i.e. copula family does not change within NAC, only the degree of dependence. (@hofer2016 p.2 "On strucutre.."). I could get around by arguing we want to compare NACs from papar with vine copulas. ie I would need to introduce vine copulas too....
+
 As mentioned in the previous section, we overcome the limitation of SAC
 by using FNACs which allow us to model asymmetric relationships.\
 TODO: Write text here that like: First show what FNAC is, then give
@@ -457,6 +462,10 @@ For our analysis, we choose $5$ common trivariate FNACs which are
 displayed in TABLE REF. The corresponding generators fulfill all listed
 conditions such that the resulting copulas are valid (@grimaldi2004 p.
 1157).
+
+
+Also, we focus on copulas built by the same functional form in the generator. 
+i.e. copula family does not change within the nested structure, but the parameters are allowed to vary.
 
 In caption of copula table:\
 zhang p. 175: Discusses/derives all trivariate asymmetric copulas ? Put
@@ -572,10 +581,20 @@ cor.test with method = kendall implements this as seen in @hollander2015 p. 398,
 Do I only mention the formula for the test here and implementation in the implementation and package chapter?
 
 ### Estimation process
+Introduce MLE
+
+Check how HAC does it 
 
 ## Diagnostics and Goodness of fit evaluation
 
 See @zhang2019 in chapter 3, 4, 5 I think. Also regarding MLE AIC
+
+GOF in paper: 
+Test by Chen (source 3)
+Visual comparison
+likelihood profile confidence intervals (source 4)
+
+
 
 A common method to evalute goodness of fit is Kendall's distribution
 function. However, as @zhangPAPER mention, this expression is
@@ -595,6 +614,9 @@ presented in theory
 
 THESE FUNCTIONS give the nested copulas of the mentioned families which
 are used for data simulation (and estimation?)
+
+For estimation, the HAC package in R. According to @okhrin in HAC DOKU, the central contribution of this package is the parameter and structure estimation. 
+
 
 ## Simulation
 
