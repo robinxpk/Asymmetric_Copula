@@ -14,6 +14,7 @@ set.seed(123)
 # Libraries ---------------------------------------------------------------
 library(ggplot2) # For plots
 library(patchwork) # For plots
+library(cowplot) # For plots (More precise than patchwork)
 # library(copula) # For copula methods; https://cran.r-project.org/web/packages/copula/index.html
 # library(HAC) # For fitting which is NOT IMPLEMENTED in copula package. wtf is this
 
@@ -110,10 +111,10 @@ marginal_vol = ggplot(dat, aes(x = vol)) +
 
 # Joint plot
 pairs = GGally::ggpairs(dat, 
-                upper = list(
+                lower = list(
                   continuous = GGally::wrap("points", alpha = 0.3)
                 ),
-                lower = list(
+                upper = list(
                   continuous = GGally::wrap(GGally::ggally_cor, method = "kendall")
                 ),
                 columnLabels = c("Peak", "Volume", "Duration")
@@ -190,7 +191,7 @@ print(layout)
 
 # Previous plot after "PIT" transformation
 marginal_peak = ggplot(pdat, aes(x = peak)) +
-  geom_histogram(fill = "blue", alpha = 0.3, color = "black") + 
+  geom_histogram(aes(y = ..density..), fill = "blue", alpha = 0.3, color = "black") + 
   labs(
     title = latex2exp::TeX("Peak Discharge"),
     x = latex2exp::TeX("$m^3/s$", output = "expression"),
@@ -218,39 +219,31 @@ marginal_vol = ggplot(pdat, aes(x = vol)) +
 
 # Joint plot
 pairs = GGally::ggpairs(pdat, 
-                upper = list(
+                lower = list(
                   continuous = GGally::wrap("points", alpha = 0.3)
                 ),
-                lower = list(
+                upper = list(
                   continuous = GGally::wrap(GGally::ggally_cor, method = "kendall")
                 ),
                 columnLabels = c("Peak", "Volume", "Duration")
-)
+) + 
+  scale_x_continuous(breaks = c(0, 0.5, 1), labels = c(0, 0.5, 1)) +
+  scale_y_continuous(breaks = c(0, 0.5, 1), labels = c(0, 0.5, 1)) 
 # Adjust diagonal
-pairs[1, 1] = marginal_peak + scale_y_continuous(breaks = c(), labels = c())
+pairs[1, 1] = marginal_peak + 
+  scale_y_continuous(breaks = c(0, 0.5, 1), labels = c(0, 0.5, 1)) + 
+  theme(axis.ticks.y = element_line())
 pairs[2, 2] = marginal_vol
-pairs[3, 3] = marginal_dur
-
+pairs[3, 3] = marginal_dur + 
+  scale_x_continuous(breaks = c(0, 0.5, 1), labels = c(0, 0.5, 1)) +
+  theme(axis.ticks.x = element_line())
 # Display 
 pairs
 
-
-
-
 # 2.2) Copula fitting -----------------------------------------------------
-
-# ML estimation as in @yan p. 9
-# Show how likelihood looks in my case (it is depicted in zhang)
-
-
-# !!! estimation_via_HAC.R file; cannot fit onacopula via copula package, require HAC package
 cop = copula::onacopula("Gumbel", C(1, 3, C(1, c(1, 2))))
 hac_cop = HAC::nacopula2hac(cop)
 plot(hac_cop)
-
-hac.fix = HAC::estimate.copula(pdat |> dplyr::rename("1" = peak, "2" = vol, "3" = dur), hac = hac_cop)
-hac.fix
-plot(hac.fix)
 
 hac.flex = HAC::estimate.copula(pdat |> dplyr::rename("1" = peak, "2" = vol, "3" = dur), type = hac_cop$type)
 hac.flex
@@ -258,74 +251,59 @@ plot(hac.flex)
 c_fit = HAC::hac2nacopula(hac.flex)
 c_fit
 
+
+
 # 2.3) Diagnostics / Goodness of fit / Comparisons ------------------------
+# Visual comparison of data and simulated copula
 
-# Typical gof things: 
+# Define a function to invert the ECDF
+inverse_ecdf <- function(u, data) {
+  quantile(data, probs = u, type = 1)  # Use type = 1 for stepwise approximation
+}
+# Empirical CDFs
+ecdf_peak = ecdf(dat$peak)
+ecdf_vol = ecdf(dat$vol)
+ecdf_dur = ecdf(dat$dur)
 
-# Cramer-von Mises statistic
-# Rosenblatt transform
-# Anderson-Darling statistic
-# Empircal comparison
-# Simulated data from fitted vs actual data
-# Check other paper
-# Out of sample performance / validation?
+# Synthetic data points
+n_fit= 5000
 
-# compare CDF's between empirical copula and copula based on parametrical assumptions
-# They shood look somewhat similar I guess
-# (HAC doku Abbildung 6)
+# Create synthetic data
+u_fit = copula::rnacopula(n_fit, c_fit)
+u_fit = tibble::as_tibble(u_fit) |> dplyr::rename(peak = V1, vol = V2, dur = V3)
 
-# Comparing the empirical PIT or empirical copula to theoretical counterparts helps assess the goodness 
-# of fit of multivariate models.
-# Actually, visual and then comparing by likelihood should work, right? 
+# Tranform generated pseudo-obs using the inverse of ECDFs
+retransformed_dat = tibble::as_tibble(
+  list(
+    peak = sapply(u_fit$peak, inverse_ecdf, data = dat$peak),
+    vol = sapply(u_fit$vol, inverse_ecdf, data = dat$vol),
+    dur = sapply(u_fit$dur, inverse_ecdf, data = dat$dur)
+  )
+) |> dplyr::mutate(origin = "syn")
 
-# General thought: 
-# Can I not just look at the nested copulas individually (like the likelihood does?)
-# i.e. 1st look at the fitted copula between more correlated
-#      2nd look at the fitted copula between copula values for inner 2 and pseudo obs of 3rd variable
-# Is this valid? 
-# -> How do other paper approach? 
-# -> How are the gof metrics defined?  
-# ALSO if I do this, I can use this damn copula shit package!
-# General thoughts on validity: 
-# Hierarchical strucutre implies that we model relationship inner independent of the outer one
-# -> partial exchangeability
-# But for sure it is valid to assess wheather a sub-copula is valid. And if that is the case
-# it should be valid approach generally. lol. reasoning. 
-outer_theta = c_fit@copula@theta
-inner_theta = c_fit@childCops[[1]]@copula@theta
+pdat = pdat |> dplyr::mutate(origin = "real")
 
-c_outer = copula::gumbelCopula(outer_theta)
-c_inner = copula::gumbelCopula(inner_theta)
+joint_data = rbind(retransformed_dat, pdat)
 
-copula::gofCopula(c_inner, pdat[1:100, 1:2])
+# Overlayed plots
+syn_peak_vol = ggplot(mapping = aes(x = peak, y = vol)) + 
+  geom_point(data = retransformed_dat, color = "lightblue", alpha = 0.3) + 
+  geom_point(data = dat, color = "black") + 
+  labs(x = "Peak", y = "Volume") + 
+  theme_minimal()
 
-# Copula values of fitted joint copula
-pdat["inner_cdf"] = copula::pCopula(as.matrix(pdat |> dplyr::select(peak, vol)), c_inner)
+syn_peak_dur = ggplot(mapping = aes(x = peak, y = dur)) + 
+  geom_point(data = retransformed_dat, color = "lightgreen", alpha = 0.3) + 
+  geom_point(data = dat, color = "black") + 
+  labs(x = "Peak", y = "Duration") + 
+  theme_minimal()
 
-copula::gofCopula(c_outer, pdat[1:100, 3:4])
+syn_vol_dur = ggplot(mapping = aes(x = vol, y = dur)) + 
+  geom_point(data = retransformed_dat, color = "orange", alpha = 0.1) + 
+  geom_point(data = dat, color = "black") + 
+  labs(x = "Duration", y = "Volume") + 
+  theme_minimal()
 
-# Checking what happens if I estimate stuff sequentially
-test = copula::fitCopula(copula::gumbelCopula(dim = 2), pdat[, 1:2])
-summary(test)
-
-inner = copula::pCopula(as.matrix(pdat |> dplyr::select(peak, vol)), copula::gumbelCopula(param = test@estimate, dim = 2))
-test_pdat = tibble::as_tibble(
-  list(dur = pdat$dur, inner = inner)
-)
-
-test_outer = copula::fitCopula(copula::gumbelCopula(dim = 2), test_pdat)
-summary(test_outer)
-
-# I THINK THE ÜARAMETER CONDITION ONLY APPLY IF SAME FAMILY!!!!
-# p. 2 @hofert "On strucutre..."
-# TODO: 
-# Use HAC to estimate nested bc it ensures this condition to be fulfilled
-# THEN: use estimates for bivariate ACs? 
-# Then I can use some gof-evaluation of the bivariate stuff (I think)
-# Remaining: Issue of not having the variance of the estimate
-
-# 2.4 MAYBE Simulation study thingy ---------------------------------------
-# Maybe let run for 1k times, each copula, each sample size, each method and give distribution of the error or something
-# BEFORE doing so, check HAC doku. There is some simulation stuff in the end
-
-
+# Combine plots
+combined_plot = (syn_peak_vol | syn_vol_dur | syn_peak_dur ) 
+print(combined_plot)

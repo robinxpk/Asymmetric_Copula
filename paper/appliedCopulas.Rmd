@@ -589,6 +589,22 @@ Do I only mention the formula for the test here and implementation in
 the implementation and package chapter?
 
 ### Estimation process
+(estimation_via_HAC.R file; cannot fit onacopula via copula package, require HAC package)
+
+Difference HAC.fix and HAC.flex estimation? 
+
+Deleted this:\ 
+
+hac.fix = HAC::estimate.copula(pdat |> dplyr::rename("1" = peak, "2" = vol, "3" = dur), hac = hac_cop)
+
+hac.fix
+
+plot(hac.fix)
+
+
+ML estimation as in @yan p. 9
+
+Show how likelihood looks in my case (it is depicted in zhang)
 
 Introduce MLE
 

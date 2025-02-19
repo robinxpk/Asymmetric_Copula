@@ -146,10 +146,6 @@ cor.test(dat$vol, dat$dur, method = "kendall")
 # This is due to partial exchangability / same margins in the copula for u_1, u_3 and u_2, u_3
 # (Was expected; Mention in presentation / paper?)
 
-
-
-
-
 # 2.1) Margin identification ----------------------------------------------
 # -> Strong part about the copula: We first worry about margins and THEN about the joint / copula
 
@@ -165,7 +161,6 @@ plot(pdat)
 # plot(tibble::as_tibble(u_gumbel))
 
 # 2.2) Copula fitting -----------------------------------------------------
-
 # ML estimation as in @yan p. 9
 # Show how likelihood looks in my case (it is depicted in zhang)
 
