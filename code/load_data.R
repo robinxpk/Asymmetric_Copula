@@ -477,62 +477,222 @@ apply_summary_stats = function(
   return(sum_df_all)
 }
 
-# Create extended data frames for all CSVs
-create_and_save_dfs(in_dir = "../data/isar data/bis311224/", out_dir = "../data/output/rdata/extended_dfs/")
-# Summary statistics (discharge distribution)
-sum_df = apply_summary_stats(in_dir = "../data/output/rdata/extended_dfs/")
-# Distribution number of observations per year 
-ggplot(sum_df, aes(x = unit)) + 
-  geom_boxplot(aes(y = n))
-# Apply straight line method to identify the most extreme flood event in each year
-# IMPORTANT: Flood event threshold uses QUANTILE of yearly distribution of discharge. Thus, threshold is p-th quantile
-apply_and_save_slm(in_dir = "../data/output/rdata/extended_dfs/", out_dir = "../data/output/rdata/threshold_dfs/", p_threshold = c(.75))
-# Create hydrograph plots for every station and every year so I can go through them and check if it worked
-create_and_save_hydrographs(in_dir = "../data/output/rdata/threshold_dfs/", out_dir = "../data/output/graphs/hydrographs/")
-# TODO:
-# Create copula dfs
-# df: peak, vol, dur, year, id, unit, river, p_threshold MORE?
+create_copula_df = function(df){
+  "
+  Create the data frame used to identify the copula / dependence structure.
+  Columns: year, duration, peak, volume, id, unit, river, n, p_threshold MORE?
+  -> year: year of observation
+  -> n: number observations in year
+  -> duration: duration of the flood event in minutes [min]
+  -> peak: peak discharge of the flood event [m^3 / s]
+  -> volume: total volume discharged during flood event [m^3]
+  -> id: id of station
+  -> unit: name of station
+  -> river: name of river
+  -> p_threshold: p as in p-quantile used as threshold to determine when flood starts / ends
+  
+  Note on calculating the (total) volume: 
+  Every 15min, an observation is made. To calculate the total volume, we 
+  a) assume constant discharge over the 15mins --> unrealistic and did not do that
+  b) assume linear change in discharge over the 15mins. i.e. connect the two discharge values with a line
+      Area is then given by area under the line (extrapolation).
+      Mathematically, it is equivalent to determine 
+      area under the line between the two discharge values
+      or 
+      area under the average of the two discharge values 
+  This is done in 2 step approach:
+  1) Create df with 15min volume sequences
+  2) summarise the previous data frame for each year
+  "
+  # TODO: This is not really clean. This function should only determine the copula shape. I think the logic of volume should be saved in the threshold dfs when most extreme flood event is determined
+  copula_df = df |> 
+    #### 1) Build data frame to summarise later on containing the parts required for area under hydrograph:
+    # Only consider the most extreme flood event...
+    dplyr::filter(peak_flood == TRUE) |> 
+    # ... for each year
+    dplyr::group_by(year) |> 
+    # Use lag operator to determine the average discharge between current and the one 15minutes ago
+    # NOTE: This sets the lag of the first observation to NA which is perfect:
+    #   The first observation has no "area under the curve", i.e. I do not want to calc area there
+    #   The average between first observation and NA becomes NA and is then not considered when summing up the volumes
+    # Also, use lag operator on date to account for cases where past observation is not 15minutes ago, but maybe longer
+    dplyr::mutate(
+      lag_discharge = dplyr::lag(discharge),
+      lag_date = dplyr::lag(date)
+    ) |> 
+    # Build rowwise average between discharge and lagged discharge (i.e. the discharge 15min ago)
+    dplyr::rowwise() |>
+    dplyr::mutate(
+      avg_discharge = mean(c(discharge, lag_discharge)),
+      # Quantify how long past obsevation is ago
+      # NOTE: Units is seconds to mulitply with discharge which is m^3/s
+      time_difference = as.numeric(
+        lubridate::as.duration(date - lag_date), 
+        "seconds"
+      ),
+      # Drawing straight line between time points, calculate the (extrapolated) volume = area = avg * duration
+      vol_extra = avg_discharge * time_difference
+    ) |> 
+    # Undo rowwise consideration
+    dplyr::ungroup() |>
+    #### 2) Summarising previous data frame:
+    # Build summary per year i.e. the copula data frame structure
+    dplyr::summarise(
+      n_floodevent = dplyr::n(),
+      duration_min = as.numeric(
+        lubridate::as.duration(max(date) - min(date)),
+        "minutes"
+      ),
+      # m^3 / s (Hover "Abfluss" in https://www.lfu.bayern.de/wasser/wasserstand_abfluss/abfluss/index.htm)
+      peak = max(discharge),
+      # I would like to calc volume NOT assuming constant discharge for 15 min
+      # I'f prefer some linear method i.e. connecting 15min points and calc area below connecting line
+      # --> Use average discharge between time points
+      volume = sum(vol_extra, na.rm = T),
+      # p_threshold = p_threshold,
+      # id = id,
+      # unit = unit,
+      # river = river,
+      .by = year
+    )
+  
+  # Add meta data: id, unit, river, p_threshold
+  copula_df = copula_df |> 
+    dplyr::mutate(
+      id = unique(df$id),
+      unit = unique(df$unit),
+      river = unique(df$river),
+      p_threshold = unique(df$p_threshold)
+    )
+  
+  return(copula_df)
+}
+
+create_and_save_copula_dfs = function(
+    in_dir = "../data/output/rdata/threshold_dfs/",
+    out_dir = "../data/output/rdata/copula_dfs/"
+  ){
+  # Get files in the input directory
+  filenames = list.files(in_dir)
+  
+  # Iterate through all file names
+  for (filename in filenames){
+    
+    # Create copula df from df where peak flood is identified
+    load(paste(in_dir, filename, sep = "")) # Loads data frame called df
+    cop_df = create_copula_df(df)
+    
+    # Filename to save df in
+    df_filename = paste(unique(df$id), "_copula.Rdata", sep = "")
+    # Save df in output path
+    save(cop_df, file = paste(out_dir, df_filename, sep = ""))
+  }
+}
+
+load_rdata = function(filepath){
+  # IMPORTANT! Assumes only 1 object / df within the rdata file
+  # Note: Use new environment for each load to prevent overwriting within lapply
+  env = new.env()
+  load(filepath, envir = env)
+  get(ls(env)[1], envir = env)
+}
+
+get_copula_df = function(
+    in_dir = "../data/output/rdata/copula_dfs/"
+  ){
+  "
+  Read all copula dfs and join them to one large copula df
+  "
+  filenames = paste(in_dir, list.files(in_dir), sep = "")
+  
+  return(purrr::map_dfr(filenames, load_rdata))
+}
+
+get_long_df = function(
+    in_dir = "../data/output/rdata/threshold_dfs/"
+  ){
+  #TODO: SAME as get_copula_df, but with different path. lol. Just have one function....!
+  "
+  Read all long ('extended') data frames and join to one large one
+  "
+  filenames = paste(in_dir, list.files(in_dir), sep = "")
+  
+  return(purrr::map_dfr(filenames, load_rdata))
+}
+
+# TODO: Did not run this function yet... ever. Will take quite some time!
+create_dfs = function(
+    data_path = "../data/isar data/bis311224/",
+    extended_dfs_path = "../data/output/rdata/extended_dfs/",
+    threshold_dfs_path = "../data/output/rdata/threshold_dfs/",
+    hydrograph_path = "../data/output/graphs/hydrographs/",
+    copula_dfs_path = "../data/output/rdata/copula_dfs/",
+    p_threshold = c(.75),
+    debug = F
+  ){
+  if (debug) browser()
+  
+  # Create extended data frames for all CSVs
+  create_and_save_dfs(in_dir = data_path, out_dir = extended_dfs_path)
+  # Apply straight line method to identify the most extreme flood event in each year
+  # IMPORTANT: Flood event threshold uses QUANTILE of yearly distribution of discharge. Thus, threshold is p-th quantile
+  apply_and_save_slm(in_dir = extended_dfs_path, out_dir = threshold_dfs_path, p_threshold = p_threshold)
+  # Create hydrograph plots for every station and every year so I can go through them and check if it worked
+  create_and_save_hydrographs(in_dir = threshold_dfs_path, out_dir = hydrograph_path)
+  # Create and save all the data frames containing the info for copula determination
+  create_and_save_copula_dfs(in_dir = extended_dfs_path, out_dir = copula_dfs_path)
+  
+  if (debug){
+    # Summary statistics (discharge distribution)
+    sum_df = apply_summary_stats(in_dir = extended_dfs_path)
+    # Distribution number of observations per year 
+    ggplot(sum_df, aes(x = unit)) + geom_boxplot(aes(y = n))
+  }
+}
+
+# # TODO:
+# # - Do I want to filter years with little observations only? Some hydrograph look odd I think.. If so, what is the min number obs?
+# # Create extended data frames for all CSVs
+# create_and_save_dfs(in_dir = "../data/isar data/bis311224/", out_dir = "../data/output/rdata/extended_dfs/")
+# # Summary statistics (discharge distribution)
+# sum_df = apply_summary_stats(in_dir = "../data/output/rdata/extended_dfs/")
+# # Distribution number of observations per year 
+# ggplot(sum_df, aes(x = unit)) + 
+#   geom_boxplot(aes(y = n))
+# # Apply straight line method to identify the most extreme flood event in each year
+# # IMPORTANT: Flood event threshold uses QUANTILE of yearly distribution of discharge. Thus, threshold is p-th quantile
+# apply_and_save_slm(in_dir = "../data/output/rdata/extended_dfs/", out_dir = "../data/output/rdata/threshold_dfs/", p_threshold = c(.75))
+# # Create hydrograph plots for every station and every year so I can go through them and check if it worked
+# create_and_save_hydrographs(in_dir = "../data/output/rdata/threshold_dfs/", out_dir = "../data/output/graphs/hydrographs/")
+# # Create and save all the data frames containing the info for copula determination
+# create_and_save_copula_dfs(in_dir = "../data/output/rdata/threshold_dfs/", out_dir = "../data/output/rdata/copula_dfs/")
 
 
-# TODO: 
-# - Do I want to filter years with little observations only? Some hydrograph look odd I think.. If so, what is the min number obs?
-# TODO:
-# All data available for period of time
-# Reading in all the data:
-# Formulate as function of threshold:
-# 1) get all filenames to append to relative path; for every rel.path: 
-# 1.1) read in all data -> transform into useable df (function: load_data)
-# 1.2) create df as returned by apply_slm and save as R object (in case I ever want to use it later on). 
-#   Also, save the plot so I can go through them and check if it worked 
-# 1.3) Calculate peak, volume, duration for each peak flood
-
-
-
+##### SINGLE FILE RUN
 # Single file for präsi; Explains approach:
 # rel_path = "../data/isar data/fluesse-abfluss/16000708_beginn_bis_31.12.2024_ezw_0.csv"
-load("../data/output/rdata/threshold_dfs/16000708_t0.75.Rdata")
-
-# Hydrograph for whole time span
-# > As we see, not always all data present
-# For missing data, we use what we have FOR NOW
-ggplot(df, aes(x = date, y = discharge)) + 
-  geom_line()
-# We split hydrograph into years
-ggplot(df, aes(x = date, y = discharge)) + 
-  geom_line() + 
-  geom_vline(xintercept = as.POSIXct(paste(1972:2024, "-01-01 00:00:00", sep = "")), colour = "red", linetype = 2)
-# Hydrograph per year - stacked
-ggplot(df, aes(x = doy, y = discharge, group = year)) + 
-  geom_line()
-# Hydropgraph one year - single
-ref_year = 2021
-ggplot(df |> dplyr::filter(year == ref_year), aes(x = doy, y = discharge)) + 
-  geom_line()
-# We consider the flood event with the highest peak only (following paper here)
-# Identifying using quantile of yearly distribution:
-thresh = df |> dplyr::filter(year == ref_year) 
-thresh= unique(thresh$threshold)
-ggplot(df |> dplyr::filter(year == ref_year), aes(x = doy, y = discharge, colour = peak_flood)) + 
-  geom_line() + 
-  geom_hline(yintercept = thresh)
-# TODO: In this plot: Mark how duration, volume and peak is determined 
+# load("../data/output/rdata/threshold_dfs/16000708_t0.75.Rdata")
+# # Hydrograph for whole time span
+# # > As we see, not always all data present
+# # For missing data, we use what we have FOR NOW
+# ggplot(df, aes(x = date, y = discharge)) + 
+#   geom_line()
+# # We split hydrograph into years
+# ggplot(df, aes(x = date, y = discharge)) + 
+#   geom_line() + 
+#   geom_vline(xintercept = as.POSIXct(paste(1972:2024, "-01-01 00:00:00", sep = "")), colour = "red", linetype = 2)
+# # Hydrograph per year - stacked
+# ggplot(df, aes(x = doy, y = discharge, group = year)) + 
+#   geom_line()
+# # Hydropgraph one year - single
+# ref_year = 2021
+# ggplot(df |> dplyr::filter(year == ref_year), aes(x = doy, y = discharge)) + 
+#   geom_line()
+# # We consider the flood event with the highest peak only (following paper here)
+# # Identifying using quantile of yearly distribution:
+# thresh = df |> dplyr::filter(year == ref_year) 
+# thresh= unique(thresh$threshold)
+# ggplot(df |> dplyr::filter(year == ref_year), aes(x = doy, y = discharge, colour = peak_flood)) + 
+#   geom_line() + 
+#   geom_hline(yintercept = thresh)
+# # TODO: In this plot: Mark how duration, volume and peak is determined 
