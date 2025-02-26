@@ -1,0 +1,9 @@
+/* Expand the main content area to full width */
+.main-container {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+img{
+    max-width: 100% !important;
+    height: auto !important;
+}

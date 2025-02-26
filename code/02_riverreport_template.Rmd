@@ -1,0 +1,108 @@
+---
+title: "River Report `r unique(params$df$river)`"
+output: 
+  html_document:
+    code_folding: hide
+    css: styles.css
+params:
+  df: NULL
+---
+```{r, include=FALSE}
+source("functions.R")
+knitr::opts_chunk$set(fig.width=14, fig.height=7, dpi=300, out.width="100%")
+knitr::opts_knit$set(root.dir = normalizePath("."))
+
+df = params$df
+river = unique(df$river)
+```
+
+## The data set
+`r river`
+
+```{r}
+head(df)
+```
+
+
+## Aggregated view {.tabset}
+Scatterplots of observed variables (Marginal affects Scatterplot) and Pseudo-Observations (Relationship only).
+
+### Volume - Duration
+```{r}
+# Plots
+# Volume-Duration
+# With marginal distribution
+p1 = ggplot(df, aes(x = volume, y = duration_min)) +
+  geom_point() +
+  facet_wrap(~unit)
+# Pobs
+p2 = ggplot(df, aes(x = pobs_vol, y = pobs_dur)) +
+  geom_point() +
+  facet_wrap(~unit)
+p1p2 = (p1 | p2)
+p1p2
+```
+
+### Volume - Peak
+```{r}
+# Volume-Peak
+# W/ marginal
+p1 = ggplot(df, aes(x = volume, y = peak)) +
+  geom_point() +
+  facet_wrap(~unit)
+# Pobs (relation without marginal)
+p2 = ggplot(df, aes(x = pobs_vol, y = pobs_peak)) +
+  geom_point() +
+  facet_wrap(~unit)
+p1p2 = (p1 | p2)
+plot(p1p2)
+```
+
+
+### Duration - Peak
+```{r}
+# Duration-Peak
+# W/ marginal
+p1 = ggplot(df, aes(x = duration_min, y = peak)) +
+  geom_point() +
+  facet_wrap(~unit)
+# Pobs
+p2 = ggplot(df, aes(x = pobs_dur, y = pobs_peak)) +
+  geom_point() +
+  facet_wrap(~unit)
+p1p2 = (p1|p2)
+plot(p1p2)
+```
+
+
+## Correlation table
+```{r}
+# Correlation table
+cor_table = df|> dplyr::summarise(
+  n = dplyr::n(),
+  tau_vd = cor(volume, duration_min, method = "kendall"),
+  p_vd = cor.test(volume, duration_min, method = "kendall")$p.value,
+  rej_vd = p_vd < 0.01,
+  tau_vp = cor(volume, peak, method = "kendall"),
+  p_vp = cor.test(volume, peak, method = "kendall")$p.value,
+  rej_vp = p_vp < 0.01,
+  tau_dp = cor(duration_min, peak, method = "kendall"),
+  p_dp = cor.test(duration_min, peak, method = "kendall")$p.value,
+  rej_dp = p_dp < 0.01,
+  .by = unit
+)
+knitr::kable(cor_table)
+```
+
+
+```{r}
+# Distribution of dependence structures
+cor_table |> tidyr::pivot_longer(
+  cols = c("tau_vd", "tau_vp", "tau_dp"),
+  names_to = "relation",
+  values_to = "correlation"
+) |>
+ggplot(aes(y = correlation, x = relation)) + 
+  geom_boxplot()
+```
+

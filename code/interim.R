@@ -252,6 +252,20 @@ c_fit = HAC::hac2nacopula(hac.flex)
 c_fit
 
 
+?copula::onacopulaL
+nac = copula::onacopulaL(
+  family = "Gumbel", 
+  nacList = list(
+    theta = 1, 
+    comp = 3, 
+    children = list(
+      list(
+        theta = 2, 
+        comp = c(1, 2)
+      )
+    )
+  )
+)
 
 # 2.3) Diagnostics / Goodness of fit / Comparisons ------------------------
 # Visual comparison of data and simulated copula

@@ -1,8 +1,24 @@
 .Rhistory
+
+# Subfolder: Code
+code/*.html
+
+# Subfolder: Paper
 paper/appliedCopulas.log
 paper/appliedCopulas.tex
 paper/appliedCopulas.aux
+
+# Subfolder: Data
+data/0 input data/*.csv
 data/isar data
-data/output
-data/all data.zip
-data/EU data.zip
+data/donau data
+data/*.zip
+data/output/graphs/hydrographs/*.png
+data/output/rdata/copula_dfs/*.Rdata
+data/output/rdata/extended_dfs/*.Rdata
+data/output/rdata/extended_dfs/issues.log
+data/output/rdata/threshold_dfs/*.Rdata
+data/fluesse*
+
+# Subfolder: River Reports
+riverreports/*.html

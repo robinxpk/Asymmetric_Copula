@@ -252,3 +252,13 @@ summary(test_outer)
 
 
 
+
+
+
+
+# TODO: When analyzing the data, immediatly write it such that I can just throw in the observed data
+# That is: Copy that and all from the observed data
+# Allow for some loops if necessary (but in R syntax, like lapply or shome bs so shit is quick)
+
+
+

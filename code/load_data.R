@@ -13,7 +13,9 @@ load_data <- function(rel_path,
                       header_meta = FALSE,
                       tz_list = list(MEZ = "MET"),
                       date_format = "%Y-%m-%d %H:%M",
-                      nonNA_cols = c("date", "status")){
+                      nonNA_cols = c("date", "status"),
+                      logfile = "../data/output/rdata/extended_dfs/issues.log"
+                      ){
   "
   Use a relative path to read in a csv file from GKD-website.
   Path is relative to Code folder.
@@ -81,7 +83,8 @@ load_data <- function(rel_path,
   )
   # Assign meta-data attributes to the data frame
   for (i in 1:length(attrs)){
-    attr(dat, attrs[i]) <- meta[i, 2]
+    # trimws: Function to remove the white space on both sides
+    attr(dat, attrs[i]) <- trimws(meta[i, 2], which = "both")
   }
   
   # Data 
@@ -92,27 +95,24 @@ load_data <- function(rel_path,
   # NAs possible: Some are just empty --> NAs
   # If that is the case, let user know:
   if (anyNA(as.numeric(sub(",", ".", dat$discharge, fixed = TRUE)))){
-    message(
-      paste(
+    totalNAs = sum(is.na(as.numeric(sub(",", ".", dat$discharge, fixed = TRUE))))
+    emptyDis = sum(dat$discharge[is.na(as.numeric(sub(",", ".", dat$discharge, fixed = TRUE)))] == "", na.rm = TRUE)
+    NADis = sum(is.na(dat$discharge[is.na(as.numeric(sub(",", ".", dat$discharge, fixed = TRUE)))]), na.rm = TRUE)
+    otherDis = totalNAs - emptyDis - NADis
+    msg = paste(
         "Note: 
         Transformation for column 'discharge' in data set '", 
         attr(dat, "measurement unit"), 
         "-", 
         attr(dat, "measurement id"), 
         "'[station - id] resulted in NAs:
-        ", 
-        sum(is.na(as.numeric(sub(",", ".", dat$discharge, fixed = TRUE)))),
-        " NAs of which:
-        - ",
-        sum(dat$discharge[is.na(as.numeric(sub(",", ".", dat$discharge, fixed = TRUE)))] == ""),
-        " due to empty discharge entries
-        - Other values that turned into NA:
-        ",
-        as.numeric(sub(",", ".", dat$discharge, fixed = TRUE))[
-          dat$discharge[is.na(as.numeric(sub(",", ".", dat$discharge, fixed = TRUE)))] != ""
-        ],
+        ", totalNAs, " NAs of which:
+        - ", emptyDis, " due to empty discharge entries
+        - ", NADis, " due to NA discharge entries
+        - ", otherDis, " non-'' or non-NA values turned to NA. Check those!",
         sep = "")
-    )
+    write_log(logfile, msg)
+    message(msg)
   }
   # Transform into numerical values
   dat$discharge = as.numeric(sub(",", ".", dat$discharge, fixed = TRUE))
@@ -120,19 +120,20 @@ load_data <- function(rel_path,
   # Check if any of the columns contains NAs. Should not be the case
   for (name in nonNA_cols){
     if (anyNA(dat[name])) {
-      stop(
-        paste(
-          "Error: Column '", 
-          name, 
-          "' in data set for '", 
-          attr(dat, "measurement unit"), 
-          "-", 
-          attr(dat, "measurement id"), 
-          "'[station - id] contains NA values!",
-          sep = "")
-      )
+      msg = paste(
+        "Error: Column '", 
+        name, 
+        "' in data set for '", 
+        attr(dat, "measurement unit"), 
+        "-", 
+        attr(dat, "measurement id"), 
+        "'[station - id] contains NA values!",
+        sep = "")
+      write_log(logfile, msg)
+      stop(msg)
     }
   }
+  
   
   return(dat)
 }
@@ -233,7 +234,9 @@ file_to_df = function(rel_path,
                       date_format = "%Y-%m-%d %H:%M",
                       nonNA_cols = c("date", "status"),
                       excluded_years = c(2025),
-                      drop_first_year = TRUE
+                      drop_first_year = TRUE,
+                      completenessThreshold = 0.85,
+                      logfile = "../data/output/rdata/extended_dfs/issues.log"
   ){
   "
     This function takes in a path to a CSV file and return a data frame (Initally part of 'create_and_save_dfs').
@@ -246,21 +249,33 @@ file_to_df = function(rel_path,
   # Enlargen the slim data frame to simplify working with it
   df = extend_columns(df)
   
-  # Some years are quite odd. Like 2025, there is usually just 1 observation
-  # Following lines just filter out given years that I want to exclude:
-  df = df |> dplyr::filter(!year %in% excluded_years)
-  # The first year is odd for the most tables. It start somewhen towards the end of the year and usually has only few observations
-  #   Simple solution is to drop it 
+  # Due to the data strucutre, there are some different filters by year allowed:
+  # Filter first observed year. Reason is that the data here is usually pretty odd...
   first_year = min(df$year)
   if (drop_first_year) df = df |> dplyr::filter(year != first_year)
-  
+  # Allow manuel exclusion of selected years. Like 2025, somehow it is still included in the data even 
+  # tho the data is supposed to only include 31.12.24
+  df = df |> dplyr::filter(!year %in% excluded_years)
+  # Apply a filter according to some completeness threshold. That is, any year that has a smaller 
+  # ratio of complete cases than the threshold is dropped.
+  # Reason: No need to consider the most extreme flood event if there are only 100 observations
+  # Where 1 observation is a 15min timeframe of a whole year. lol. 
+  years_below_thresh = calcCompRatio(df, filterby = c("year")) |> 
+    dplyr::filter(ratio < completenessThreshold) |> 
+    dplyr::select(year)
+  df = df |> dplyr::filter(!year %in% years_below_thresh$year)
+  if (length(years_below_thresh$year > 0)) {
+    msg = paste(attr(df, "measurement id"), "Due to threshold on complete cases per year, removed", length(years_below_thresh$year), "years.")
+    message(msg)
+    write_log(logfile, msg) 
+  }
   
   return(df)
 }
 
 create_and_save_dfs <- function(
     in_dir = "../data/isar data/bis311224/",
-    out_dir = "../data/output/rdata/extended",
+    out_dir = "../data/output/rdata/extended/",
     header_main = T, 
     sep = ";", 
     skip = 9, 
@@ -309,6 +324,10 @@ create_and_save_dfs <- function(
   }
 }
 
+write_log = function(logfilepath, logmessage){
+  cat(logmessage, file = logfilepath, append = TRUE, sep = "\n")
+}
+
 apply_and_save_slm = function(
     in_dir = "../data/output/rdata/extended_dfs/",
     out_dir = "../data/output/rdata/threshold_dfs/",
@@ -338,7 +357,7 @@ apply_and_save_slm = function(
   Note: Separating these steps and even saving the Rdata helps working on intermediate steps. Probably not most efficient.
   "
   # Get the names of the files in the input dir
-  filenames = list.files(in_dir)
+  filenames = list.files(in_dir, pattern = "*data")
   
   # Iterate through all filenames
   for (filename in filenames){
@@ -419,6 +438,37 @@ create_and_save_hydrographs <- function(
   }
 }
 
+calcCompRatio = function(df, filterby = c("id", "year")){
+  # I an observation every 15min. Determine ratio by using ratio of the observed 15min intervals and the 15min contained in a year
+  # Hinweis: Falls ratio = 1.00274, we have a leap year where 366 days in a year
+  timeInYear = 365 * 24 * 60 / 15
+  return(df |> dplyr::summarise(ratio = sum(!is.na(discharge)) / timeInYear, .by = dplyr::all_of(filterby)))
+}
+
+evaluateCompleteness = function(in_dir = "../data/output/rdata/extended_dfs/", returndf = FALSE, threshold = 0.85){
+  "
+  For some years in some stations, there are barely any observations or even none at all
+  e.g. 10032009, years: 1977, 1978, ..., 1986, 1988, ..., 1997
+  Note: Check via df |> dplyr::summarise(allna = all(is.na(discharge)), .by = year)
+  Solution: Remove years where a certain threshold of number observations is totally not achieved
+  Thus, evaluate completeness of data before hard coding some bs.
+  "
+  # Load all Rdata files in the in_dir
+  df = get_long_df(in_dir)
+  
+  # Get ratio of observed time relative to total time in year
+  completeness = calcCompRatio(df)
+  # Check distribution; this is not feasible for the whole flipping df
+  p = ggplot(completeness, aes(x = as.factor(year), y = ratio)) + 
+    geom_boxplot() + 
+    geom_hline(yintercept = threshold, colour = "blue") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+    labs(title = "Boxplots fraction of complete cases") + 
+    ylim(0, max(completeness$ratio))
+  plot(p)
+  if (returndf) return(completeness)
+}
+
 apply_summary_stats = function(
     in_dir = "../data/output/rdata/extended_dfs/",
     quantile_p = 0.95
@@ -440,7 +490,7 @@ apply_summary_stats = function(
   )
   
   # Read in the data.frames (the ones without the peak_flood info, but should not matter, really)
-  filenames = list.files(in_dir)
+  filenames = list.files(in_dir, patter = "*data")
   
   # Iterate through all these filenames
   for (filename in filenames){
@@ -457,19 +507,24 @@ apply_summary_stats = function(
         .by = year
       )
     # Add unit, id and river info to summary
-    sum_df = sum_df |> dplyr::mutate(unit = unique(df$unit), id = unique(df$id), river = unique(df$river))
+    sum_df = sum_df |> 
+      dplyr::mutate(
+        unit = attr(df, "measurement unit"), 
+        id = attr(df, "measurement id"), 
+        river = attr(df, "body of water")
+      )
     # Append df to overall df 
     sum_df_all = rbind(sum_df_all, sum_df)
   }
   # Create plot within the function
   #   Not really necessary bc the summary df is output anyway
-  p = ggplot(sum_df_all, aes(x = unit)) +
-    # geom_boxplot(aes(y = peak)) +
+  p = ggplot(sum_df_all, aes(x = id)) +
+    geom_boxplot(aes(y = peak)) +
     # geom_boxplot(aes(y = mean)) + 
-    geom_boxplot(aes(y = quant)) +
+    # geom_boxplot(aes(y = quant)) +
     labs(
       title = paste("Station over years"),
-      x = "Station"
+      x = "id"
     ) + 
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
   plot(p)
@@ -603,7 +658,7 @@ get_copula_df = function(
   "
   Read all copula dfs and join them to one large copula df
   "
-  filenames = paste(in_dir, list.files(in_dir), sep = "")
+  filenames = paste(in_dir, list.files(in_dir, pattern = "*data"), sep = "")
   
   return(purrr::map_dfr(filenames, load_rdata))
 }
@@ -615,30 +670,37 @@ get_long_df = function(
   "
   Read all long ('extended') data frames and join to one large one
   "
-  filenames = paste(in_dir, list.files(in_dir), sep = "")
+  filenames = paste(in_dir, list.files(in_dir, pattern = "*data"), sep = "")
   
   return(purrr::map_dfr(filenames, load_rdata))
 }
 
 # TODO: Did not run this function yet... ever. Will take quite some time!
 create_dfs = function(
-    data_path = "../data/isar data/bis311224/",
+    data_path = "../data/0 input data/",
     extended_dfs_path = "../data/output/rdata/extended_dfs/",
     threshold_dfs_path = "../data/output/rdata/threshold_dfs/",
     hydrograph_path = "../data/output/graphs/hydrographs/",
     copula_dfs_path = "../data/output/rdata/copula_dfs/",
     p_threshold = c(.75),
+    hydros = F,
+    evalCompleteness = F, # ONLY set TRUE if joint input dfs are reasonably large!!
     debug = F
   ){
   if (debug) browser()
   
   # Create extended data frames for all CSVs
   create_and_save_dfs(in_dir = data_path, out_dir = extended_dfs_path)
+  # Plot of complete cases
+  if (evalCompleteness) evaluateCompleteness(in_dir = extended_dfs_path)
+  
   # Apply straight line method to identify the most extreme flood event in each year
   # IMPORTANT: Flood event threshold uses QUANTILE of yearly distribution of discharge. Thus, threshold is p-th quantile
   apply_and_save_slm(in_dir = extended_dfs_path, out_dir = threshold_dfs_path, p_threshold = p_threshold)
+  
   # Create hydrograph plots for every station and every year so I can go through them and check if it worked
-  create_and_save_hydrographs(in_dir = threshold_dfs_path, out_dir = hydrograph_path)
+  if (hydros) create_and_save_hydrographs(in_dir = threshold_dfs_path, out_dir = hydrograph_path)
+  
   # Create and save all the data frames containing the info for copula determination
   create_and_save_copula_dfs(in_dir = extended_dfs_path, out_dir = copula_dfs_path)
   
@@ -650,22 +712,39 @@ create_dfs = function(
   }
 }
 
-# # TODO:
-# # - Do I want to filter years with little observations only? Some hydrograph look odd I think.. If so, what is the min number obs?
-# # Create extended data frames for all CSVs
+# Isar data only
 # create_and_save_dfs(in_dir = "../data/isar data/bis311224/", out_dir = "../data/output/rdata/extended_dfs/")
-# # Summary statistics (discharge distribution)
-# sum_df = apply_summary_stats(in_dir = "../data/output/rdata/extended_dfs/")
-# # Distribution number of observations per year 
-# ggplot(sum_df, aes(x = unit)) + 
-#   geom_boxplot(aes(y = n))
-# # Apply straight line method to identify the most extreme flood event in each year
-# # IMPORTANT: Flood event threshold uses QUANTILE of yearly distribution of discharge. Thus, threshold is p-th quantile
-# apply_and_save_slm(in_dir = "../data/output/rdata/extended_dfs/", out_dir = "../data/output/rdata/threshold_dfs/", p_threshold = c(.75))
-# # Create hydrograph plots for every station and every year so I can go through them and check if it worked
-# create_and_save_hydrographs(in_dir = "../data/output/rdata/threshold_dfs/", out_dir = "../data/output/graphs/hydrographs/")
-# # Create and save all the data frames containing the info for copula determination
-# create_and_save_copula_dfs(in_dir = "../data/output/rdata/threshold_dfs/", out_dir = "../data/output/rdata/copula_dfs/")
+# All data in input folder
+create_and_save_dfs(in_dir = "../data/0 input data/", out_dir = "../data/output/rdata/extended_dfs/")
+
+# ONLY run evaluate completeness with a reasonable amount of files in the in_dir
+# Else it probably will take ages
+evaluateCompleteness(in_dir = "../data/output/rdata/extended_dfs/")
+
+# Summary statistics (discharge distribution)
+sum_df = apply_summary_stats(in_dir = "../data/output/rdata/extended_dfs/")
+
+# Apply straight line method to identify the most extreme flood event in each year
+# IMPORTANT: Flood event threshold uses QUANTILE of yearly distribution of discharge. Thus, threshold is p-th quantile
+apply_and_save_slm(in_dir = "../data/output/rdata/extended_dfs/", out_dir = "../data/output/rdata/threshold_dfs/", p_threshold = c(.75))
+
+# Create hydrograph plots for every station and every year so I can go through them and check if it worked
+create_and_save_hydrographs(in_dir = "../data/output/rdata/threshold_dfs/", out_dir = "../data/output/graphs/hydrographs/")
+
+# Create and save all the data frames containing the info for copula determination
+create_and_save_copula_dfs(in_dir = "../data/output/rdata/threshold_dfs/", out_dir = "../data/output/rdata/copula_dfs/")
+
+# create_dfs(
+#     data_path = "../data/0 input data/",
+#     extended_dfs_path = "../data/output/rdata/extended_dfs/",
+#     threshold_dfs_path = "../data/output/rdata/threshold_dfs/",
+#     hydrograph_path = "../data/output/graphs/hydrographs/",
+#     copula_dfs_path = "../data/output/rdata/copula_dfs/",
+#     p_threshold = c(.75),
+#     evalCompleteness = F,
+#     hydros = F,
+#     debug = F
+#   )
 
 
 ##### SINGLE FILE RUN
@@ -696,3 +775,6 @@ create_dfs = function(
 #   geom_line() + 
 #   geom_hline(yintercept = thresh)
 # # TODO: In this plot: Mark how duration, volume and peak is determined 
+
+
+

@@ -55,6 +55,8 @@ I mean, the R package _HAC_ estimates its parameters like this, but I cannot fin
 
 ### References
 - Bayesian Copula idea: Li - Improving forecasting performance using covariate-dependent copula models
+- BRO HAS A WEBSITE:
+https://tu-dresden.de/bu/verkehr/ivw/osv/die-professur/inhaber-in
 
 
 
@@ -86,5 +88,76 @@ FOR LATER: Moving threshold (as paper does) could floods to be not well identifi
 
 
 - Not all years contain meaningful data. The copula data set should be fine even with some missing years in between...\
-Mostly the first year of the data is iffy. (For now) I drop the first year which usually contains only little observations (e.g. Moosburg in 2015 only 1 observation, Freising ~3000 observations (one every 15minutes) within 1 year..)
+Mostly the first year of the data is iffy. (For now) I drop the first year which usually contains only little observations (e.g. Moosburg in 2015 only 1 observation, Freising ~3000 observations (one every 15minutes) within 1 year..)\
+There are also cases where years contain no data at all or very little:
+![shit data](./READMEpics/16000708_40.png)
+This is garbage and could lead to outliers in further analysis causing headaches.. Don't need those.\
+Here is the completeness distribution for Donau and Isar. 
+![completeness](./READMEpics/CompletenessBoxplots.png)
+For these two the majority of years are complete (we have 30 stations / observations for each year). Thus, for years to be included in our analysis, they are required to be $90% $ complete.\
+Note: Ratio larger than 1 due to leap year bc I calculated ratio by non leap year days\
+I arbitrarily conclude that $85% $ is good threshold (blue line)
 
+### Notes during single analysis (Station: Munich, River: Isar)
+#### Paper
+- Practical applications mentioned (p.1160):\
+trivariate info required for design of expansion basin / diversion channel.\
+building synthetic design hydrographs -> HOW?\
+conditional joint density / distribution of volume and duration given peak
+- Varying thresholds (p. 1162); They use FIXED thresholds tho. And given table2, their rivers do not seem too compareable tbh...\
+I could try both: quantile and fixed, but I think quantile is more meaningful bc dependence structure is scale invariant anyway so relative consideration of flood event seems appropriate! 
+
+Following is based on _fixed_ threshold. Paper does not mention how they decided on this fixed value (p. 1163, section 5.2 mentions this fixed threshold tho)
+
+- Estimate Kendall's tau and test for significance (test not really necessary IMO)
+- Identifying univariate distribution; ONLY if I use some parametric approach. Else I just use empirical copula. IF I use parametric approach too, I should check behavior of missspecification in simulation
+- Estimate parameter for all considered copulas / generators: inner and outer generator as well as assumptions of symmetric trivariate AC\
+(Using Canonical ML; This is also implemented in HAC; TODO: Read up on what that is and if its equivalent to iterative nested ML)\
+For each estimate, also give the 95% likelihood profile CI (What is that?)
+- From all fitted copulas, select best fitted\
+Selection via: 
+Visual comparison\
+superimpose 5000 pairs of generated samples\
+Hypothesis test\
+(proposed by Chen in source 3)
+- Comparison copula performance vs traditional model in flood analysis (WONT DO THIS), BUT the comparison is interesting: \
+Compare two models via conditioning on values of Peak and plotting MOST PROBABLE pairs of volume and duration, i.e. mode of conditional cdf 
+
+Considered Copulas: M3, M4, M6, M12
+
+#### Ideas
+- Initial plan: Model tau in dependence of other variable; Now: Estimates based on tau do not seem to perform that well in copula estimation process? 
+##### Estimation
+- Kendall's tau
+- Use functions form to estimate parameters based on tau --> Don't bc estimates seem to be not as good..
+- Copula selection (see also goodness-of-fit)
+(- Kendall's tau as response --> estimate coefficients of linear predictor; POSTPONED until I am done with main copula modellling)
+- CANNOT use any available package to estimate with mixed generator functions. Would have to implement this myself. Cannot just estimate nestedly bc then joint variable is considered as a fixed variable which biases the estimates...
+What I would need is to determine the likelihood for all the different generator functions (I think) and then just run constraint opimizer to ensure the conditions on the parameters
+FOR NOW, use SAME copula families I guess.... IF I HAVE TIME, I can implement constraint optimization on the copula likelihood... Check the paper Okhrin - on the structure and estimation AND Hofert - Densities of nested Archimedean copulas
+
+Note: I cannot estimate recursively, but I can apply GOF recursively bc then I use the unbiased estimates anyway..
+##### Goodness of fit
+- Comparison observed and generated
+##### Practical application
+- Tail dependence
+- ? "Synthetic design hydrographs" (What ever Grimaldi paper means by that)
+
+
+
+
+# Vine copulas
+- Naglers paper for my purpose is a banger. BUT they also model tau? That seems odd given that the other paper mentions bias due to Jensen's inequality. Can I run simulation modelling both and check if there is a bias or not?? Also, how does estimate behave if I change response function? The closer to linear, the less bias, right? For identity, we should not have bias but the model would then be wrong, no? Evaluate true MSE in simulation
+For simulation I'd like to evaluate true MSE and some goodness of fit statistic and simultaneously check if that works 
+sim: https://tvatter.github.io/gamCopula/
+- TIME-VARYING MIXTURE COPULA MODELS WITH COPULA SELECTION; I think they allow both: Time varying weights on mixed copula structure AND estimation of copula params as function of covariates. Not too sure tho. Doesn't seem too hard either(?) BUT I think I would have to implement everything myself. So postpone this for now. 
+- I have coordinates of stations; I could use L2 norm to determine distance and use as input for time. Issue is that number of estimates increases 
+Maybe not advisable bc only 50 observations each (50 years with 1 flood event each)
+
+- Trees are visual representation of the complex product 
+
+
+
+!! For now, focus on vine copulas as alternative to NACs bc the issue at hand is the violated assumption of NACs. Regression task is more relevant later....
+TODO: Write functions during simulation s.t. they are widely applicable to my data.
+I can even compare tau-modelled NACs with tau modelled Vines

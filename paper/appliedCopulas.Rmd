@@ -610,6 +610,32 @@ Introduce MLE
 
 Check how HAC does it
 
+
+
+The estimation process.
+
+According to HAC docu p. 4, section 2.1: A _recursive_ procedure is applied.
+First, the copula for the most dependent parameters is estimated. Most dependent is evaluated by the value of the parameter estimates bc: The larger these parameter estimates, the larger Kendall's tau (So this means, I can fit bivariate copula with order based on Kendall's tau values).
+Then, consider the copula / dependence between the copula values ("aggregated variables") and the remaining variables (So this means I can just fit a copula on the remaining variable and the values of the fitted copula). 
+
+Theoretical validation by Porposition 1 in Okhrin2013: NAC can be uniquely recovered from the marginal distribution funcs and all bivariate copula funcs.
+In practice, we can use parametric or non-parametric estimates for the PIT and apply recursive estimation :)! 
+
+THAT MEANS: 
+1) Recursive ML is valid!
+2) Recursive Goodness-of-fit is valid!
+BUT!!! 
+Okhrin - On the structure and estimation of hierarchical Archimedean copulas: 
+1) Recursive ML is ONLY valid, if we treat the joint variable as FUNCTION of the two parameters! Thus, I cannot apply repeated bivariate copula fitting to the joint variable and the 3rd variable
+2) Recursive GoF is valid still :) 
+3) The estimates based on Tau are biased, while the ML estimates seem ok?
+Reason: The transformation tau <-> parameter is highly non-linear (Jensen's inequality I guess). But of course, for the true tau the functinonal relationship holds. Thus, for large n, the bias should vanish bc our tau estimate is close to true tau? i.e. bias especialy large for small samples
+-------> Find solution for this. Create a question the audience can ask based on solution
+
+Chen and Fan, Okhrin provide asymptotic behvior of these estimates (p. 6)
+
+Note: Default method is ii) which is equivalent to the "canonical ML" judging from the following link: https://documentation.sas.com/doc/en/pgmsascdc/v_060/etsug/etsug_copula_details21.htm
+
 ## Diagnostics and Goodness of fit evaluation
 
 See @zhang2019 in chapter 3, 4, 5 I think. Also regarding MLE AIC
