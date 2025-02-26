@@ -262,3 +262,11 @@ summary(test_outer)
 
 
 
+
+
+
+
+####### Functions to use
+# Sample from HAC:
+HAC::rHAC()
+

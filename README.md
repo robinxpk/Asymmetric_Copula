@@ -161,3 +161,88 @@ Maybe not advisable bc only 50 observations each (50 years with 1 flood event ea
 !! For now, focus on vine copulas as alternative to NACs bc the issue at hand is the violated assumption of NACs. Regression task is more relevant later....
 TODO: Write functions during simulation s.t. they are widely applicable to my data.
 I can even compare tau-modelled NACs with tau modelled Vines
+
+# Application
+Following is based on Isar station Munich if not mentioned otherwise. Also regarding the models and the number of observations in each station. Here is the distribution of number of observations (i.e. observed years per station) for the river Isar and Donau:\
+Table:\
+`5 15  20  27  >30`(nobs)\
+`2  1   2   1   23` (nstations with these nobs)
+
+Estimating (only) the dependence strucutre / copula, for stations with moderate number of observations.\
+To estimate copula _AND_ GLM, I can only use stations with MANY observations
+Thus:\
+1) Estimate copula and create the Bavaria plot based on these estimates. Remove those stations with 5 obs or smth\
+2) Fit GLM(M) for the stations with many obs and interpret beta, no further bavaria plot here
+
+## Considerations
+(Also in terms of simulation as the the simulation interests are derived from the application)
+
+Concluding from the data, the assumption of NACs is violated. Thus, I need to fit not only NACs, but also Vines which are able to capture the data underlying dependence strucutre. 
+
+Regarding the estimation of NACs, I need to use `HAC`-package because sequentially estimating a bivariate copula does not accounts 
+for the fact that the nested strucutre is a function in two random variable. This leads to a bias (Okhrin - On the strucutre and estimation of hierarchical Arch. copulas).
+But, sequential GOF are valid if the estimation process is based on `HAC` bzw. based on non-biased estimation process.\
+The `HAC` package uses (canonical) ML estimation for $\hat{\theta}$ because estimates of $\theta$ based on Kendall's $\tau$ has several disadvatages:
+It does not guarantee that the sufficient nesting condition is fulfilled (Hofert - Densities of NACs uses this wording). Also the estimate of 
+the copula parameter is biased because the relationship between $\tau$ and $\theta$ is highly non-linear (Jensen's inequality).\
+Aparently, the `HAC`-package is somewhat limited to same family copulas for all nested copulas. IF TIME, I CAN TRY TO IMPLEMENT SOMETHING, 
+but the NACs are not even of the right dependence strucutre anyway... so probably not.\
+Regarding the estimation process, Li - "Improving forecasting performance ..." suggests modelling $\tau$ in terms of a linear predictor. 
+I wonder why they model $\tau$ since the copula paramter is then supposed to be biased.\
+
+Intersting for simulation: Compare bias in the modelled paramter (HAC: copula parameter) and the function of it (HAC: tau is function of estimate).
+i.e. For `HAC`, I want to evaluate $\theta - \hat{\theta}$ and $\tau - \tau(\hat{\theta})$ and see if one is biased while the other is not or if they 
+behave similar. 
+
+For NACs, I would first fit the copula using `HAC` and then model the dependence parameter using GLM. Maybe inner $\theta \sim Ga(.)$ and 
+for outer $\theta$ I model the difference between outer and inner? 
+
+Intersting for simulation: Does this approach even work? I mean, I do not find a paper particulary suggesting that this approach is valid. 
+It is more based on what I read in Li - "Improving forecasting performance...."
+
+Regarding Vine copulas, things are more chill since the package `gamCopula` has already all I need (I think). Here, all I do is based on 
+Vatter, Nagler - "GAM for PCC". The function simultaneously fits the copula and the GAM.\
+I think for purpose of comparison, I first should fit the GAM using only an intercept which (should be) is equivalent to estimating copula
+without any GAM approach.\
+Interesting is that the `gamCopula` package models the $\tau$ coefficient using the Fisher z-transformation as link. 
+
+Intersting for simulation, again, is the comparison in the bias. (see above in NAC section)
+
+
+
+## Fitting copula
+i.e. no GAM used anywhere for now
+
+### NACs / Copulas in Paper
+M-type copulas refer to specific types of NACs i.e. they extend bivariate Archimedean copulas.\
+Copulas unsed in paper:
+| Copula |Base Type| Tail dependence| Use cases |
+| -------- | ------- | ---- | ---- |
+| M3 | Frank| No tail dep.| Symmetric / weak dependence |
+| M4 | Clayton| Lower tail dep.|Strong lower tail dep.|
+| M5 | Joe| Upper tail dep.| Strong right-tail (???) dep.|
+| M6 | Gumbel| Upper tail dep.| Upper tail dep.|
+| M12| Mixed|Mixed tail dep.| Hyprid tail dep. (???)|
+
+Also simulation:\
+Actually, I think I would also confirm what the paper found: Assumption of symmetric Archimedean copulas is bad. But only as a side note.
+Like "yes, we can confirm the paper findings, but the paper still is wasted bc even NACs assumption is too restrictive. So Vines should be used!"
+Maybe also in simulation (dont have to show others): Performance comparison between the types of estimating HAC (see HAC p.6 iii))
+
+
+See:\
+HAC 
+
+#### R 
+Using `HAC` and copula package .
+See:\
+HAC 
+
+### Vines
+
+Implemented copula families are limited: https://cran.r-project.org/web/packages/gamCopula/readme/README.html
+(Gaussian, t, Clayton, Gumbel, Frank).
+
+#### R
+
+## Fitting GLM(M) for tau / copula param

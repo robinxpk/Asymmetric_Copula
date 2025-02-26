@@ -1,5 +1,5 @@
 ---
-title: "River Report `r unique(params$df$river)`"
+title: "River Report `r params$df$river[1]`"
 output: 
   html_document:
     code_folding: hide
@@ -13,14 +13,28 @@ knitr::opts_chunk$set(fig.width=14, fig.height=7, dpi=300, out.width="100%")
 knitr::opts_knit$set(root.dir = normalizePath("."))
 
 df = params$df
-river = unique(df$river)
+river = df$river[1]
 ```
+
 
 ## The data set
 `r river`
 
 ```{r}
 head(df)
+```
+Some stations have very little number of observations
+```{r}
+# Some of the stations have VERY little observations...
+nobs_unit = df |> dplyr::summarise(
+  n = dplyr::n(),
+  .by = unit
+) |>
+  dplyr::mutate(
+    n_for_table = as.factor(dplyr::if_else(n > 30, ">30", as.character(n)))
+  )
+
+knitr::kable(table(nobs_unit$n_for_table))
 ```
 
 
@@ -102,7 +116,10 @@ cor_table |> tidyr::pivot_longer(
   names_to = "relation",
   values_to = "correlation"
 ) |>
-ggplot(aes(y = correlation, x = relation)) + 
+ggplot(aes(y = correlation, x = relation)) +
   geom_boxplot()
 ```
 
+## Fitted Copulas {.tabset}
+
+Section to list copula fit an simulated data from copula fit
