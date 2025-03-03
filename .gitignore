@@ -20,5 +20,8 @@ data/output/rdata/extended_dfs/issues.log
 data/output/rdata/threshold_dfs/*.Rdata
 data/fluesse*
 
+# Subfolder: Simulation
+data/simulation/*.Rdata
+
 # Subfolder: River Reports
 riverreports/*.html

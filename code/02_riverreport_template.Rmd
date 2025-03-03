@@ -118,8 +118,28 @@ cor_table |> tidyr::pivot_longer(
 ) |>
 ggplot(aes(y = correlation, x = relation)) +
   geom_boxplot()
+
+```
+Averages for more than 10 observations
+```{r}
+means = cor_table |> dplyr::filter(n > 10) |> dplyr::summarise(
+  vd_mean = mean(tau_vd),
+  vp_mean = mean(tau_vp),
+  dp_mean = mean(tau_dp)
+)
+knitr::kable(means)
+```
+Mean of smaller correlation
+```{r}
+mean(c(means$vp_mean, means$dp_mean))
+```
+Mean of Means
+```{r}
+mean(c(means$vd_mean, means$vp_mean, means$dp_mean))
 ```
 
-## Fitted Copulas {.tabset}
 
-Section to list copula fit an simulated data from copula fit
+
+<!-- ## Fitted Copulas {.tabset} -->
+
+<!-- Section to list copula fit an simulated data from copula fit -->

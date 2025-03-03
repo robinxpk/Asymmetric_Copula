@@ -25,6 +25,9 @@ In practice: Captures co-occurence of extreme event --> HIGHLY relevant! If two 
 For modelling: Choose appropriate copula and estimate parameter. Tail dependence is implicitly given (is function of this parameter)
 USING FITTED COPULA: Simulate extreme event scenarios to assess worst-case scenario! (Sounds very interesting)
 - !!! Archimedean copulas cannot model negative dependence strucutre (really? Kinda read this on a thread only) This is due to the generator function being completely monotone --> Positive dependence only; What makes it more clear: Archimedean copulas are radially symmetric, that is, only positive correlation. BUT work around is modelling u' = 1-u instead of u itself I think? Then u' is enforced to have positive dependence while this implies negative dependence for u. That means the Kendall's tau I model MUST NOT be negative! (Should I use Beta distribution then? Would ensure meaningful values for tau) ALSO, to ensure to condition of thetas having this required order, I can model nested Copula: tau, outer level: tau_outer - tau_inner ~ beta (Not sure if Beta is reasonable bc sum of two beta). 
+- Having simulated and fitted all the copula stuff, I would like to use the copula on a more hydrology based level and less on a statistic level
+(Grimaldi had some neat mentionings. Revisit)
+
 
 ## Approach
 ### Given Data
@@ -57,9 +60,6 @@ I mean, the R package _HAC_ estimates its parameters like this, but I cannot fin
 - Bayesian Copula idea: Li - Improving forecasting performance using covariate-dependent copula models
 - BRO HAS A WEBSITE:
 https://tu-dresden.de/bu/verkehr/ivw/osv/die-professur/inhaber-in
-
-
-
 
 
 ### Notes during Data wrangling
@@ -99,7 +99,7 @@ Note: Ratio larger than 1 due to leap year bc I calculated ratio by non leap yea
 I arbitrarily conclude that $85% $ is good threshold (blue line)
 
 ### Notes during single analysis (Station: Munich, River: Isar)
-#### Paper
+#### Grimaldi Paper
 - Practical applications mentioned (p.1160):\
 trivariate info required for design of expansion basin / diversion channel.\
 building synthetic design hydrographs -> HOW?\
@@ -137,9 +137,18 @@ What I would need is to determine the likelihood for all the different generator
 FOR NOW, use SAME copula families I guess.... IF I HAVE TIME, I can implement constraint optimization on the copula likelihood... Check the paper Okhrin - on the structure and estimation AND Hofert - Densities of nested Archimedean copulas
 
 Note: I cannot estimate recursively, but I can apply GOF recursively bc then I use the unbiased estimates anyway..
+
 ##### Goodness of fit
 - Comparison observed and generated
-##### Practical application
+- Cramer-von Mises statistic
+- Rosenblatt transform
+- Anderson-Darling statistic
+- Empircal comparison
+- Simulated data from fitted vs actual data
+- Check other paper
+- Out of sample performance / validation?
+
+##### !! TODO: Practical application
 - Tail dependence
 - ? "Synthetic design hydrographs" (What ever Grimaldi paper means by that)
 
@@ -147,7 +156,9 @@ Note: I cannot estimate recursively, but I can apply GOF recursively bc then I u
 
 
 # Vine copulas
-- Naglers paper for my purpose is a banger. BUT they also model tau? That seems odd given that the other paper mentions bias due to Jensen's inequality. Can I run simulation modelling both and check if there is a bias or not?? Also, how does estimate behave if I change response function? The closer to linear, the less bias, right? For identity, we should not have bias but the model would then be wrong, no? Evaluate true MSE in simulation
+- Naglers paper for my purpose is a banger. BUT they also model tau? That seems odd given that the other paper mentions bias due to Jensen's inequality. 
+Can I run simulation modelling both and check if there is a bias or not?? Also, how does estimate behave if I change response function? 
+The closer to linear, the less bias, right? For identity, we should not have bias but the model would then be wrong, no? Evaluate true MSE in simulation
 For simulation I'd like to evaluate true MSE and some goodness of fit statistic and simultaneously check if that works 
 sim: https://tvatter.github.io/gamCopula/
 - TIME-VARYING MIXTURE COPULA MODELS WITH COPULA SELECTION; I think they allow both: Time varying weights on mixed copula structure AND estimation of copula params as function of covariates. Not too sure tho. Doesn't seem too hard either(?) BUT I think I would have to implement everything myself. So postpone this for now. 
@@ -161,6 +172,9 @@ Maybe not advisable bc only 50 observations each (50 years with 1 flood event ea
 !! For now, focus on vine copulas as alternative to NACs bc the issue at hand is the violated assumption of NACs. Regression task is more relevant later....
 TODO: Write functions during simulation s.t. they are widely applicable to my data.
 I can even compare tau-modelled NACs with tau modelled Vines
+
+
+
 
 # Application
 Following is based on Isar station Munich if not mentioned otherwise. Also regarding the models and the number of observations in each station. Here is the distribution of number of observations (i.e. observed years per station) for the river Isar and Donau:\
@@ -208,7 +222,10 @@ Interesting is that the `gamCopula` package models the $\tau$ coefficient using 
 
 Intersting for simulation, again, is the comparison in the bias. (see above in NAC section)
 
+(Vatter 1st paper[GAM for Conditional dependence...]:) gamCopula package / Vine approach models tau, bc tau more natural interpretation than copula param AND somthing else :D  
 
+
+What are the theoretical properties of estimates for tau, theta and beta? Think the 1st paper by Vatter goes into that? 
 
 ## Fitting copula
 i.e. no GAM used anywhere for now
@@ -238,11 +255,88 @@ Using `HAC` and copula package .
 See:\
 HAC 
 
+Okhrin - "properties of HAC": Why HAC only implements same family copulas: However, if we consider generators from
+different families within a single copula, the condition of complete monotonicity is not
+always fulfilled and each particular case should be analysed separately
+
 ### Vines
 
 Implemented copula families are limited: https://cran.r-project.org/web/packages/gamCopula/readme/README.html
 (Gaussian, t, Clayton, Gumbel, Frank).
 
+Vine structure matrix: Encodes which pairs of variables appear in each level of the vine construction.
+Vine idea: Nested sequence of trees, each trees edges becomes the "nodes" of the next tree. For d-dimensions, we have d-1 trees. Each edge in a tree corresponds to a bivariate copula
+Matrix: Encodes which variables are considered bivariate and which considered conditional on other variables (and on which)
+Matrix construction: First row (or column, depending on convention) 
+![Structure Matrix Construction](READMEpics/StructureMatrixConstruction.png)
+or watch: https://www.youtube.com/watch?v=NY9-oWZqAUg
+
 #### R
 
 ## Fitting GLM(M) for tau / copula param
+
+- 
+
+
+# Simulation
+Open Qs: 
+- What selection method is used between the packages? This implies some GOF measure and will influence the results of course
+  Is there something better suited for small samples i.e. 50 obs for copula and 15 obs for GAM
+- Evaluate the bias implied if sequential ACs are used for NAC estimation?
+- Issue I see when only including slope is confounder of course. And I cannot even controle for variable or fit a spline bc 
+    we have so few observations.. 
+    Keep parts of it descriptive and fit model, but take result "with grain of salt"? 
+    But also, will see how it performs in simulation, right? 
+    -> 
+- Compare all 3 copula fits and confirm what paper showed: AC for NACs are bad (and their tau estimate have this bias thingy mentioned in the paper)
+  ALSO compare NACs with Vines if NACs violated and see how it behaves
+- Evaluate small sample performance for each estimate
+
+## Copy pasta from old sim
+General thought: 
+Can I not just look at the nested copulas individually (like the likelihood does?)
+i.e. 1st look at the fitted copula between more correlated
+     2nd look at the fitted copula between copula values for inner 2 and pseudo obs of 3rd variable
+Is this valid? 
+-> How do other paper approach? 
+-> How are the gof metrics defined?  
+ALSO if I do this, I can use this damn copula shit package!
+General thoughts on validity: 
+Hierarchical strucutre implies that we model relationship inner independent of the outer one
+-> partial exchangeability
+But for sure it is valid to assess wheather a sub-copula is valid. And if that is the case
+it should be valid approach generally. lol. reasoning. 
+
+compare CDF's between empirical copula and copula based on parametrical assumptions
+They shood look somewhat similar I guess
+(HAC doku Abbildung 6)
+
+Comparing the empirical PIT or empirical copula to theoretical counterparts helps assess the goodness 
+of fit of multivariate models.
+Actually, visual and then comparing by likelihood should work, right? 
+
+
+
+For Sim: NAC, AC - I only care about vine AIC (selection criterion --> Is correct copula structure selected?) and kl (how is performance given missspecification)
+        Vine - NAC, AC only AIC and KL again. 
+  Stop wondering how to include the estimates for the corresponding simulation. I do not need that
+
+
+# Presentation
+- Fow now, finish up the Vine part. Let's see if I can finish the GAM copula part before the presentation. Else, I put that into the paper only
+- State the problem we observed with our practical data and introduce vines briefly
+- Point out the differences between ac, nac and vine. Important part is showing the density plots (see next point)
+- Have density plot of each considered copula so people get a feeling for what implies what
+  Actually, discuss more detailled what each of the copulas imply
+  Also mention which parameter conclude to independent copula for each copula family
+- Data presentation, then sim: Used empirical taus in simulation
+- Introduce both copula types, a bit more thoroughly such that the difference becomes clear i.e. the limitation in NACs
+Introduce Vines using the graph AND the formula bc without I think its super confusion. Missed the formula...
+- Lovely sidenote during the presentation:
+NAC or HAC packages are a total desaster. Really. They break super fast, they are not congruent, the common copula package only allows to 
+estimate multivariate AC, but the package claims to be able to estimte it all, however, there is HAC which seems to be an alternative, but 
+if HAC comes to the conclusion it is a symmetric AC, it breaks down. None of these packages make sense. I swear. Just use Vines. Really.
+
+# Copula packages
+DUUUUUUUUUUUUUUDE!! 
+How is every copula package different in some aspect. I cannot implement all this myself and rely on this bs and the damn copula package does not even have a AIC method?? And the logLik funtion does not work for trivariate copulas??? What is this? Like, NACs are just shit or what?
