@@ -403,3 +403,160 @@ NOTE: Using this approach we kind of imply that the data is representative throu
 
 - Synthetic data: Basically increasing the number of years I observed. Can draw from fitted cop, retransform using empirical 
 inverse PIT and see how it looks. Maybe look at marginals?
+
+
+
+# Final Presentation
+
+## Grading 
+- 30min presentation
+- 15min discussion (own)
+- 15min discussion (leading other presentation)
+- Submission of slides 24h before lecture (15.3.)
+
+## Structure
+(Structure as in a paper)
+
+Intro and Problem: Relevancy (Hannes + Intro of Paper)
+Data (Data first so in Methods we can discuss limitations and draw conclusions for methods)
+Methods
+Simulation (performance evaluation)
+Analysis (applied)
+  - What to do with fitted
+Summary 
+  - What now
+Appendix
+  - Additionals
+
+! Keep it intuitive. Keep it low in math and explain hydrology
+
+### Intro / Problem / Relevance 
+- Hannes and partially intro of paper 
+- Explain discharge in terms of what that is (i.e. water volume per s)
+
+### Data
+As we will see from the data, the methods used in the paper have their limitations that are not fully applicable to our data.\
+Critique on paper here: Methods used in paper are potentially not suitable for their data either. However, not sure because they never discussed the dependence structure of the observed data in detail. 
+
+- What we are interested in: Peak, Duration and Vol of the most severe flood event in a year for multiple years
+
+- How do we get this data: GKD offers data to build a hydrograph over multiple measurement stations = measurement points
+1) What is a measurement station: Geographical location where water discharge values are measured. 
+PLOT: Bavaria map with all stations we consider
+  -> Stations are at rivers
+  -> We look at THESE rivers 
+  -> How do we get from a station to hydrograph?
+  -> Select Munich station and proceed
+
+2) What is a hydrograph: 
+Discharge of water over time, here: discharge of water since year xy up to 31.12.24
+PLOT: Example hydrograph munich 2024
+
+3) How to derive our data from this:
+  - Focus on one year only
+  - Apply straight line method to identify flood
+  (brief explanation using a PLOT: threshold line in hydrograph)
+  - Given identified flood, graphically show variables
+
+  APPENDIX: Not all years were as nice. Save plot in appendix by which I decided to use a year or not
+
+4) Repeat this for every station and every available year. 
+  Focus on Isar only
+  PLOT: Show scatterplot for all stations with margins
+
+- Describe the data. 
+1) How many obs per station (What is average count years / nobs)
+  - Mention that sample size is not too great
+2) How many stations at Isar
+3) Marginal distribution for each station (same format as before)
+Especially intersting since we used QUANTILE instead of a fix threshold. That is, the margins probably have totally different scale. 
+  Reason: A small river is flooded at a different discharge than a large river, of course
+  This is fine: 
+  a: First part only focuses on within station dependence
+  b: Copulas are independent of margins anyway. That is, the dependence structure is totally independent of any scale
+- Mean of peak, vol, dur
+- Plots:  
+  PLOT: Data marginals on SAME x axis to show the difference in scale
+  PLOT: Data with own x-axis to discuss the different shapes
+    -> Mention: We do not need to worry too much about different shapes due to copula
+5) Tau values for the whole Isar 
+  ! Point out that 3 different taus bc relevant for Methods
+
+10) Slope values at station
+
+
+
+
+
+
+
+### Methods
+(low in math [show baic formula so, but then intuition / graphs], focus on plots. i.e. density plots for the copula showing their limitation in modelling dependence structures)
+
+- Brief refresher on PIT
+  -> Mention that there is empirical Copula, which is non-parametric / empirical PIT
+  We use this because avoids any estimation process which is nice in context of our amount of observations
+
+- Strength of dependence in terms of tau:
+  - Explain: tau is a correlation coefficient (We all know what this is)
+  - For increasing tau, variables are more dependent. 
+  That means, the TYPE of dependence is indepedent of the STRENGTH of dependence. 
+  Very important for the following 
+  PLOT: Same dependence type with varying dependence strength
+
+- Considered dependence types:
+  Plot of each discussing their characteristics (tail dep esp.)
+  - Frank
+  - Gumbel
+  - Clayton
+  (all AC family)
+  Explain: These dependence types already are copulas, but bivariate. We want trivariate, thus introduce trivariate AC, NAC and Vines
+  PLOT: Scatterplot for many many obs or density. Maybe overlay?
+
+- Brief introduction to relevant copulas trivariate case
+  - AC: 
+  math formula 
+  Limitation: Just 1 copula, i.e. variables must have same dependence structure and strength
+  - NAC
+  math formula
+  Limitation: 2(d-1) different copulas, i.e. (as above, but for 2)
+  Mention: This is the one examined in the paper
+  - Vines
+  math formula
+  Below: Tree representation (or Appendix)
+  Limitation: No limitation on the copula. 3 different allowed. Totally flexible
+  Mention: Seen from data we know, that tau takes on 3 different values, implying that NACs are not reasonable as they enforce the same copula for two relationships
+
+- Selection between copulas using AIC
+
+### Simulation
+Paper compared AC and NACs and showed NACs are way better if dependence DGP is asymmetric. 
+Since our data suggests that NACs are too restrictive, we care about how NACs perform given Vines are true, but also, how do vines performe if we falsely fit a vine
+
+Paper:
+  - Showed that AC underestimate 
+TODO: Plot vine taus and plot estimated NAC taus. Any dependence? 
+
+- Metadata of simulation
+
+- Missspecification: 
+  - KLD
+  - Behavior of vines fitted if NAC true 
+    -> Conclusion: Always fitting vines ok
+
+
+- OTHERS
+
+
+- Goals: Copy Paper goal - kind of, but improved
+          Estimate Slope effect on dependence structure
+
+### Application
+- Fit all vines and check AIC ratio to show vines are more reasonable which we expect by tau values
+
+- Plot fitted densities and synthetic data
+
+- What to do with it?
+
+- Put Sklar in the Appendix
+

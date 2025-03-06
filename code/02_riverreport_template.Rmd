@@ -24,6 +24,16 @@ if (generate) {
 }
 ```
 
+```{r}
+# Params
+n_syn = 5000 # Number of synthetic data generated
+# For the copula density to be displayed also towards the edges of the plot, keep the binwidth low.
+# I liked 
+# density_binwidth = 0.01
+# But for now, keep it high so it renders faster
+density_binwidth = 1
+```
+
 
 ## The data set
 `r river`
@@ -174,34 +184,6 @@ names(nacs) = river_units
 ```
 
 
-<!-- #### Trees -->
-
-<!-- ```{r} -->
-<!-- par(mfrow = c(y, x)) -->
-<!-- invisible( -->
-<!--   lapply( -->
-<!--     river_units, -->
-<!--     function(name){ -->
-<!--       plot(nacs[[name]], main = paste(name, "-", nac_fams[as.character(nacs[[name]]$type)])) -->
-<!--     } -->
-<!--   ) -->
-<!-- ) -->
-<!-- par(mfrow = c(1, 1)) -->
-<!-- ``` -->
-
-<!-- #### Contours -->
-
-<!-- ```{r} -->
-<!-- for (name in river_units){ -->
-<!--   nac = nacs[[name]] -->
-<!--   cnac = HAC::hac2nacopula(nac) -->
-<!--   inner_cop = copula::archmCopula(family = cnac@copula@name, param = cnac@copula@theta) -->
-<!--   contour(inner_cop, dCopula, n.grid = 450) -->
-<!--   outer_cop = copula::archmCopula(family = cnac@childCops[[1]]@copula@name, param = cnac@childCops[[1]]@copula@theta) -->
-<!--   contour(x = outer_cop, FUN = dCopula, n.grid = 200) -->
-<!-- } -->
-<!-- ``` -->
-
 ### Vines {.tabset}
 
 ```{r}
@@ -269,17 +251,11 @@ plot_dfs = lapply(
 )
 plot_df = plot_dfs |> dplyr::bind_rows()
 
-# For the copula density to be displayed also towards the edges of the plot, keep the binwidth low.
-# I liked 
-# density_binwidth = 0.01
-# But for now, keep it high so it renders faster
-density_binwidth = 1
 ```
 
 
 ```{r}
 # Synthetic data
-n_syn = 1000
 syn_dfs = lapply(
   river_units,
   function(name) get_synthetic_data(vines[[name]], n_syn, name)
@@ -288,12 +264,6 @@ syn_df = syn_dfs |> dplyr::bind_rows()
 ```
 
 ```{r}
-syn_df = syn_df |> 
-  dplyr::mutate(
-    vol = inverse_ecdf_unitwise(u = pobs_vol, data = df, data_col = "vol", unit = unit),
-    .by = unit
-  )
-# Append inversed, synthetic data 
 syn_df$peak = lapply(
   river_units,
   function(name) inverse_ecdf_unitwise(syn = syn_df, syn_col = "pobs_peak", df = df, df_col = "peak", unit_name = name)
@@ -435,12 +405,6 @@ ssyn_df = syn_df |> dplyr::filter(unit == station)
 
 ```{r}
 
-get_syn_scatter = function(ssyn_df, var1_syn, var2_syn, sdf, var1_df, var2_df){
-  p = ggplot() + 
-    geom_point(data = ssyn_df, mapping = aes_string(x = var1_syn, y = var2_syn), color = "lightblue") + 
-    geom_point(data = sdf, mapping = aes_string(x = var1_df, y = var2_df)) 
-  return(p)
-}
 
 p1 = get_contour("z12", splot_df, sdf, "pobs_dur", "pobs_peak")
 p2 = get_contour("z23", splot_df, sdf, "pobs_peak", "pobs_vol")
@@ -452,15 +416,71 @@ p = (p1 | p2 | p3) /
     (p4 | p5 | p6)
 p
 ```
+The synthetic data looks a bit odd. Reason is that we used the empirical PIT. That is, the synthetic data is being "categorized". 
+This limits the power of our analysis, of course, because we cannot really translate from copula to margins bzw. the transformation depends on the number of observed data points. This is the clear downside of the non-parametric approach.. 
+What I COULD do is using any margin (bzw. inverse of any margin) of my choice to transform data and synthetic data. 
+I mean, I could even estimate distributional parameters of the actual margins and use this estimated distribution ONLY for the inverse function. 
+That is, the initial transformation to uniform data is non-parametric. The re-transformation uses estimates on the observed distribution. 
+This does not change the number of estimates required for our copula. Because the copula is independent of the re-transofmration process. 
+
+That is, the fit of my copula is dirupted by potential missspecifications of the distributions of the margins. 
+We have two uncertainties. 
+1) in the fitted copula used to draw synthetic data
+2) in the estimation of the parametric distribution
+BUT no potential distortion in the copula due to parametrically estimate the margins
+
+I could valide my fit by density plot of re-transformed synthetic data vs density of observed data. Especially tail behavior is intersting.
+(But this is basically plotting the fitted marginal distribution and the empirical one).
+Of interest tho: Using the joint copula CDF to determine thresholds and transflate them into actual scale values using the parametrically fitted inverse.
+("2-step semiparametric workflow", Joe: Chapter 5 discusses multi-stage procedures, including semiparametric rank-based transformations.)
+
+Finding a parametric marginal:
+- Choose selection of candidate distributions
+- Fit each using MLE 
+- Compare fits using AIC / BIC 
+or
+semiparametric!
+Spline based where many data point, parametric where few data points
+This is especially interesting because I care about tail behavior and splines tend to be instable at towards the edges of the observed data!
+Try evmix package!
+But somehow this does not work at all...
+
+Keep this as idea, but use some basic R stuff to proxi the density. This does not need to be super accurate since I focus more on the copula part. This is a possible extension: Improve on the estimating process of the marginals. Just use it and see how it looks.
+
+TODO: 
+- Tail dependence analysis
+- Implementation of the planned thresholds for probability events
+
+
+```{r}
+gam = fitdistr(df$peak, densfun = "gamma")
+lnorm = fitdistr(df$peak, densfun = "lognormal")
+wb = fitdistr(df$peak, densfun = "weibull")
+
+n = length(df$peak)
+test = data.frame(
+  pts = df$peak,
+  gam = rgamma(n, shape = gam$estimate["shape"], rate = gam$estimate["rate"]),
+  lnorm = rlnorm(n, meanlog = lnorm$estimate["meanlog"], sdlog = lnorm$estimate["sdlog"]),
+  wb = rweibull(n, shape = wb$estimate["shape"], scale = wb$estimate["scale"])
+)
+
+ggplot(test) + 
+  geom_density(aes(pts)) + 
+  geom_density(aes(gam), color = "red") + 
+  geom_density(aes(lnorm), color ="blue") + 
+  geom_density(aes(wb), color = "green")
+```
+
+
+
+
 Marginal plots with and without synthetic data
 
 ```{r}
 ggplot() + 
   geom_density(data = ssyn_df, mapping = aes(x = peak), color = "blue", alpha = 0.5) + 
   geom_density(data = sdf, mapping = aes(x = peak)) 
-```
-```{r}
-plot(ecdf(c(ssyn_df$dur, ssyn_df$vol)))
 ```
 
 

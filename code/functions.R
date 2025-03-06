@@ -775,4 +775,9 @@ get_contour = function(rel, splot_df, sdf, var1, var2, bwidth = 0.1 ){
   return(p)
 }
 
-
+get_syn_scatter = function(ssyn_df, var1_syn, var2_syn, sdf, var1_df, var2_df){
+  p = ggplot() + 
+    geom_point(data = ssyn_df, mapping = aes_string(x = var1_syn, y = var2_syn), color = "lightblue") + 
+    geom_point(data = sdf, mapping = aes_string(x = var1_df, y = var2_df)) 
+  return(p)
+}
