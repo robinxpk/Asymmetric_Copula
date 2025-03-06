@@ -602,7 +602,9 @@ rivers = c("Aalbach",
 )
 
 # The 6 River with the most stations (corresponds to rivers with at least 9 stations)
-sort(table(rivers), decreasing = T) |> head(n = 6)
+considered = sort(table(unlist(lapply(rivers, trimws))), decreasing = T) |> head(n = 6)
+considered
+save(considered, file = "../data/output/presentation/considered_rivers.Rdata")
 
 # Focus on these 6 for our analysis
 # Sometimes, not all stations allow to download the data. Thus, I did not end up exactly with these number of stations

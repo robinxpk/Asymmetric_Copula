@@ -712,27 +712,27 @@ create_dfs = function(
   }
 }
 
-# Isar data only
-# create_and_save_dfs(in_dir = "../data/isar data/bis311224/", out_dir = "../data/output/rdata/extended_dfs/")
-# All data in input folder
-create_and_save_dfs(in_dir = "../data/0 input data/", out_dir = "../data/output/rdata/extended_dfs/")
-
-# ONLY run evaluate completeness with a reasonable amount of files in the in_dir
-# Else it probably will take ages
-evaluateCompleteness(in_dir = "../data/output/rdata/extended_dfs/")
-
-# Summary statistics (discharge distribution)
-sum_df = apply_summary_stats(in_dir = "../data/output/rdata/extended_dfs/")
-
-# Apply straight line method to identify the most extreme flood event in each year
-# IMPORTANT: Flood event threshold uses QUANTILE of yearly distribution of discharge. Thus, threshold is p-th quantile
-apply_and_save_slm(in_dir = "../data/output/rdata/extended_dfs/", out_dir = "../data/output/rdata/threshold_dfs/", p_threshold = c(.75))
-
-# Create hydrograph plots for every station and every year so I can go through them and check if it worked
-create_and_save_hydrographs(in_dir = "../data/output/rdata/threshold_dfs/", out_dir = "../data/output/graphs/hydrographs/")
-
-# Create and save all the data frames containing the info for copula determination
-create_and_save_copula_dfs(in_dir = "../data/output/rdata/threshold_dfs/", out_dir = "../data/output/rdata/copula_dfs/")
+# # Isar data only
+# # create_and_save_dfs(in_dir = "../data/isar data/bis311224/", out_dir = "../data/output/rdata/extended_dfs/")
+# # All data in input folder
+# create_and_save_dfs(in_dir = "../data/0 input data/", out_dir = "../data/output/rdata/extended_dfs/")
+# 
+# # ONLY run evaluate completeness with a reasonable amount of files in the in_dir
+# # Else it probably will take ages
+# evaluateCompleteness(in_dir = "../data/output/rdata/extended_dfs/")
+# 
+# # Summary statistics (discharge distribution)
+# sum_df = apply_summary_stats(in_dir = "../data/output/rdata/extended_dfs/")
+# 
+# # Apply straight line method to identify the most extreme flood event in each year
+# # IMPORTANT: Flood event threshold uses QUANTILE of yearly distribution of discharge. Thus, threshold is p-th quantile
+# apply_and_save_slm(in_dir = "../data/output/rdata/extended_dfs/", out_dir = "../data/output/rdata/threshold_dfs/", p_threshold = c(.75))
+# 
+# # Create hydrograph plots for every station and every year so I can go through them and check if it worked
+# create_and_save_hydrographs(in_dir = "../data/output/rdata/threshold_dfs/", out_dir = "../data/output/graphs/hydrographs/")
+# 
+# # Create and save all the data frames containing the info for copula determination
+# create_and_save_copula_dfs(in_dir = "../data/output/rdata/threshold_dfs/", out_dir = "../data/output/rdata/copula_dfs/")
 
 # create_dfs(
 #     data_path = "../data/0 input data/",

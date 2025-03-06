@@ -1,8 +1,6 @@
 library(ggplot2)
 library(patchwork)
 
-
-
 # Load Data ---------------------------------------------------------------
 get_copula_df = function(
     in_dir = "../data/output/rdata/copula_dfs/"
@@ -35,7 +33,8 @@ render_rivertemplate = function(
     input = "02_riverreport_template.Rmd",
     output_file = report_name,
     params = list(
-      df = df
+      df = df,
+      generate = TRUE
     )
   )
 }
@@ -158,6 +157,8 @@ get_nac_name = function(idx, inverse_copula_families = list("1" = "Gumbel", "3" 
   return(inverse_copula_families[as.character(idx)][[1]])
 }
 
+get_ac_estimate = function(ac) unname(ac@copula@tau( ac@copula@theta ))
+
 run_one_nac = function(
     seed,
     n,
@@ -207,6 +208,7 @@ run_one_nac = function(
       nac_kl = klMonteCarlo(mdl, nac),
       # Other copulas / Misspecifications
       # Results of AC fit
+      ac_tau = get_ac_estimate(ac),
       ac_aic = ll2aic(ll = attr(ac, "logLik")[[1]], p = 1),
       ac_kl = klMonteCarlo(mdl, HAC::nacopula2hac(ac), est_mdl_AC = TRUE),
       # Results for Vine
@@ -347,7 +349,7 @@ run_one_vine = function(
   names(tau) = vine_colnames
   
   # Vine matrix defining the (un)conditional copulas in the model
-  # 1 - 2 - 3
+  # 1 - 2 - 3 
   vine_matrix = matrix(
     c(
       1, 0, 0,
@@ -417,6 +419,8 @@ run_one_vine = function(
       vine_kl = vine_klMonteCarlo(rvmat, vine, est = "vine"),
       # Other copulas / Misspecifications
       # NAC fit
+      nac_tau_outer = attr(nac, "tau")[1],
+      nac_tau_inner = attr(nac, "tau")[2], 
       nac_aic = ll2aic(ll = attr(nac, "logLik")[[1]], p = 2),
       nac_kl = vine_klMonteCarlo(rvmat, nac, est = "nac"),
       # AC fit
@@ -665,5 +669,110 @@ get_vine_famname = function(idx){
 }
 
 
+
+# Presentation Plotting ---------------------------------------------------
+gkd2gg = function(
+    df, 
+    coord_cols, 
+    current_crs = 25832, # ETRS25832
+    into_crs = 4326 # EPSG4326
+  ){
+  "
+  Takes positions given by GKD website (CooRdinateSystem[crs] = ETRS25832) and returns a coordinate system ggplot can work with (crs = EPSG4326).
+  "
+  return(
+    sf::st_transform(
+      sf::st_as_sf(df, coords = coord_cols, crs = current_crs),
+      crs = into_crs
+    )
+  )
+}
+
+
+
+
+
+
+
+# Copula oder so ----------------------------------------------------------
+filter_infeasible_stations = function(
+    cop_df, min_nyears = 15 # Sim had min 15 obs, so stick to that
+  ){
+  feasible_stations = cop_df |> 
+    dplyr::summarise(
+      years = dplyr::n(),
+      .by = unit
+    ) |> 
+    dplyr::filter(years > min_nyears) |> 
+    dplyr::select(unit)
+  
+  return(cop_df |> dplyr::filter(unit %in% feasible_stations$unit))
+}
+
+get_density_values = function(vine, dgrid, unit_name){
+  plot_df = as.data.frame(dgrid) |>
+    # 1: pobs_dur, 2: pobs_peak, 3: pobs_vol
+    # 1-2: index [3, 1]
+    # 1-3: index [2, 1]
+    # 2-3: index [3, 2]
+    dplyr::mutate(
+      z12 = VineCopula::BiCopPDF(x, y, family = vine$family[3, 1], par = vine$par[3, 1]),
+      z13_2 = VineCopula::BiCopPDF(x, y, family = vine$family[2, 1], par = vine$par[2, 1]),
+      z23 = VineCopula::BiCopPDF(x, y, family = vine$family[3, 2], par = vine$par[3, 2])
+    ) |>
+    tidyr::pivot_longer(
+      cols = contains("z"),
+      names_to = "vars",
+      values_to = "dens"
+    ) |>
+    # Standardize density values so scale does not matter
+    dplyr::group_by(vars) |>
+    dplyr::mutate(
+      density = (dens - mean(dens)) / sd(dens)
+    ) |> 
+    dplyr::ungroup()
+  # Add family 
+  plot_df$fam = rep(c(f12 = vine$family[3, 1], f13 = vine$family[2, 1], f23 = vine$family[3, 2]), nrow(plot_df) / 3)
+  plot_df$unit = unit_name
+  return(plot_df)
+}
+
+get_tail_dependencies = function(vine, name){
+  utdp = vine$taildep$upper
+  ltdp = vine$taildep$lower
+  data.frame(
+    unit = name,
+    ltdp_12 = ltdp[3, 1],
+    ltdp_23 = ltdp[3, 2],
+    ltdp_13_2 = ltdp[2, 1],
+    utdp_12 = utdp[3, 1],
+    utdp_23 = utdp[3, 2],
+    utdp_13_2 = utdp[2, 1]
+  )
+}
+
+get_synthetic_data = function(vine, n, unit_name){
+  as.data.frame(VineCopula::RVineSim(n, RVM = vine)) |> dplyr::mutate(unit = unit_name)
+}
+
+inverse_ecdf <- function(u, data) {
+  quantile(data, probs = u, type = 1)  # Use type = 1 for stepwise approximation
+}
+
+inverse_ecdf_unitwise <- function(syn, syn_col, df, df_col, unit_name) {
+  syn_ = (unlist((syn |> dplyr::filter(unit == unit_name))[syn_col]))
+  names(syn_) = df_col
+  df_ = unname(unlist((df |> dplyr::filter(unit == unit_name))[df_col]))
+  return(unname(sapply(syn_, inverse_ecdf, data = df_)))
+}
+
+get_contour = function(rel, splot_df, sdf, var1, var2, bwidth = 0.1 ){
+  p = ggplot() +
+    # 1: pobs_dur, 2: pobs_peak, 3: pobs_vol
+    geom_contour(data = splot_df |> dplyr::filter(vars == rel), aes(x = x, y = y, z = density), binwidth = bwidth, alpha = .1) + 
+    geom_point(data = sdf, mapping = aes_string(x = var1, y = var2), alpha = .8) + 
+    labs(title = paste(var1, var2))
+  return(p)
+}
 
 

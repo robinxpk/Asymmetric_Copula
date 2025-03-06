@@ -4,6 +4,8 @@ Repo used for reproducing and extending the paper:
 [Asymmetric copula in multivariate flood frequency analysis](https://doi.org/10.1016/j.advwatres.2005.09.005)
 
 ## TODOs
+- VineCopula also fits rotated and survival copulas. What is that?
+- put functions from load data into functions
 - Summary on tail dependence 
 - Relevancy of asymmetry in my copula (i.e. non-symmetric BIVARAITE copula)? 
 - Simulate data according to Li's paper on copula
@@ -174,6 +176,20 @@ TODO: Write functions during simulation s.t. they are widely applicable to my da
 I can even compare tau-modelled NACs with tau modelled Vines
 
 
+- Estimation of vine copulas (As in VineCopula package)
+RVineCopSelect: Fit Bivariate copulas to each bivariate dependence structure. Parameters are estimated using MLE. It takes in UNIFORM distributed
+variables. Selection of fitted models via AIC.
+Function takes matrix of [0, 1]^d. That is, it is independent of the transformation (pobs or parametrically)
+
+- Estimation of GAM vine copulas: TODO - see gamCopula
+gamVineCopSelect
+
+- The vine structure can follow from theory. In practice, we are especially interested in a conditional copula of two variables.
+Since vine implicitly come with a conditional copula, it's perfect! 
+But does "wrong" tree affect the validity of my estimate? e.g. enforcing volume and peak to be the conditional copula, does the KL change?
+Based on the derivation of the vine copula density, I would say it does not matter. Because there is not rule dictating which of the 
+  pairs must be conditonal for the math to work out. Espeically in the trivariate case where we only have one conditional copula.
+TAKEAWAY: Model that one conditional that I am interested in anyway
 
 
 # Application
@@ -336,7 +352,54 @@ Introduce Vines using the graph AND the formula bc without I think its super con
 NAC or HAC packages are a total desaster. Really. They break super fast, they are not congruent, the common copula package only allows to 
 estimate multivariate AC, but the package claims to be able to estimte it all, however, there is HAC which seems to be an alternative, but 
 if HAC comes to the conclusion it is a symmetric AC, it breaks down. None of these packages make sense. I swear. Just use Vines. Really.
+- Could include screenshot of Email from GKD where they tell me they send me an email when I can download data. Reason why I only use the large rivers. I think thats funny :D
+"Still waiting on that mail... So we manually downloaded station data from GKD website, during which is was still being a pain, focusing on largest river so our data is elagible for both our analysis parts."
+- Goals: 
+  Verify paper findings (Like graphically showing tau behavior for AC estimate given NAC),
+  Initial goal: Effect of slope onto dependence strcuture
+  Data: NAC not really suitable, no? 
+  Solution: Introduce vines
+- What is motivation / relevance (Hannes)
+- Data collection / Data presentation 
+- - GKD provides 
+- What are the methods we used (Robin)
+- Analysis
+- Discussion
+- Conclusion
+
 
 # Copula packages
 DUUUUUUUUUUUUUUDE!! 
 How is every copula package different in some aspect. I cannot implement all this myself and rely on this bs and the damn copula package does not even have a AIC method?? And the logLik funtion does not work for trivariate copulas??? What is this? Like, NACs are just shit or what?
+
+
+# What to do with fitted copulas
+- What to do with fitted copula? Synthetic data is giga strong! 
+Synthetic data is basically increasing the number of years we observed flood events. That is, now we only observed 50 events, but we can just
+draw 5k observations from our fitted copula. 
+This data can be used in hydrological simulations or also as GoF test.
+
+Show copula and marginal Scatterplot for all stations
+(Can do that for all stations still. Then, go from all to just Muncih station)
+
+Focusing on Munich station: 
+- Explain Copula densities and tail dependence i.e. interpret the tail dependence and mention what copulas imply a tail dependence and which do not
+
+- Just for munich, consider observed margins vs. margins with sythetic data. Do they match? 
+This is half way to estimation of the (univariate) margins. What we can also consider is the empirical JOINT pdf bzw CDF (use empirical bc no real assumptions but still easy to interpret and fulfills purpose now)
+
+- Using the empirical joint CDF: Use combination of peak, vol, dur: How likely is this combination
+1) Draw threshold into cdf s.t. probability is around 1. Since 1 combination represents the most severe flood event of one year, the 1% combination corresponds to the Jahrhundertflut values! Damn :D 
+2) Also, Check the values for last years flood in Munich. I was actually stuck in my hometown back then. How likely is such a combination? Should I get a car or what :D 
+NOTE: Using this approach we kind of imply that the data is representative through the years. This is of course not really the case bc eg climate change. Would need a more comlex model. But I can evaluate the above using this simple model.
+(Go here from copula densities -> Synthetic data -> inverse PIT -> empirical estimation of CDF <<<< What I need)
+
+
+
+
+- Conditional scenario generation: Given one / two of the other variables, I could draw conclusions on 3rd bzw. on joint density. But this won't be applicable for me I guess.
+
+- Tail dependence / measure of asymmetry: Not sure how to use this in our analysis? I mean, when we reduce to just one station, we could discuss the implied distribution in more detail? Also talking about tail dependence. 
+
+- Synthetic data: Basically increasing the number of years I observed. Can draw from fitted cop, retransform using empirical 
+inverse PIT and see how it looks. Maybe look at marginals?
