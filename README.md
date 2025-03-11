@@ -489,7 +489,6 @@ Especially intersting since we used QUANTILE instead of a fix threshold. That is
 
 
 
-
 ### Methods
 (low in math [show baic formula so, but then intuition / graphs], focus on plots. i.e. density plots for the copula showing their limitation in modelling dependence structures)
 
@@ -560,3 +559,20 @@ TODO: Plot vine taus and plot estimated NAC taus. Any dependence?
 
 - Put Sklar in the Appendix
 
+Simplified vine (default in VineCopula):
+The conditional copula 1,3|2 is independent of the actual x_2 bzw. u_2 values.
+That is, the conditional copula only depends on its parameter. However, the value of the variable which is conditioned on affect the 
+conditional probabilities. Thereby, the copula / dependence structure is constant, but the values at u_1|2 and u_3|2 depend on u_2.
+-> See paper Nagler and Vatter oder Czado 5.4 and ML estimation (p. 146; understood it based on equation 7.2)
+
+
+
+
+
+- l-moments approach
+- 
+
+TODO: 
+- (8 min start + daten)
+- (10min) Zeit für Methodik und Statistik part
+- 

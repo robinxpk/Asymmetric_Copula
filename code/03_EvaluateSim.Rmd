@@ -506,3 +506,51 @@ all_res |>
 
 ```
 
+Behavior of NAC taus if Vine is true. (i.e. if only 2 relationships are estimated via NAC even tho its 3 unique relationships)
+
+```{r}
+all_res |> 
+  dplyr::mutate(
+    x = dplyr::row_number(),
+    .by = c(river, n)
+  ) |> 
+  ggplot() +
+  geom_line(aes(y = true_tau_12, x = x)) + 
+  geom_line(aes(y = true_tau_23, x = x)) + 
+  geom_line(aes(y = true_tau_13, x = x)) + 
+  geom_line(aes(y = nac_tau_outer, x = x), color = "blue", alpha = 0.4) + 
+  geom_line(aes(y = nac_tau_inner, x = x), color = "red", alpha = 0.4) + 
+  facet_grid(n ~ river, scale = "free_x")
+```
+NAC seems to capture the two most strongly correlated relations. Thus, NACs totally overestimate the lowest strength of dependence by implying the same strength for the two lesser correlated variables. 
+Thereby, the bias due to NAC under true vines increases the more different the two lower correlations are. 
+
+Explains why KLD for the rivers is not too bad. Here, the two lower taus are somewhat similar. For the LowHighHigh case, the performance is worst because the difference between the lowest and 2nd lowest is largest.
+
+Further consider the bias, i.e. systematically overestimating dependence strength for the lowest dependence strength.
+Consider the relation between the true taus and the taus estimated by NAC. Relationship evaluated by fraction of NAC tau divided by true tau
+From previous plot I expect:
+a) The ratio of inner tau and largest tau is close to 1. That is, the inner tau in NAC models approximate the largest tau in vine copulas well
+b) The ratio of outer tau and 2nd largest vine tau is close to 1. That is, the outer tau in NAC models approximte the 2nd largest tau well
+c) The ratio of outer tau and smallest vine tau is large. That is, NAC are restricted to use the outer tau for this relationship too. Because it is close to 2nd largest tau, this ratio should be close to true_tau_medium / true_tau_small
+```{r}
+all_res |> 
+  dplyr::mutate(
+    inner_large = nac_tau_inner / true_tau_12, # tau_12 is largest (tree: 1 - 2 - 3)
+    outer_med = nac_tau_outer / true_tau_23, # tau_23 is 2nd largest / medium dependence strength
+    outer_small = nac_tau_outer / true_tau_13,
+    .b = river
+  ) |> 
+  tidyr::pivot_longer(
+    cols = c(inner_large, outer_med, outer_small),
+    values_to = "val",
+    names_to = "nest"
+  ) |> 
+  ggplot() + 
+  geom_boxplot(aes(y = val, color = nest)) + 
+  geom_hline(yintercept = 1, alpha = .7, linetype = 2) + 
+  facet_grid(n~river)
+```
+
+
+

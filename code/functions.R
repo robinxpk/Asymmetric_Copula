@@ -775,9 +775,30 @@ get_contour = function(rel, splot_df, sdf, var1, var2, bwidth = 0.1 ){
   return(p)
 }
 
-get_syn_scatter = function(ssyn_df, var1_syn, var2_syn, sdf, var1_df, var2_df){
+get_syn_scatter = function(ssyn_df, var1_syn, var2_syn, sdf, var1_df, var2_df, syn_color = "lightblue", syn_alpha = 0.3){
   p = ggplot() + 
-    geom_point(data = ssyn_df, mapping = aes_string(x = var1_syn, y = var2_syn), color = "lightblue") + 
+    geom_point(data = ssyn_df, mapping = aes_string(x = var1_syn, y = var2_syn), color = syn_color, alpha = syn_alpha) + 
     geom_point(data = sdf, mapping = aes_string(x = var1_df, y = var2_df)) 
   return(p)
+}
+
+
+dspline = function(x, est){
+  # Density function of data using spline basis
+  evd::dgev(x = x, loc = est["loc"], scale = est["scale"], shape = est["shape"])
+}
+qspline = function(p, est){
+  # Quantile function of fitted extreme value distribution
+  unname(evd::qgev(p = p, loc = est["loc"], scale = est["scale"], shape = est["shape"]))
+}
+cspline = function(x, est){
+  # CDF of fitted extreme value distribution
+  unname(evd::pgev(q = x, loc = est["loc"], scale = est["scale"], shape = est["shape"]))
+}
+
+invPIT = function(name, df, u){
+  vec = unname(unlist(df[, name]))
+  fit = logspline::logspline(vec, lbound = 0)
+  
+  return(logspline::qlogspline(u, fit))
 }

@@ -13,6 +13,8 @@ source("functions.R")
 knitr::opts_chunk$set(fig.width=14, fig.height=7, dpi=300, out.width="100%")
 knitr::opts_knit$set(root.dir = normalizePath("."))
 
+set.seed(1)
+
 generate = params$generate
 
 if (generate) {
@@ -22,6 +24,41 @@ if (generate) {
   df = cop_df |> dplyr::filter(river == "Isar")
   river = "Isar"
 }
+
+# TODO: Make filepath dynamic
+slopefile_path = "../data/slopes/"
+slopes = read.csv2(
+  file = paste(slopefile_path, "Isar_Station_Slope.csv", sep = ""),
+  sep = ","
+) |> 
+  dplyr::select(unit, Slope_1, Slope_Percent) |> 
+  dplyr::rename(
+    slope = Slope_1,
+    pslope = Slope_Percent
+  ) |> 
+  dplyr::mutate(
+    slope = as.numeric(slope),
+    pslope = as.numeric(pslope)
+  )
+
+df = df |> 
+  dplyr::left_join(
+    y = slopes,
+    by = "unit"
+  )
+
+# Structure used for VineCopula and gamCopula
+assumed_vine_structure =  matrix(
+  # 1 - 2 - 3 where: 1:dur, 2:peak, 3:vol
+    c(
+      1, 0, 0,
+      3, 2, 0,
+      2, 3, 3
+    ),
+    nrow = 3, ncol = 3,
+    byrow = TRUE
+  )
+
 ```
 
 ```{r}
@@ -188,17 +225,7 @@ names(nacs) = river_units
 
 ```{r}
 # Fit Vines
-
-assumed_vine_structure =  matrix(
-  # 1 - 2 - 3 where: 1:dur, 2:peak, 3:vol
-    c(
-      1, 0, 0,
-      3, 2, 0,
-      2, 3, 3
-    ),
-    nrow = 3, ncol = 3,
-    byrow = TRUE
-  )
+# 
 
 vines = lapply(
   river_units,
@@ -388,8 +415,26 @@ aic |>
   geom_boxplot()
 ```
 ### Single Station
+
+Use a single station to showcase what we could do with these fitted copulas: 
+- Evaluate probability of last year flood event (P(VOL >= vol, PEAK >= peak, DUR >= dur))
+  - Maybe: Set of all vol, peak, dur pairs for which probability is 1; i.e. century flood triplets?
+- Conditional on peak, how does bivariate relatioship volume and duration change? 
+  - The conditional dependence structure / conditional copula does NOT change because I only fitted simplified copulas. The condition only has an effect of the conditional probabilities fed into the conditional copula. 
+That is, a fixed vol and duration value bzw. for fixed u_1 and u_3, u_1|2 and u_3|2 might change for varying peak / u_2 values.
+That is, I use the h function (conditional bivariate copula) to determine the conditional probabilities. These probabilities are then plugged into the conditional CDF
+- Quantifying slope effect on dependence structure
+
+Okay, fitting a marginal distribution is a lot more involved than I expected. But this is just an example for how to use the copula. I really do not care for complex approaches to density estimation. Thus: 
+Freising for Isar looks okay when I use a pretty simple approach. I would like to compare the empirical and parametrical cdf. 
+To do that, I just the conditional copula df and then plot that with desired threshold combinations. All I need a quantile function to change the x and y axis labels. 
+
+Thus: copula cdf, mark every combination that says cdf larger than threshold is certain color. Every set of the two variables volume and duration. 
+
 ```{r}
 if (river == "Isar") station = "München" else station = df$unit[1]
+# Freising, Lenggries
+# station = "Puppling"
 ```
 
 Zoomed density and synthetic data
@@ -404,18 +449,71 @@ ssyn_df = syn_df |> dplyr::filter(unit == station)
 ```
 
 ```{r}
+colnames = c("peak", "volume", "duration_min")
+u = ssyn_df |> dplyr::select(contains("pobs"))
+u = u |> dplyr::rename(peak = pobs_peak, volume = pobs_vol, duration_min = pobs_dur)
+fits = lapply(
+  colnames,
+  function(name) invPIT(name, sdf, u[name])
+)
+names(fits) = colnames
+
+ssyn_df = ssyn_df |>
+  dplyr::mutate(
+    peakp = fits$peak,
+    volp = fits$volume,
+    durp = fits$duration_min
+  )
+```
+
+Evaluation of marginal density fit
+```{r}
+ggplot() + 
+  geom_density(data = sdf, aes(x = volume), color = "blue") + 
+  geom_density(data = ssyn_df, aes(x = volp))
+ggplot() + 
+  geom_density(data = sdf, aes(x = peak), color = "blue") + 
+  geom_density(data = ssyn_df, aes(x = peakp))
+ggplot() + 
+  geom_density(data = sdf, aes(x = duration_min), color = "blue") + 
+  geom_density(data = ssyn_df, aes(x = durp))
+```
 
 
+
+
+```{r}
+# Contour plots
 p1 = get_contour("z12", splot_df, sdf, "pobs_dur", "pobs_peak")
 p2 = get_contour("z23", splot_df, sdf, "pobs_peak", "pobs_vol")
-p3 = get_contour("z13_2", splot_df, sdf, "pobs_vol", "pobs_peak")
-p4 = get_syn_scatter(ssyn_df, "dur", "peak", sdf, "duration_min", "peak")
-p5 = get_syn_scatter(ssyn_df, "peak", "vol", sdf, "peak", "volume")
-p6 = get_syn_scatter(ssyn_df, "vol", "peak", sdf, "volume", "peak")
+p3 = get_contour("z13_2", splot_df, sdf, "pobs_dur", "pobs_vol")
+# Synthetic data on [0, 1]
+p4 = get_syn_scatter(ssyn_df, "pobs_dur", "pobs_peak", sdf, "pobs_dur", "pobs_peak")
+p5 = get_syn_scatter(ssyn_df, "pobs_peak", "pobs_vol", sdf, "pobs_peak", "pobs_vol")
+p6 = get_syn_scatter(ssyn_df, "pobs_dur", "pobs_vol", sdf, "pobs_dur", "pobs_vol")
+# Synthetic data based on empirical invPIT
+p7 = get_syn_scatter(ssyn_df, "dur", "peak", sdf, "duration_min", "peak")
+p8 = get_syn_scatter(ssyn_df, "peak", "vol", sdf, "peak", "volume")
+p9 = get_syn_scatter(ssyn_df, "dur", "vol", sdf, "duration_min", "volume")
+# Synthetic data based on parametric invPIT
+p10 = get_syn_scatter(ssyn_df, "durp", "peakp", sdf, "duration_min", "peak")
+p11 = get_syn_scatter(ssyn_df, "peakp", "volp", sdf, "peak", "volume")
+p12 = get_syn_scatter(ssyn_df, "durp", "volp", sdf, "duration_min", "volume")
+
 p = (p1 | p2 | p3) / 
-    (p4 | p5 | p6)
+    (p4 | p5 | p6) /
+    (p7 | p8 | p9) /
+    (p10 | p11 | p12)
+  
 p
 ```
+Parametric synthetic invPIT looks super bad. But thats okay. The empirical invPIT leads to these bins. Of corse, it is more intersting without those, else the continously drawn copula observations are forced into these bins and invPIT forces intersting thresholds into these bins.
+Thus, we used a very simple approach to estimate the marginal empirival density. That fit is not that  great. But that is okay, since we only want to give an example on how to use fitted copula in practice. So: Take results with grain of salt and consider it more of an example. For sound statements, we would require a more sophisticated marginal distribution estimation
+
+The discrapency between the empirical PIT and the parametric PIT is due to the suboptimal fit...
+As I said: Grain of salt <3 
+
+
 The synthetic data looks a bit odd. Reason is that we used the empirical PIT. That is, the synthetic data is being "categorized". 
 This limits the power of our analysis, of course, because we cannot really translate from copula to margins bzw. the transformation depends on the number of observed data points. This is the clear downside of the non-parametric approach.. 
 What I COULD do is using any margin (bzw. inverse of any margin) of my choice to transform data and synthetic data. 
@@ -451,37 +549,145 @@ TODO:
 - Tail dependence analysis
 - Implementation of the planned thresholds for probability events
 
+!!! I need MARGINAL density estimates but these do not capture the JOINT behavior. 
+
+
+#### Last year flood
+Use the synthetic data to determine the probability of last years flood event or a more severe flood event
+$$
+PEAK \geq peak, VOL \geq vol, DUR \geq dur
+$$
 
 ```{r}
-gam = fitdistr(df$peak, densfun = "gamma")
-lnorm = fitdistr(df$peak, densfun = "lognormal")
-wb = fitdistr(df$peak, densfun = "weibull")
+last_flood = sdf |> 
+  dplyr::filter(year == max(sdf$year)) |> 
+  dplyr::select(year, peak, pobs_peak, duration_min, pobs_dur, volume, pobs_vol)
 
-n = length(df$peak)
-test = data.frame(
-  pts = df$peak,
-  gam = rgamma(n, shape = gam$estimate["shape"], rate = gam$estimate["rate"]),
-  lnorm = rlnorm(n, meanlog = lnorm$estimate["meanlog"], sdlog = lnorm$estimate["sdlog"]),
-  wb = rweibull(n, shape = wb$estimate["shape"], scale = wb$estimate["scale"])
+last_flood
+```
+
+That is, we compute the CDF at (`r last_flood$pobs_peak`, `r last_flood$pobs_dur`, `r last_flood$pobs_vol```)
+
+Last years flood in graphs
+```{r}
+p1 = get_contour("z12", splot_df, sdf, "pobs_dur", "pobs_peak")
+p1 + geom_point(data = last_flood, aes(x = pobs_dur, y = pobs_peak), color = "red")
+
+p2 = get_contour("z23", splot_df, sdf, "pobs_peak", "pobs_vol")
+p2 + geom_point(data = last_flood, aes(x = pobs_peak, y = pobs_vol), color = "red")
+
+p3 = get_contour("z13_2", splot_df, sdf, "pobs_dur", "pobs_vol")
+p3 + geom_point(data = last_flood, aes(x = pobs_dur, y = pobs_vol), color = "red")
+```
+
+
+Probability of such a flood event or a more severe one (Based on simulation)
+(Here, I use simulated data because a lot simpler than VineCopula function. I would have to evaluate VineCopula function multiple times (3 times for 2d) to obtain joint $X>=x, Y>=y$)
+
+```{r}
+# P(X>x, Y>y, Z>z)
+syn_vals = ssyn_df |> dplyr::select(pobs_dur, pobs_peak, pobs_vol)  
+thresh_vals = c(last_flood$pobs_dur, last_flood$pobs_peak, last_flood$pobs_vol)
+# Idea: Use threshold from last flood
+# For every entry in synthetic data, check if value is larger corresponding threshold
+# If all three (rowsum) are larger than their thresholds, they are an occurance of X>x, Y>y, Z>z
+# Determine frequence of these events
+prob = sum(rowSums(syn_vals >= thresh_vals) == 3) / nrow(ssyn_df)
+print(prob)  
+```
+On average, every `r 1 / prob` years such a flood occurs.
+
+
+#### Jahrhundertfluten
+What are the combinations of peak, duation and volume that only have a 1 percent probability. 
+Plot Bivariate for all 3
+Plot trivariate right underneath for all 3 
+
+To have reference and simplify 3d display: 
+Keep peak fixed and consider how volume and duration change for a Jahrhundertflut where the peak is the same as the one we had in the flood in last year 
+
+
+
+POSTPONED. Not sure how to give a good viz and I busy anyway
+
+#### Vol-Dur|Peak
+Consider the joint CDF for volume and duration for varying values of peak.
+
+```{r}
+# Approach:
+# Select values for X_2 
+# Transform to U_2 bzw. just use empirical quantiles, then I already have the pseudo obs
+# Determine U_1|2 and U_3|2 using h function from VineCopula package
+# Evaluate conditional copula cdf at u_1|2 and u_3|2
+# Return those probabilities
+# Repeat the above for a grid of X_1, X_3 values given a certain X_2 and create a contour plot
+
+emp_quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95, 0.99)
+peak_idxs = ceiling(quantile(1:nrow(sdf), probs = emp_quantiles)) # Not sure, just using some random values for now
+peaks = sdf |> 
+  dplyr::arrange(peak) |> 
+  dplyr::mutate(row = dplyr::row_number()) |> 
+  dplyr::filter(row %in% peak_idxs) 
+peaks |> dplyr::select(peak)
+
+peaks$pobs_peak
+vine = vines[[station]]
+
+bicop_dp = VineCopula::BiCop(family = vine$family[3, 1], par = vine$par[3, 1])
+bicop_pv = VineCopula::BiCop(family = vine$family[3, 2], par = vine$par[3, 2])
+bicop_cond_dv = VineCopula::BiCop(family = vine$family[2, 1], par = vine$par[2, 1]) 
+```
+
+```{r}
+# Conditional probabilities (h-function) as input for further conditional copula
+# current_peak = unname(unlist(peaks[1, "pobs_peak"]))
+
+cond_df = lapply(
+  peaks$pobs_peak,
+  function(current_peak) {
+    u_cond_dp = VineCopula::BiCopHfunc2(ssyn_df$pobs_dur, rep(current_peak, nrow(ssyn_df)), bicop_dp)
+    u_cond_pv = VineCopula::BiCopHfunc2(ssyn_df$pobs_vol, rep(current_peak, nrow(ssyn_df)), bicop_pv)
+    
+    cond_cdf = VineCopula::BiCopCDF(u_cond_dp, u_cond_pv, bicop_cond_dv)
+    
+    d = data.frame(
+      u_cond_dp,
+      u_cond_pv,
+      cond_cdf,
+      current_peak
+    ) 
+    return(d)
+  }
 )
+cond_df = cond_df |> dplyr::bind_rows() |> dplyr::left_join(sdf |> dplyr::select(pobs_peak, peak) |> dplyr::rename(current_peak = pobs_peak), by = "current_peak")
 
-ggplot(test) + 
-  geom_density(aes(pts)) + 
-  geom_density(aes(gam), color = "red") + 
-  geom_density(aes(lnorm), color ="blue") + 
-  geom_density(aes(wb), color = "green")
+# u_cond_dp = VineCopula::BiCopHfunc2(ssyn_df$pobs_dur, rep(current_peak, nrow(ssyn_df)), bicop_dp)
+# u_cond_pv = VineCopula::BiCopHfunc2(ssyn_df$pobs_vol, rep(current_peak, nrow(ssyn_df)), bicop_pv)
+# 
+# cond_cdf = VineCopula::BiCopCDF(u_cond_dp, u_cond_pv, bicop_cond_dv)
+# # cond_cdf = VineCopula::BiCopPDF(u_cond_dp, u_cond_pv, bicop_cond_dv)
+# 
+# data.frame(
+#   u_cond_dp,
+#   u_cond_pv,
+#   cond_cdf
+# ) |> 
+#   ggplot() + 
+#   geom_point(aes(x = u_cond_dp, u_cond_pv, color = cond_cdf))
+#   # stat_contour(aes(x = x, y = y, z = cond_cdf), binwidth = 0.01)
+cond_df |> 
+  ggplot() + 
+  geom_point(aes(x = u_cond_dp, y = u_cond_pv, color = cond_cdf), alpha = 0.7) + 
+  facet_wrap(~peak)
 ```
 
+Expectation: Conditional probability for duration given peak is close to uniform because they look almost indepedent. Thus, conditioning should not change a lot. 
+For volume, the dependence in stronger and I expect a larger effect from the condition on a peak value.
+
+Thing is, the damn cdf and pdf are constant. The effect of conditioning on a peak value is that it changes probable pairs i.e. conditioning on a certain peak turn unconditional probabilities in conditional ones. surprise. Due to the condition, the dependence structure remains the same (conditonal copula is constant), but probabilities are adjusted. 
+So: the conditional copula remains constant, but the condition changes the attained probabilities.
 
 
-
-Marginal plots with and without synthetic data
-
-```{r}
-ggplot() + 
-  geom_density(data = ssyn_df, mapping = aes(x = peak), color = "blue", alpha = 0.5) + 
-  geom_density(data = sdf, mapping = aes(x = peak)) 
-```
 
 
 
@@ -496,6 +702,112 @@ tdeps = lapply(
 )
 tdep = tdeps |> dplyr::bind_rows()
 knitr::kable(tdep)
+```
+
+
+## gamVine
+
+```{r}
+# !!! Must estimate tau! Because only tau is compareable among different copulas. 
+# i.e. I am intersted in modelling tau over the different copulas. Not sure if I need gamVine at all for that ...
+# Maybe just Fisher z trans and model using GAM? Try that in simulation?
+# Issue: gamCopula assumes constant copula structure
+# After all, modelling tau as function of a covariate is totally independent of the copula approach. 
+# So I would basically mix Li and Nagler? Li: Model tau using Bayesian, Nagler: Model tau using GAM
+# Also, I could implement a GAMM with an additional spline component? I mean, I am just more flexible when fitting tau on my own terms
+
+# Let's try:
+fisher_z = function(r) 1/2 * log( (1+r) / (1-r) )
+inv_fisher_z = function(z) (exp(2 * z) - 1) / (exp(2 * z) + 1) 
+to_beta = function(r) (r + 1) / 2
+from_beta = function(b) 2 * b - 1
+
+
+# Issue: 
+# Fisher_z does not has a lot of impact for low values of tau
+# That is, bimodal distribution of tau close to 0 is barely shifted
+# Only consider 
+test = cor_table |> 
+  dplyr::mutate(
+    z_dp = fisher_z(tau_dp),
+    z_vp = fisher_z(tau_vp),
+    z_vd = fisher_z(tau_vd),
+    b_dp = to_beta(tau_dp),
+    b_vp = to_beta(tau_vp),
+    b_vd = to_beta(tau_vd)
+  )  |> 
+  dplyr::select(
+    unit, tau_vd, z_vd, b_vd
+  ) 
+names(test) = c("unit", "tau", "z", "b")
+
+test |> 
+  ggplot() + 
+  geom_density(aes(x = tau)) + 
+  geom_density(aes(x = z), color = "red", linetype = 2) + 
+  geom_density(aes(x = b), color = "blue", linetype = 3) 
+  
+```
+
+
+```{r}
+|> 
+  tidyr::pivot_longer(
+    cols = c(contains("z"), contains("b"), contains("tau")),
+    names_to = "vars",
+    values_to = "z"
+  )  |> 
+  dplyr::summarise(
+    
+    .by = c(unit, z)
+  )
+test
+```
+
+
+```{r}
+ggplot() + 
+  geom_density(aes(x = z)) + 
+  facet_wrap(~type)
+  
+  
+# Try different links:
+# (tau + 1) / 2 = b ~ beta bzw. tau = b * 2 - 1 
+# fisher_z ~ norm
+```
+
+
+```{r}
+# gamCOpula tries
+gam = gamCopula::gamVineCopSelect(
+  # 1: pobs_dur, 2: pobs_peak, 3: pobs_vol
+  data = df |> dplyr::select(pobs_dur, pobs_peak, pobs_vol),
+  Matrix = assumed_vine_structure,
+  lin.covs = df |> dplyr::select(pslope),
+  simplified = TRUE
+)
+
+df |> 
+  dplyr::summarise(
+    .by = c(unit, pslope)
+  ) |> 
+  dplyr::left_join(
+    # Think z is Fisher-z
+    gam@model[[1]]@model$model,
+    by = "pslope"
+  ) |> 
+  ggplot() +
+  geom_density(aes(x = z)) + 
+  facet_wrap(~unit)
+
+gam@model
+gam@model[[1]]@model$coefficients
+gam@model[[1]]@model$model
+
+
+table(gam@model[[1]]@model$fitted.values)
+gam@model[[1]]@model$fitted.values
+cor_table |> dplyr::select(unit, tau_dp)
 ```
 
 
