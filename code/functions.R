@@ -766,12 +766,12 @@ inverse_ecdf_unitwise <- function(syn, syn_col, df, df_col, unit_name) {
   return(unname(sapply(syn_, inverse_ecdf, data = df_)))
 }
 
-get_contour = function(rel, splot_df, sdf, var1, var2, bwidth = 0.1 ){
+get_contour = function(rel, splot_df, sdf, var1, var2, bwidth = 0.1, plt_pts = TRUE){
   p = ggplot() +
     # 1: pobs_dur, 2: pobs_peak, 3: pobs_vol
     geom_contour(data = splot_df |> dplyr::filter(vars == rel), aes(x = x, y = y, z = density), binwidth = bwidth, alpha = .1) + 
-    geom_point(data = sdf, mapping = aes_string(x = var1, y = var2), alpha = .8) + 
     labs(title = paste(var1, var2))
+  if (plt_pts) p = p + geom_point(data = sdf, mapping = aes_string(x = var1, y = var2), alpha = .8)
   return(p)
 }
 
@@ -801,4 +801,92 @@ invPIT = function(name, df, u){
   fit = logspline::logspline(vec, lbound = 0)
   
   return(logspline::qlogspline(u, fit))
+}
+
+
+
+
+showcase_copula_contours = function(tau, n_gen_sim = 5000, title = "TODO: Title",
+                                    textsize_lab = 20, textsize_tick = 10, textsize_strip = 10, textsize_title = 20){
+  # Formulas according to Hofert "Elements of copula Modeling with R" p. 98
+  gen_clayton = function(t, theta) (1 + t)^(-1 / theta)
+  gen_frank = function(t, theta) -log(1 - exp(-t) * (1 - exp(-theta))) / theta
+  gen_gumbel = function(t, theta) exp(-t^(1 / theta))
+  
+  cop_fams = c("clayton" = 3, "gumbel" = 4, "frank" = 5)
+  vine_matrix = matrix(
+    c(
+      1, 0, 0,
+      3, 2, 0,
+      2, 3, 3
+    ),
+    nrow = 3, ncol = 3,
+    byrow = TRUE
+  )
+  
+  family_matrix = matrix(0, nrow = 3, ncol = 3)
+  family_matrix[2, 1] = cop_fams["clayton"]
+  family_matrix[3, 1:2] = cop_fams[c("gumbel", "frank")]
+  
+  theta = c(
+    "clayton" = VineCopula::BiCopTau2Par(cop_fams["clayton"], tau),
+    "gumbel" = VineCopula::BiCopTau2Par(cop_fams["gumbel"], tau),
+    "frank" = VineCopula::BiCopTau2Par(cop_fams["frank"], tau)
+  )
+  
+  params = matrix(0, nrow = 3, ncol = 3)
+  params[2, 1] = theta["clayton"]
+  params[3, 1:2] = c(theta["gumbel"], theta["frank"])
+  
+  rvmat = VineCopula::RVineMatrix(Matrix = vine_matrix, family = family_matrix, par = params)
+  
+  # Contours
+  x = seq(from = 0.001, to = 0.99, length.out = 200)
+  y = seq(from = 0.001, to = 0.99, length.out = 200)
+  density_grid = expand.grid(x = x, y = y)
+  
+  plot_df = get_density_values(rvmat, density_grid, "showcase") |>
+    dplyr::mutate(
+      vars = dplyr::case_when(
+        vars == "z12" ~ "Gumbel",
+        vars == "z13_2" ~ "Clayton",
+        vars == "z23" ~ "Frank"
+      )
+    )
+  
+  contours = ggplot(plot_df) +
+    geom_contour(aes(x = x, y = y, z = density), binwidth = 0.5) + 
+    labs(x = latex2exp::TeX("$u_1$"), y = latex2exp::TeX("$u_2$")) + 
+    theme(axis.text = element_text(size = textsize_tick), axis.title = element_text(size = textsize_lab), strip.text = element_text(size = textsize_strip)) +
+    facet_wrap(~vars)
+  
+  # Generator plots
+  t = seq(0, 9, length.out = 1000)
+  # Clayton Generator
+  gens = data.frame(
+    # Clayton = copula::copClayton@psi(t, theta["clayton"]),
+    Clayton = gen_clayton(t, theta["clayton"]),
+    # Gumbel Generator
+    # Gumbel = copula::copGumbel@psi(t, theta["gumbel"]),
+    Gumbel = gen_gumbel(t, theta["gumbel"]),
+    # Frank Generator
+    # Frank = copula::copFrank@psi(t, theta["frank"]),
+    Frank = gen_frank(t, theta["frank"]),
+    t = t
+  ) |> 
+    tidyr::pivot_longer(
+      cols = c(Clayton, Gumbel, Frank),
+      names_to = "family",
+      values_to = "generator"
+    ) |> 
+    ggplot() + 
+    geom_line(aes(x = t, y = generator), linewidth = 0.8) +
+    facet_wrap(~family) +
+    xlim(0, 1) + 
+    theme(axis.text = element_text(size = textsize_tick), axis.title = element_text(size = textsize_lab), strip.text = element_text(size = textsize_strip), title = element_text(size = textsize_title)) +
+    labs(x = "", y = "Generator", title = title)  
+    
+  
+  gen_cont = gens / contours
+  return(gen_cont)
 }

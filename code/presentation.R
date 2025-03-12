@@ -102,6 +102,8 @@ rivers_bayern = rivers_bayern |>
     )
   )
 
+# Data --------------------------------------------------------------------
+
 # NOTE: Plots may look super bad in RStudio. I save them using savegg. 
 #   Check the saved file or its look in PowerPoint to judge visual
 # Selected rivers and all stations 
@@ -528,8 +530,14 @@ savegg("tau_boxplots", width = 15, height = 5)
 
 
 
-
-
+# Methods -----------------------------------------------------------------
+# Generator function plots
+tau = list(low = 0.1, high = 0.7)
+source("functions.R")
+showcase_copula_contours(tau$low, title = latex2exp::TeX(paste("Copula Families ($\\tau =", tau$low, "$)")), textsize_lab = 20, textsize_tick = 10, textsize_strip = 10)
+savegg("CopFams_lowtau", width = 10, height = 5)
+showcase_copula_contours(tau$high, title = latex2exp::TeX(paste("Copula Families ($\\tau =", tau$high, "$)")), textsize_lab = 20, textsize_tick = 10, textsize_strip = 10)
+savegg("CopFams_hightau", width = 10, height = 5)
 
 
 

@@ -695,6 +695,11 @@ So: the conditional copula remains constant, but the condition changes the attai
 
 
 ### Tail dependence
+Check tail dependence behavior for each variable combination
+- Give distribution of copula family by variables !! Keep roration and survival as separate family of course! 
+- Give distribution of tail dependence values 
+Are some variables highly dependent? 
+
 ```{r}
 tdeps = lapply(
   river_units,
@@ -705,109 +710,109 @@ knitr::kable(tdep)
 ```
 
 
-## gamVine
+<!-- ## gamVine -->
 
-```{r}
-# !!! Must estimate tau! Because only tau is compareable among different copulas. 
-# i.e. I am intersted in modelling tau over the different copulas. Not sure if I need gamVine at all for that ...
-# Maybe just Fisher z trans and model using GAM? Try that in simulation?
-# Issue: gamCopula assumes constant copula structure
-# After all, modelling tau as function of a covariate is totally independent of the copula approach. 
-# So I would basically mix Li and Nagler? Li: Model tau using Bayesian, Nagler: Model tau using GAM
-# Also, I could implement a GAMM with an additional spline component? I mean, I am just more flexible when fitting tau on my own terms
+<!-- ```{r} -->
+<!-- # !!! Must estimate tau! Because only tau is compareable among different copulas.  -->
+<!-- # i.e. I am intersted in modelling tau over the different copulas. Not sure if I need gamVine at all for that ... -->
+<!-- # Maybe just Fisher z trans and model using GAM? Try that in simulation? -->
+<!-- # Issue: gamCopula assumes constant copula structure -->
+<!-- # After all, modelling tau as function of a covariate is totally independent of the copula approach.  -->
+<!-- # So I would basically mix Li and Nagler? Li: Model tau using Bayesian, Nagler: Model tau using GAM -->
+<!-- # Also, I could implement a GAMM with an additional spline component? I mean, I am just more flexible when fitting tau on my own terms -->
 
-# Let's try:
-fisher_z = function(r) 1/2 * log( (1+r) / (1-r) )
-inv_fisher_z = function(z) (exp(2 * z) - 1) / (exp(2 * z) + 1) 
-to_beta = function(r) (r + 1) / 2
-from_beta = function(b) 2 * b - 1
-
-
-# Issue: 
-# Fisher_z does not has a lot of impact for low values of tau
-# That is, bimodal distribution of tau close to 0 is barely shifted
-# Only consider 
-test = cor_table |> 
-  dplyr::mutate(
-    z_dp = fisher_z(tau_dp),
-    z_vp = fisher_z(tau_vp),
-    z_vd = fisher_z(tau_vd),
-    b_dp = to_beta(tau_dp),
-    b_vp = to_beta(tau_vp),
-    b_vd = to_beta(tau_vd)
-  )  |> 
-  dplyr::select(
-    unit, tau_vd, z_vd, b_vd
-  ) 
-names(test) = c("unit", "tau", "z", "b")
-
-test |> 
-  ggplot() + 
-  geom_density(aes(x = tau)) + 
-  geom_density(aes(x = z), color = "red", linetype = 2) + 
-  geom_density(aes(x = b), color = "blue", linetype = 3) 
-  
-```
+<!-- # Let's try: -->
+<!-- fisher_z = function(r) 1/2 * log( (1+r) / (1-r) ) -->
+<!-- inv_fisher_z = function(z) (exp(2 * z) - 1) / (exp(2 * z) + 1)  -->
+<!-- to_beta = function(r) (r + 1) / 2 -->
+<!-- from_beta = function(b) 2 * b - 1 -->
 
 
-```{r}
-|> 
-  tidyr::pivot_longer(
-    cols = c(contains("z"), contains("b"), contains("tau")),
-    names_to = "vars",
-    values_to = "z"
-  )  |> 
-  dplyr::summarise(
-    
-    .by = c(unit, z)
-  )
-test
-```
+<!-- # Issue:  -->
+<!-- # Fisher_z does not has a lot of impact for low values of tau -->
+<!-- # That is, bimodal distribution of tau close to 0 is barely shifted -->
+<!-- # Only consider  -->
+<!-- test = cor_table |>  -->
+<!--   dplyr::mutate( -->
+<!--     z_dp = fisher_z(tau_dp), -->
+<!--     z_vp = fisher_z(tau_vp), -->
+<!--     z_vd = fisher_z(tau_vd), -->
+<!--     b_dp = to_beta(tau_dp), -->
+<!--     b_vp = to_beta(tau_vp), -->
+<!--     b_vd = to_beta(tau_vd) -->
+<!--   )  |>  -->
+<!--   dplyr::select( -->
+<!--     unit, tau_vd, z_vd, b_vd -->
+<!--   )  -->
+<!-- names(test) = c("unit", "tau", "z", "b") -->
+
+<!-- test |>  -->
+<!--   ggplot() +  -->
+<!--   geom_density(aes(x = tau)) +  -->
+<!--   geom_density(aes(x = z), color = "red", linetype = 2) +  -->
+<!--   geom_density(aes(x = b), color = "blue", linetype = 3)  -->
+
+<!-- ``` -->
 
 
-```{r}
-ggplot() + 
-  geom_density(aes(x = z)) + 
-  facet_wrap(~type)
-  
-  
-# Try different links:
-# (tau + 1) / 2 = b ~ beta bzw. tau = b * 2 - 1 
-# fisher_z ~ norm
-```
+<!-- ```{r} -->
+<!-- |>  -->
+<!--   tidyr::pivot_longer( -->
+<!--     cols = c(contains("z"), contains("b"), contains("tau")), -->
+<!--     names_to = "vars", -->
+<!--     values_to = "z" -->
+<!--   )  |>  -->
+<!--   dplyr::summarise( -->
+
+<!--     .by = c(unit, z) -->
+<!--   ) -->
+<!-- test -->
+<!-- ``` -->
 
 
-```{r}
-# gamCOpula tries
-gam = gamCopula::gamVineCopSelect(
-  # 1: pobs_dur, 2: pobs_peak, 3: pobs_vol
-  data = df |> dplyr::select(pobs_dur, pobs_peak, pobs_vol),
-  Matrix = assumed_vine_structure,
-  lin.covs = df |> dplyr::select(pslope),
-  simplified = TRUE
-)
-
-df |> 
-  dplyr::summarise(
-    .by = c(unit, pslope)
-  ) |> 
-  dplyr::left_join(
-    # Think z is Fisher-z
-    gam@model[[1]]@model$model,
-    by = "pslope"
-  ) |> 
-  ggplot() +
-  geom_density(aes(x = z)) + 
-  facet_wrap(~unit)
-
-gam@model
-gam@model[[1]]@model$coefficients
-gam@model[[1]]@model$model
+<!-- ```{r} -->
+<!-- ggplot() +  -->
+<!--   geom_density(aes(x = z)) +  -->
+<!--   facet_wrap(~type) -->
 
 
-table(gam@model[[1]]@model$fitted.values)
-gam@model[[1]]@model$fitted.values
-cor_table |> dplyr::select(unit, tau_dp)
-```
+<!-- # Try different links: -->
+<!-- # (tau + 1) / 2 = b ~ beta bzw. tau = b * 2 - 1  -->
+<!-- # fisher_z ~ norm -->
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+<!-- # gamCOpula tries -->
+<!-- gam = gamCopula::gamVineCopSelect( -->
+<!--   # 1: pobs_dur, 2: pobs_peak, 3: pobs_vol -->
+<!--   data = df |> dplyr::select(pobs_dur, pobs_peak, pobs_vol), -->
+<!--   Matrix = assumed_vine_structure, -->
+<!--   lin.covs = df |> dplyr::select(pslope), -->
+<!--   simplified = TRUE -->
+<!-- ) -->
+
+<!-- df |>  -->
+<!--   dplyr::summarise( -->
+<!--     .by = c(unit, pslope) -->
+<!--   ) |>  -->
+<!--   dplyr::left_join( -->
+<!--     # Think z is Fisher-z -->
+<!--     gam@model[[1]]@model$model, -->
+<!--     by = "pslope" -->
+<!--   ) |>  -->
+<!--   ggplot() + -->
+<!--   geom_density(aes(x = z)) +  -->
+<!--   facet_wrap(~unit) -->
+
+<!-- gam@model -->
+<!-- gam@model[[1]]@model$coefficients -->
+<!-- gam@model[[1]]@model$model -->
+
+
+<!-- table(gam@model[[1]]@model$fitted.values) -->
+<!-- gam@model[[1]]@model$fitted.values -->
+<!-- cor_table |> dplyr::select(unit, tau_dp) -->
+<!-- ``` -->
 
 

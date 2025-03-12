@@ -125,7 +125,7 @@ n_cores = parallel::detectCores() - 2
 # NACs ----
 
 # Number of simulations per setting
-B = 2000
+B = 3000
 
 # Copula families considered during the simulation
 copula_families = list("Gumbel" = 1, "Clayton" = 3, "Frank" = 5)
@@ -177,7 +177,7 @@ for (n in sample_sizes){
 
 # Vines ----
 # For drawing vines, we have 3^3 possible vine structures. Thus, draw 27000 so that every vine structure has 1k (on average bc I draw them randomly)
-B = 27 * 100
+B = 27 * 1000
 # Also, the copula families have a different encoding
 copula_families = list("Clayton" = 3, "Gumbel" = 4, "Frank" = 5)
 
