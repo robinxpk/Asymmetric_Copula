@@ -2,6 +2,7 @@
 
 # Subfolder: Code
 code/*.html
+code/rosm.cache/*
 
 # Subfolder: Paper
 paper/appliedCopulas.log
@@ -25,3 +26,6 @@ data/output/presentation/*.Rdata
 
 # Subfolder: River Reports
 riverreports/*.html
+
+# Subfolder: Präsentation
+Präsentation/pictures/*.png
