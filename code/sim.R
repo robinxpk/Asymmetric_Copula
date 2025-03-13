@@ -131,7 +131,7 @@ B = 3000
 copula_families = list("Gumbel" = 1, "Clayton" = 3, "Frank" = 5)
 
 # Start simulation
-cluster <- parallel::makeCluster(n_cores, outfile = "")
+cluster <- parallel::makeCluster(n_cores, outfile = "nac.log")
 doParallel::registerDoParallel(cluster)
 
 # Ensure cluster stops after execution
@@ -141,7 +141,8 @@ for (n in sample_sizes){
   for (cop in names(copula_families)){
       # Run parallelized
       res <- foreach(
-        seed = 1:B
+        seed = 1:B,
+        .combine = "rbind"
         # .packages = pkg
         # .export = ls()
       ) %dopar% {
@@ -153,26 +154,30 @@ for (n in sample_sizes){
             cop = cop,
             taus = taus
           ),
-          error = function(e) message(e))
+          error = function(e) {
+            message(e)
+            message(paste("NAC  -- Error at seed:", seed, " - Cop:", cop, " - n:", n, " - msg:", e$message))
+            NULL
+          })
       }
 
       res = res |> dplyr::bind_rows(.id = "seed")
       res$seed = as.numeric(res$seed)
-      # browser()
       attr(res, "n") = n
       attr(res, "cop") = cop
       attr(res, "dep") = "nac"
-      
+
       attr(res, "B") = B
       attr(res, "sample sizes") = sample_sizes
       attr(res, "copula families") = copula_families
-      
+
       # Save simulation results in file
       filename = paste("../data/simulation/simulation_n", n, "_cop", cop, "_depnac.Rdata", sep = "")
       save(res, file = filename)
   }
 }
 
+stopCluster(cluster)
 
 
 # Vines ----
@@ -181,11 +186,11 @@ B = 27 * 1000
 # Also, the copula families have a different encoding
 copula_families = list("Clayton" = 3, "Gumbel" = 4, "Frank" = 5)
 
-cluster <- parallel::makeCluster(n_cores, outfile = "")
+cluster <- parallel::makeCluster(n_cores, outfile = "vine.log")
 doParallel::registerDoParallel(cluster)
 
 # Ensure cluster stops after execution
-on.exit(parallel::stopCluster(cluster))  
+on.exit(parallel::stopCluster(cluster))
 
 for (n in sample_sizes){
     # Run parallelized
@@ -198,7 +203,10 @@ for (n in sample_sizes){
         n = n,
         taus = taus
       ),
-        error = function(e) NULL)
+        error = function(e){
+          message(paste("Vine -- Error at seed:", seed, " - ", e$message))
+          NULL
+        })
     }
 
     res = res |> dplyr::bind_rows(.id = "seed")
@@ -208,11 +216,13 @@ for (n in sample_sizes){
     attr(res, "B") = B
     attr(res, "sample sizes") = sample_sizes
     attr(res, "copula families") = copula_families
-    
+
     # Save simulation results in file
     filename = paste("../data/simulation/simulation_n", n, "_depvine.Rdata", sep = "")
     save(res, file = filename)
 }
+
+stopCluster(cluster)
 
 # # # b) GAM ------------------------------------------------------------------
 # # # Here, I only care how the gamVine packages performs. NACs are not relevant for my use case so the coefficient estimation for a non-relevant

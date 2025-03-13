@@ -42,6 +42,7 @@ copula_families = attr(all_res, "copula families")
 ### Sanity checks
 
 ```{r}
+table(all_res$seed, all_res$cop, all_res$n) 
 # Sanity check
 nrow(all_res) # For each dependence structure: B seeds * length(sample_sizes) * length(copula_families)
 B_nac * length(sample_sizes) * length(copula_families)

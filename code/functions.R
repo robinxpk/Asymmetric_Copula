@@ -99,6 +99,7 @@ fit_ac = function(mat, cops){
   # NOTE HERE: Since p identical, we can just select smallest negative loglikelihood
   ac_lls = lapply(ac_fits, function(fit) - fit@min) # min gives the NEGATIVE loglikelihood
   ac_best_fit = which.max(ac_lls)
+  if (is.integer(ac_best_fit) && length(ac_best_fit) == 0) ac_best_fit = 1
   ac_mle = ac_fits[[ac_best_fit]]@coef[[1]]
   
   # Actual copula
@@ -182,6 +183,7 @@ run_one_nac = function(
   mat = HAC::rHAC(n, mdl) 
   
   # Fit models --------------------------------------------------------------
+  if (cop == "Frank") print(paste("Start seed                                   ", seed))
   ac = fit_ac(mat, names(copula_families))
   
   nac = fit_nac(mat, copula_families)
@@ -216,6 +218,7 @@ run_one_nac = function(
       vine_kl = klMonteCarlo(mdl, vine, est_mdl_vine = TRUE)
     )
   )
+  if(cop == "Frank") print(paste("Success:                                 ", seed))
   return(res)
 }
 
@@ -620,8 +623,9 @@ load_depdata = function(filepath){
   
   # Append attributes to df. Necessary before merging them into one big df
   n = attr(env$res, "n")
-  cop = attr(env$res, "cop")
   dep = attr(env$res, "dep")
+  cop = attr(env$res, "cop")
+  if (dep == "vine") cop = "vine"
   
   # Sanity messages
   message(paste("n:", n, "-- cop:", cop, "-- dep:", dep,"-- #seeds:", nrow(env$res)))
