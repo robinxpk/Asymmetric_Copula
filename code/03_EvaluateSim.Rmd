@@ -414,7 +414,8 @@ copula_families = attr(all_res, "copula families")
 
 ```{r}
 table(all_res$river, all_res$n)
-table(all_res$true_famname_12, all_res$true_famname_13, all_res$true_famname_23)
+# Every family comb 1k for each sample size
+table(all_res$famcomb, all_res$n)
 ```
 
 ### Sanity checks

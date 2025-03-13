@@ -610,7 +610,7 @@ Keep peak fixed and consider how volume and duration change for a Jahrhundertflu
 
 POSTPONED. Not sure how to give a good viz and I busy anyway
 
-#### Vol-Dur|Peak
+#### Trying coonditional distribution...
 Consider the joint CDF for volume and duration for varying values of peak.
 
 ```{r}
@@ -631,55 +631,155 @@ peaks = sdf |>
 peaks |> dplyr::select(peak)
 
 peaks$pobs_peak
+
+# Vine models
 vine = vines[[station]]
 
 bicop_dp = VineCopula::BiCop(family = vine$family[3, 1], par = vine$par[3, 1])
 bicop_pv = VineCopula::BiCop(family = vine$family[3, 2], par = vine$par[3, 2])
 bicop_cond_dv = VineCopula::BiCop(family = vine$family[2, 1], par = vine$par[2, 1]) 
+
+# NAC model
+nac = nacs[[station]]
 ```
+
+<!-- ```{r} -->
+<!-- ####### Old -->
+<!-- # Conditional distribution: -->
+<!-- # Draw samples from the two unconditional copulas given a peak value -->
+<!-- # i.e. randomly draw u_1 and u_3 given a value for u_2 -->
+<!-- # Then, plot these probabilities in a scatter plot. In theory, these points should resemble the conditonal copula? Not sure about that tho. But the conditonal copula represents the dependence between the conditonal probabilities and, according to assumption of simplified vines, this dependence is not influenced by the specific peak value conditioned on.  -->
+<!-- # How would I re-transform conditional probabilities into marginal values?  -->
+<!-- # Can I just draw the conditional probabilities (conditional on peak value), check dependence (simplified vine assumption). Then, I am interested in the marginal duration bzw. volume values to expect when conditioning on the peak values. So I re-transform the conditional u values into uncoditional setting. Then, I can inverse transform these and I get the duration bzw. volume values (issue is when invPIT conditonal probabilities, they are not really the correct "scale". That is, conditonal probability of 0.9 may refer to a marginal value of a with conditon b or to marginal value c with condition d. Because depending on the condition, the conditonal probability for value a bzw. c changes.) -->
+<!-- ######### Old -->
+<!-- ``` -->
+```{r}
+# Evaluate NAC and Vine over grid fixing peak value to obtain triplet (peak, vol, dur) with peak fixed
+```
+
 
 ```{r}
-# Conditional probabilities (h-function) as input for further conditional copula
-# current_peak = unname(unlist(peaks[1, "pobs_peak"]))
+n_draws = 10000
+peak = peaks$pobs_peak[[3]]
+# Use inverse h to obtain unconditional values (Czado p.62)
+# That is: 
+# 1) Draw n probabilities to condition on u_2i
+# 2) Draw another n uniform variables v_i
+# 3) Define v_i as conditonal probability: v_i = u_1i|u_2i (as any other probability, it is uniform)
+# 4) Use inverse h function: h.inv(v_i|u_2i) = u_1i (UNCONDITIONAL!)
+#   -> I can draw (u_1i, u_2i) pairs for a fixed u_2i
+#   -> That is, I would not condition on a peak value, but consider the most probable pairs for a fixed peak value? Just like paper I guess (i.e. Considering the triplet (peak, vol, dur) and holding peak fixed at certain point !! Not conditoned in, just holding it fixed!!, I can draw most probable volume-duration pairs: For each fixed peak, I can check the scatterplot / determine point with highest density)
+cond_probs = runif(n_draws, 0, 1)
+uncon_dur = VineCopula::BiCopHinv1(cond_probs, rep(peak, n_draws), bicop_dp) # hinv1: inverse u_2|u_1 --> gives unconditonal u_1 where u_1 is first argument into function and u_2 second argument
 
-cond_df = lapply(
-  peaks$pobs_peak,
-  function(current_peak) {
-    u_cond_dp = VineCopula::BiCopHfunc2(ssyn_df$pobs_dur, rep(current_peak, nrow(ssyn_df)), bicop_dp)
-    u_cond_pv = VineCopula::BiCopHfunc2(ssyn_df$pobs_vol, rep(current_peak, nrow(ssyn_df)), bicop_pv)
-    
-    cond_cdf = VineCopula::BiCopCDF(u_cond_dp, u_cond_pv, bicop_cond_dv)
-    
-    d = data.frame(
-      u_cond_dp,
-      u_cond_pv,
-      cond_cdf,
-      current_peak
-    ) 
-    return(d)
-  }
-)
-cond_df = cond_df |> dplyr::bind_rows() |> dplyr::left_join(sdf |> dplyr::select(pobs_peak, peak) |> dplyr::rename(current_peak = pobs_peak), by = "current_peak")
+# Considering a full df 
+trips = data.frame( # Create a data frame where we look at triplets keeping peak constant 
+  # Fixed peaks
+  peak = rep(peaks$pobs_peak, each = n_draws),
+  cond_prob1 = rep(runif(n_draws, 0, 1), length(peaks$pobs_peak)),
+  cond_prob2 = rep(runif(n_draws, 0, 1), length(peaks$pobs_peak))
+  # Random peaks
+  # peak = runif(n_draws, 0, 1),
+  # cond_prob1 = runif(n_draws, 0, 1),
+  # cond_prob2 = runif(n_draws, 0, 1)
+  ) |> 
+  dplyr::mutate(
+    dur = VineCopula::BiCopHinv1(cond_prob1, peak, bicop_dp),
+    vol = VineCopula::BiCopHinv1(cond_prob2, peak, bicop_pv)
+  ) 
 
-# u_cond_dp = VineCopula::BiCopHfunc2(ssyn_df$pobs_dur, rep(current_peak, nrow(ssyn_df)), bicop_dp)
-# u_cond_pv = VineCopula::BiCopHfunc2(ssyn_df$pobs_vol, rep(current_peak, nrow(ssyn_df)), bicop_pv)
-# 
-# cond_cdf = VineCopula::BiCopCDF(u_cond_dp, u_cond_pv, bicop_cond_dv)
-# # cond_cdf = VineCopula::BiCopPDF(u_cond_dp, u_cond_pv, bicop_cond_dv)
-# 
-# data.frame(
-#   u_cond_dp,
-#   u_cond_pv,
-#   cond_cdf
-# ) |> 
-#   ggplot() + 
-#   geom_point(aes(x = u_cond_dp, u_cond_pv, color = cond_cdf))
-#   # stat_contour(aes(x = x, y = y, z = cond_cdf), binwidth = 0.01)
-cond_df |> 
+trips |> 
   ggplot() + 
-  geom_point(aes(x = u_cond_dp, y = u_cond_pv, color = cond_cdf), alpha = 0.7) + 
-  facet_wrap(~peak)
+  geom_point(aes(y = vol, x = dur, color = peak))
+
+# Most probable point for each peak-value
+# Estimate the 2D kernel density
+kde <- MASS::kde2d(
+  (trips |> dplyr::filter(peak == peaks$pobs_peak[[1]]))$dur, 
+  (trips |> dplyr::filter(peak == peaks$pobs_peak[[1]]))$vol, 
+   n = 100
+)
+
+# Find the mode (highest density)
+max_idx <- which(kde$z == max(kde$z), arr.ind = TRUE)
+mode = list( 
+  x = kde$x[max_idx[1]],
+  y = kde$y[max_idx[2]]
+)
+
+
+trips |> 
+  ggplot() + 
+  geom_point(aes(y = vol, x = dur, color = peak)) + 
+  geom_point(data = data.frame(mode), aes(x = x, y = y))
+
+# Mode for NAC
+nac = nacs[[station]]
+# Evaluate nac density for fixed peak and varying vol and dur over a grid
+# Using this grid, select highest density point ~ mode
+# Legit, can use the same approach for vine....
+### COnditonal NAC: 
+# Use Hfunciton from VineCopula:
+# Condition of peak again
+# For peak, use invH to get values of nested copula
+# For the value of nested copula, I get a set of u1 and u2 fulfillling copula is this. I basically need the invCDF of a bivariate copula. Thus, I can again use VineCopulap package for this. 
+# I get a set of variables fulfilling the copula == value
+# Choose those variable combination that is most likely? 
+# Idea: Wurf mit 2 Würfeln hat bestimmte Wkeit unter 6 zu bleiben, aber manche dieser Kombinationen unter 6 zu bleiben sind wahrscheinlicher als andere. Nimm die Kombination, die am Wahrscheinlichsten ist
+
 ```
+```{r}
+# 1) Draw from conditional copula. 
+# 2) Use inverse h functions to obtain vol and dur values,
+#   That is, plug in any values (like the empirical quantiles values for every conditional synthetic draw) and use inverse h function to obtain the unconditional probability 
+# 3) Consider the scatterplot of unconditonal probabilities (Does it look different to before?)
+# 4) Given these unconditional probabilities, I can apply invPIT and check out the marginal distribution. This should be the conditional(?) marginal distribution of vol / dur. 
+#   Bc: These marginal values are based on draws of the conditonal copula. That is:
+#     Conditional on a peak value, this must be the vol bzw. dur value s.t. the drawn conditonal prbability is obtained. That is, given a peak value, I obtain the vol bzw. dur values. 
+##  Confusing tho is that I obtain the UNCONDITIONAL vol and dur values. However, they are somewhat conditoned, right? Not sure...
+```
+
+
+
+<!-- ```{r} -->
+<!-- cond_df = lapply( -->
+<!--   peaks$pobs_peak, -->
+<!--   function(current_peak) { -->
+<!--     u_cond_dp = VineCopula::BiCopHfunc2(ssyn_df$pobs_dur, rep(current_peak, nrow(ssyn_df)), bicop_dp) -->
+<!--     u_cond_pv = VineCopula::BiCopHfunc2(ssyn_df$pobs_vol, rep(current_peak, nrow(ssyn_df)), bicop_pv) -->
+
+<!--     cond_cdf = VineCopula::BiCopCDF(u_cond_dp, u_cond_pv, bicop_cond_dv) -->
+
+<!--     d = data.frame( -->
+<!--       u_cond_dp, -->
+<!--       u_cond_pv, -->
+<!--       cond_cdf, -->
+<!--       current_peak -->
+<!--     )  -->
+<!--     return(d) -->
+<!--   } -->
+<!-- ) -->
+<!-- cond_df = cond_df |> dplyr::bind_rows() |> dplyr::left_join(sdf |> dplyr::select(pobs_peak, peak) |> dplyr::rename(current_peak = pobs_peak), by = "current_peak") -->
+
+<!-- # u_cond_dp = VineCopula::BiCopHfunc2(ssyn_df$pobs_dur, rep(current_peak, nrow(ssyn_df)), bicop_dp) -->
+<!-- # u_cond_pv = VineCopula::BiCopHfunc2(ssyn_df$pobs_vol, rep(current_peak, nrow(ssyn_df)), bicop_pv) -->
+<!-- #  -->
+<!-- # cond_cdf = VineCopula::BiCopCDF(u_cond_dp, u_cond_pv, bicop_cond_dv) -->
+<!-- # # cond_cdf = VineCopula::BiCopPDF(u_cond_dp, u_cond_pv, bicop_cond_dv) -->
+<!-- #  -->
+<!-- # data.frame( -->
+<!-- #   u_cond_dp, -->
+<!-- #   u_cond_pv, -->
+<!-- #   cond_cdf -->
+<!-- # ) |>  -->
+<!-- #   ggplot() +  -->
+<!-- #   geom_point(aes(x = u_cond_dp, u_cond_pv, color = cond_cdf)) -->
+<!-- #   # stat_contour(aes(x = x, y = y, z = cond_cdf), binwidth = 0.01) -->
+<!-- cond_df |>  -->
+<!--   ggplot() +  -->
+<!--   geom_point(aes(x = u_cond_dp, y = u_cond_pv, color = cond_cdf), alpha = 0.7) +  -->
+<!--   facet_wrap(~peak) -->
+<!-- ``` -->
 
 Expectation: Conditional probability for duration given peak is close to uniform because they look almost indepedent. Thus, conditioning should not change a lot. 
 For volume, the dependence in stronger and I expect a larger effect from the condition on a peak value.
@@ -691,6 +791,11 @@ So: the conditional copula remains constant, but the condition changes the attai
 
 
 
+#### CDF Triplets for which HQ event
+
+I want to find those triplets for which a certain probability holds. 
+Or maybe also use condtional distribution? THen I can do this in 2d
+Like: Conditional on last years peak, what would be a vol and dur distr. s.t. HQflood
 
 
 

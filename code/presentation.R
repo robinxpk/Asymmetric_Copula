@@ -474,7 +474,20 @@ cop_df |>
   )
 # Duration of the maximum volume floodings
 cop_df |> dplyr::filter(volume %in% c(6824363400, 1808050500)) |> dplyr::mutate(duration_days = duration_min / 60 / 24)
+cop_df |> dplyr::mutate(duration_days = duration_min / 60 / 24) |> dplyr::filter(duration_days > 87)
 
+
+
+# TODO
+# > Appendix: Hydrographen für die Tabellen-Events
+# > Wie funktioniert extRemes; kann ich damit inverse bilden?
+# > Trivariate Bestimmung der HQ 1, 2, (5,) 10, 20, 50, 100
+# > Darstellung für most probable pair aus paper übernehmen
+# > Taildependencies in results
+# > Taildependence in intro: 
+#   Difference Taildependence and heavy tail in distribution
+
+# > WENN ZEIT: 
 
 # -> Taus Boxplots (correlation tiles already hinted towards this behavior)
 # Correlation table
