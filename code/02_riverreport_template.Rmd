@@ -466,20 +466,18 @@ ssyn_df = ssyn_df |>
   )
 ```
 
-Evaluation of marginal density fit
-```{r}
-ggplot() + 
-  geom_density(data = sdf, aes(x = volume), color = "blue") + 
-  geom_density(data = ssyn_df, aes(x = volp))
-ggplot() + 
-  geom_density(data = sdf, aes(x = peak), color = "blue") + 
-  geom_density(data = ssyn_df, aes(x = peakp))
-ggplot() + 
-  geom_density(data = sdf, aes(x = duration_min), color = "blue") + 
-  geom_density(data = ssyn_df, aes(x = durp))
-```
-
-
+<!-- Evaluation of marginal density fit -->
+<!-- ```{r} -->
+<!-- ggplot() +  -->
+<!--   geom_density(data = sdf, aes(x = volume), color = "blue") +  -->
+<!--   geom_density(data = ssyn_df, aes(x = volp)) -->
+<!-- ggplot() +  -->
+<!--   geom_density(data = sdf, aes(x = peak), color = "blue") +  -->
+<!--   geom_density(data = ssyn_df, aes(x = peakp)) -->
+<!-- ggplot() +  -->
+<!--   geom_density(data = sdf, aes(x = duration_min), color = "blue") +  -->
+<!--   geom_density(data = ssyn_df, aes(x = durp)) -->
+<!-- ``` -->
 
 
 ```{r}
@@ -578,6 +576,7 @@ p2 + geom_point(data = last_flood, aes(x = pobs_peak, y = pobs_vol), color = "re
 
 p3 = get_contour("z13_2", splot_df, sdf, "pobs_dur", "pobs_vol")
 p3 + geom_point(data = last_flood, aes(x = pobs_dur, y = pobs_vol), color = "red")
+
 ```
 
 

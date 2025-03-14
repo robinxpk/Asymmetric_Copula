@@ -3,13 +3,42 @@ library(patchwork)
 
 # Load Data ---------------------------------------------------------------
 get_copula_df = function(
-    in_dir = "../data/output/rdata/copula_dfs/"
+    p_threshold = NULL,
+    in_dir = "../data/output/rdata/copula_dfs/", 
+    all = FALSE
   ){
   "
   Read all copula dfs and join them to one large copula df
   "
-  filenames = paste(in_dir, list.files(in_dir, pattern = "*data"), sep = "")
+  if (is.null(p_threshold)) assertthat::assert_that(all == TRUE) # If not all dataframes, then p_threhsold must be given
+  if (!is.null(p_threshold)) assertthat::assert_that(all != TRUE) # If all dataframes, then no p_threshold must be given
   
+  pattern = "*.Rdata"
+  if (!all) pattern = paste("_", p_threshold, "_copula.Rdata", sep = "")
+  filenames = paste(in_dir, list.files(in_dir, pattern = pattern), sep = "")
+  
+  cop_df = purrr::map_dfr(filenames, load_rdata)
+  
+  cop_df = cop_df |> 
+    dplyr::mutate(
+      pobs_dur = copula::pobs(duration_min),
+      pobs_peak = copula::pobs(peak),
+      pobs_vol= copula::pobs(volume),
+      .by = unit
+    ) 
+  
+  return(cop_df)
+}
+
+get_long_df = function(
+    in_dir = "../data/output/rdata/threshold_dfs/"
+  ){
+  #TODO: SAME as get_copula_df, but with different path. lol. Just have one function....!
+  "
+  Read all long ('extended') data frames and join to one large one
+  "
+  filenames = paste(in_dir, list.files(in_dir, pattern = "*data"), sep = "")
+
   return(purrr::map_dfr(filenames, load_rdata))
 }
 
@@ -786,18 +815,50 @@ get_syn_scatter = function(ssyn_df, var1_syn, var2_syn, sdf, var1_df, var2_df, s
   return(p)
 }
 
+marginal_fit = function(vec, type){
+  return(extRemes::fevd(vec, type = type))
+}
 
-dspline = function(x, est){
-  # Density function of data using spline basis
-  evd::dgev(x = x, loc = est["loc"], scale = est["scale"], shape = est["shape"])
+dmarginal = function(vec, obj, type = "GEV"){
+  mle = obj$results$par
+  
+  return(
+    extRemes::devd(
+      vec, 
+      loc = mle[["location"]],
+      scale = mle[["scale"]], 
+      shape = mle[["shape"]], 
+      type = type 
+    )
+  )
 }
-qspline = function(p, est){
-  # Quantile function of fitted extreme value distribution
-  unname(evd::qgev(p = p, loc = est["loc"], scale = est["scale"], shape = est["shape"]))
+
+pmarginal = function(vec, obj, type = "GEV"){
+  mle = obj$results$par
+  
+  return(
+    extRemes::pevd(
+      vec, 
+      loc = mle[["location"]],
+      scale = mle[["scale"]], 
+      shape = mle[["shape"]], 
+      type = type 
+    )
+  )
 }
-cspline = function(x, est){
-  # CDF of fitted extreme value distribution
-  unname(evd::pgev(q = x, loc = est["loc"], scale = est["scale"], shape = est["shape"]))
+qmarginal = function(vec, obj, type = "GEV"){
+  mle = obj$results$par
+  
+  return(
+    extRemes::qevd(
+      vec, 
+      loc = mle[["location"]],
+      scale = mle[["scale"]], 
+      shape = mle[["shape"]], 
+      type = type 
+    )
+  )
+  
 }
 
 invPIT = function(name, df, u){
@@ -894,3 +955,130 @@ showcase_copula_contours = function(tau, n_gen_sim = 5000, title = "TODO: Title"
   gen_cont = gens / contours
   return(gen_cont)
 }
+
+savegg = function(
+    filename, 
+    ending = ".png", out_path = "../Präsentation/pictures/", width = 10, height = 8, dpi = 300)
+  {
+  ggsave(
+    paste(out_path, filename, ending, sep = ""),
+    width = width,
+    height = height,
+    dpi = dpi
+  )
+}
+
+fit_nacs = function(cop_df, all_units){
+  nac_fams = list("1" = "Gumbel", "3" = "Clayton", "5" = "Frank")
+  
+  nacs = lapply(
+    all_units,
+    function(name){
+      fit_nac(mat = cop_df |> dplyr::filter(unit == name) |> dplyr::select(contains("pobs")) |> as.matrix(), families = c(1, 3, 5))
+    }
+  )
+  names(nacs) = all_units
+  
+  return(nacs)
+}
+
+
+fit_vines = function(cop_df, all_units){
+  vines = lapply(
+    all_units,
+    function(name) {
+      mat = cop_df |> dplyr::filter(unit == name) |> dplyr::select(contains("pobs")) |> as.matrix() 
+      
+      vine = VineCopula::RVineCopSelect(data = mat, Matrix = assumed_vine_structure, familyset = c(3, 4, 5))
+    }
+  )
+  names(vines) = all_units
+  
+  return(vines)
+}
+
+
+rcond_vine_draws = function(HQ_prob, vine, n_syn = 1000, debug = FALSE){
+  if (debug) browser()
+  # Indices for AFTER drawing the samples
+  idx_dur = 1
+  idx_vol = 2
+  p = 1 - HQ_prob # Use 1 - HQ_prob to use in CDF: CDF = P(X <= x), HQ = P(X > x)
+  
+  bicop_dp = VineCopula::BiCop(family = vine$family[3, 1], par = vine$par[3, 1])
+  bicop_pv = VineCopula::BiCop(family = vine$family[3, 2], par = vine$par[3, 2])
+  bicop_cond_dv = VineCopula::BiCop(family = vine$family[2, 1], par = vine$par[2, 1]) 
+  
+  # Draw samples of conditional probabilities
+  #   Draw u_1|u_2 and u_3|u_2
+  cond_sample = VineCopula::BiCopSim(N = n_syn, obj = bicop_cond_dv)
+  # Inverse conditional probabilities
+  #   Use BiCopHinv2: Inverse of u_1|u_2 --> obtain u_1
+  dur = VineCopula::BiCopHinv2(u1 = cond_sample[, idx_dur], u2 = rep(p, n_syn), bicop_dp) 
+  vol = VineCopula::BiCopHinv2(u1 = cond_sample[, idx_vol], u2 = rep(p, n_syn), bicop_pv)
+  if (debug) plot(dur, vol)
+  return(
+    data.frame(hq_prob = rep(HQ_prob, n_syn), pobs_peak = rep(p, n_syn), pobs_dur = dur, pobs_vol = vol)
+  )
+}
+
+cond_marginal_dens = function(vol_dur_vec, peak, marginal_vol, marginal_dur, marginal_peak, mdl, mdl_type, min = F, factor = 1e3){
+  vol = vol_dur_vec[1]
+  dur = vol_dur_vec[2]
+  
+  uMatrix = cbind(
+    pmarginal(dur, marginal_dur),
+    pmarginal(vol, marginal_vol),
+    pmarginal(peak, marginal_peak)
+  )
+  colnames(uMatrix) = c("pobs_dur", "pobs_vol", "pobs_peak")
+  
+  if (mdl_type == "nac"){
+    copula_density = HAC::dHAC(X = uMatrix, hac = mdl)
+  } else if (mdl_type == "vine") {
+    copula_density = VineCopula::RVinePDF(uMatrix, mdl)
+  }
+  
+  # f(vol, dur | peak) = c(vol, dur, peak) f(vol) f(dur)
+  conditional_marginal_density =  copula_density * dmarginal(vol, marginal_vol) * dmarginal(dur, marginal_dur)
+  
+  if (min) conditional_marginal_density = - factor * conditional_marginal_density
+  return(conditional_marginal_density)
+}
+
+get_most_probable_voldur = function(
+    hq_prob, 
+    mdl, mdl_type,
+    gev_vol, gev_dur, gev_peak, 
+    initial_vol = 0, initial_dur = 0,
+    optimizer = "L-BFGS-B", lower = 1e-5,
+    trace = 1
+    ){
+  # Find most probable combination of vol and dur given a peak value
+  # by maximizing the conditional density (using numerical approach)
+  out = optim(
+    par = c(initial_vol, initial_dur), # Initial values
+    fn = cond_marginal_dens,
+    peak = qmarginal(1 - hq_prob, gev_peak),
+    marginal_vol = gev_vol,
+    marginal_dur = gev_dur,
+    marginal_peak = gev_peak,
+    mdl = mdl, 
+    mdl_type = mdl_type,
+    min = T,
+    method = optimizer,
+    # hessian = T,
+    lower = lower,
+    control = list(
+      trace = trace,
+      maxit = 1e6,
+      factr = 1e2
+    )
+  )
+  vol = out$par[1]
+  dur = out$par[2]
+  return(
+    data.frame(vol = vol, dur = dur, hq_prob = hq_prob)
+  )
+}
+

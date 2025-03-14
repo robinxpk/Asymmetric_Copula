@@ -1,40 +1,112 @@
 # Code to generate plots for presentation 
-
-
-
 # Packages and Dependencies -----------------------------------------------
 source("functions.R")
-source("load_data.R")
 library(ggplot2)
 
-load("../data/output/presentation/pos.Rdata")
-load("../data/output/presentation/rivers.Rdata")
+# Params
+# When (re)running the script, should plots be saved
+save_plots = FALSE
+# Selected station
+station = "München" # Isar
+# station = "Hofkirchen" # Donau
+# station = "Sylvenstein"
+ref_year = 2024
 
-savegg = function(
-    filename, 
-    ending = ".png", out_path = "../Präsentation/pictures/", width = 10, height = 8, dpi = 300)
-  {
-  ggsave(
-    paste(out_path, filename, ending, sep = ""),
-    width = width,
-    height = height,
-    dpi = dpi
-  )
-}
-
-cop_df = get_copula_df()
-df = get_long_df()
-
-
-
-# color y x
+# Color
 color_vol_peak = "lightblue"
 color_vol_dur = "orange"
 color_dur_peak = "lightgreen"
+# Considered rivers 
+considered = c("Isar", "Donau")
 
+# Data
+load("../data/output/presentation/pos.Rdata")
+load("../data/output/presentation/rivers.Rdata")
+
+
+all_cops = get_copula_df(all = TRUE)
+
+cop_df = get_copula_df(p_threshold = 0.75)
+cop_df = cop_df |> dplyr::filter(river %in% considered)
+
+# Station specific data
+id = (cop_df |> dplyr::filter(unit == station))[1, "id"]
+load(paste("../data/output/rdata/threshold_dfs/", id, "_t0.75.Rdata", sep = "")) # loads "df"
+ref_yeardf = df |> dplyr::filter(year == ref_year)
+peak_info = cop_df |> dplyr::filter(year == ref_year, unit == station)
+scop_df = cop_df |> dplyr::filter(unit == station)
+
+# All stations
+# Total number Stations BEFORE filtering
+length(unique(cop_df$unit))
+# Of which have more than 30 observations
+thresh = 30
+obs_status = cop_df |> 
+  dplyr::summarise(
+    n = dplyr::n(),
+    .by = c(river, unit)
+  ) |> 
+  dplyr::mutate(
+    nlarge = n > thresh
+  ) 
+considered_stations = obs_status |> dplyr::filter(nlarge == TRUE)
+removed_stations = obs_status |> dplyr::filter(nlarge == FALSE)
+
+# cop_df only contains stations with more than threshold number of observations
+cop_df = cop_df |> dplyr::filter(unit %in% considered_stations$unit) 
+# Number stations AFTER filtering
+length(unique(cop_df$unit))
+
+all_units = unique(cop_df$unit)
+
+# Number of stations by river
+table(considered_stations$river)
+
+# Grimaldi paper p. 1164 gives their observed tau values
+#   Sadly, they do not really specify which of these rivers it refers to or if its an average or smth
+paper_tau = data.frame(
+  value = rep(c(0.295, 0.462, 0.776), 2),
+  tau = rep(c("Duration - Peak", "Volume - Duration", "Volume - Peak"), 2),
+  river = c(rep("Isar", 3), rep("Donau", 3))
+)
+
+# Correlation table
+# Only Mittenwald has negative correlation. But judging by the scatter plot, it is pretty unclear
+#   This "unclear" is supported by insignificant p-value. Also, consider pseudo-obs. They look like no real dependence at all
+cor_table = cop_df |> dplyr::summarise(
+  n = dplyr::n(),
+  tau_vd = cor(volume, duration_min, method = "kendall"),
+  p_vd = cor.test(volume, duration_min, method = "kendall")$p.value,
+  rej_vd = p_vd < 0.01,
+  tau_vp = cor(volume, peak, method = "kendall"),
+  p_vp = cor.test(volume, peak, method = "kendall")$p.value,
+  rej_vp = p_vp < 0.01,
+  tau_dp = cor(duration_min, peak, method = "kendall"),
+  p_dp = cor.test(duration_min, peak, method = "kendall")$p.value,
+  rej_dp = p_dp < 0.01,
+  .by = c(river, unit)
+)
+
+assumed_vine_structure =  matrix(
+  # 1 - 2 - 3 where: 1:dur, 2:peak, 3:vol
+    c(
+      1, 0, 0,
+      3, 2, 0,
+      2, 3, 3
+    ),
+    nrow = 3, ncol = 3,
+    byrow = TRUE
+  )
+
+# Number of synthetic data points drawn
+n_syn = 1000
+scop_df = cop_df |> dplyr::filter(unit == station)
+
+# Probabilities for HQs
+HQs = c(2, 5, 10, 20, 50, 100, 200, 500) # Return periods
+HQ_probs = 1/HQs # Corresponding probability for return period
 
 # Our considered got drastically reduced, for the presentation at least. So reduce rivers for now
-
 # TODO: Define this function and let it run during load_data when all data available
 # create_and_save_position(
 #   in_dir = 
@@ -47,8 +119,10 @@ color_dur_peak = "lightgreen"
 #   river = river[1],
 #   .by = unit
 # )
-considered = c("Isar", "Donau")
-cop_df = cop_df |> dplyr::filter(river %in% considered)
+# save(pos, file = "../data/output/presentation/pos.Rdata")
+
+
+# Map Parameters ----------------------------------------------------------
 pos_sf = gkd2gg(pos, coord_cols = c("east", "north")) |> 
   dplyr::filter(river %in% considered) |> 
   dplyr::mutate(
@@ -57,12 +131,6 @@ pos_sf = gkd2gg(pos, coord_cols = c("east", "north")) |>
       river == "Donau" ~ "Donau_Station"
     )
   )
-# save(pos, file = "../data/output/presentation/pos.Rdata")
-
-# TODO: Also define a function to get the river stuff and bavaria shape during load_data
-# Here, I only want to read in some files and be done
-
-# Parameter ---------------------------------------------------------------
 
 
 # Get bavaria and its rivers 
@@ -103,6 +171,8 @@ rivers_bayern = rivers_bayern |>
   )
 
 # Data --------------------------------------------------------------------
+
+# Bavaria plots -----------------------------------------------------------
 
 # NOTE: Plots may look super bad in RStudio. I save them using savegg. 
 #   Check the saved file or its look in PowerPoint to judge visual
@@ -165,11 +235,9 @@ ggplot(rivers_bayern) +
       order = 2
     )
   )
-savegg("bayern_rivers")
+if(save_plots) savegg("bayern_rivers")
 
 # Select one station to explain the data process on
-station = "München"
-    
 ggplot(rivers_bayern) + 
   # Displaying the actual data
   # 1) Make background look like map
@@ -237,17 +305,12 @@ ggplot(rivers_bayern) +
       order = 2
     )
   )
-savegg("bayern_river_station_highlighted")
+if(save_plots) savegg("bayern_river_station_highlighted")
+
+
+# Data Process Explained - Munich -----------------------------------------
 
 # Data process explained
-ref_unit = station
-ref_year = 2024
-peak_info = cop_df |> dplyr::filter(year == ref_year, unit == ref_unit)
-
-id = (cop_df |> dplyr::filter(unit == ref_unit))[1, "id"]
-load(paste("../data/output/rdata/threshold_dfs/", id, "_t0.75.Rdata", sep = "")) # loads "df"
-ref_yeardf = df |> dplyr::filter(year == ref_year)
-
 # Descriptives for selected station
 # Number of years
 # As we see later, these are the number of observations we have per station
@@ -289,7 +352,7 @@ ggplot(df) +
     x = expression(Date),
     y = expression(Discharge ~ ( m^3 / s))
   )  
-savegg("station_full_hydrograph", width = 10, height = 5)
+if(save_plots) savegg("station_full_hydrograph", width = 10, height = 5)
 # # Hydrograph per year - stacked
 # ggplot(df, aes(x = doy, y = discharge, group = year)) +
 #   geom_line()
@@ -312,7 +375,7 @@ ggplot(ref_yeardf, aes(x = doy, y = discharge)) +
     x = "Day of the Year",
     y = expression(Discharge ~ ( m^3 / s))
   )
-savegg("hydrograph_munich_2024", width = 10, height = 5)
+if(save_plots) savegg("hydrograph_munich_2024", width = 10, height = 5)
 # We consider the flood event with the highest peak only (following paper here)
 # Flood start and end are obtained by straight line method
 # Identifying using quantile of yearly distribution
@@ -345,8 +408,9 @@ ggplot(mapping = aes(x = doy, y = discharge)) +
     x = "Day of the Year",
     y = expression(Discharge ~ ( m^3 / s))
   )
-savegg("straight_line_method", width = 10, height = 5)
+if(save_plots) savegg("straight_line_method", width = 10, height = 5)
 
+# Values seen:
 cop_df |> dplyr::filter(unit == station, year == ref_year) |> 
   dplyr::select(
     duration_min, peak, volume
@@ -364,11 +428,7 @@ cop_df |> dplyr::filter(unit == station, year == ref_year) |>
 # Potentially also, how we derived them. Maybe put the corresponding plots from README into the appendix and tell the others to ask 
 # -> i.e. questions for asking session
 
-
-
-
-scop_df = cop_df |> dplyr::filter(unit == station)
-
+# Plot Scatter, Bar and tau for Station
 marginal_peak = ggplot(scop_df, aes(x = peak)) +
   geom_histogram(aes(y = ..density..), fill = "blue", alpha = 0.3, color = "black") + 
   labs(
@@ -425,37 +485,13 @@ pairs[3, 3] = marginal_peak +
   theme(axis.ticks.x = element_line())
 # Display 
 pairs
-savegg("munich_marginals", width = 10, height = 5)
-
-# That for every station
-# -> Descriptives over all stations
-# Rivers
-unique(cop_df$river)
-length(unique(cop_df$river))
-
-# Total number Stations
-length(unique(cop_df$unit))
-# Of which have more than 30 observations
-thresh = 30
-considered_stations = cop_df |> 
-  dplyr::summarise(
-    n = dplyr::n(),
-    .by = c(river, unit)
-  ) |> 
-  dplyr::mutate(
-    nlarge = n > thresh
-  ) |> 
-  dplyr::filter(nlarge == TRUE)
+if(save_plots) savegg("munich_marginals", width = 10, height = 5)
 
 
-# cop_df only contains stations with more than threshold number of observations
-cop_df = cop_df |> dplyr::filter(unit %in% considered_stations$unit) 
 
-# Number of stations by river
-table(considered_stations$river)
+# All Stations - Table ----------------------------------------------------
 # Majority of stations have 54 observations, only 2 have below 50: 44 and 48 observations
 table(considered_stations$n)
-
 
 print(paste("Total number of flood events:", cop_df |> nrow()))
 
@@ -477,35 +513,8 @@ cop_df |> dplyr::filter(volume %in% c(6824363400, 1808050500)) |> dplyr::mutate(
 cop_df |> dplyr::mutate(duration_days = duration_min / 60 / 24) |> dplyr::filter(duration_days > 87)
 
 
-
-# TODO
-# > Appendix: Hydrographen für die Tabellen-Events
-# > Wie funktioniert extRemes; kann ich damit inverse bilden?
-# > Trivariate Bestimmung der HQ 1, 2, (5,) 10, 20, 50, 100
-# > Darstellung für most probable pair aus paper übernehmen
-# > Taildependencies in results
-# > Taildependence in intro: 
-#   Difference Taildependence and heavy tail in distribution
-
-# > WENN ZEIT: 
-
+# All Stations - Corr Boxplots --------------------------------------------
 # -> Taus Boxplots (correlation tiles already hinted towards this behavior)
-# Correlation table
-# Only Mittenwald has negative correlation. But judging by the scatter plot, it is pretty unclear
-#   This "unclear" is supported by insignificant p-value. Also, consider pseudo-obs. They look like no real dependence at all
-cor_table = cop_df |> dplyr::summarise(
-  n = dplyr::n(),
-  tau_vd = cor(volume, duration_min, method = "kendall"),
-  p_vd = cor.test(volume, duration_min, method = "kendall")$p.value,
-  rej_vd = p_vd < 0.01,
-  tau_vp = cor(volume, peak, method = "kendall"),
-  p_vp = cor.test(volume, peak, method = "kendall")$p.value,
-  rej_vp = p_vp < 0.01,
-  tau_dp = cor(duration_min, peak, method = "kendall"),
-  p_dp = cor.test(duration_min, peak, method = "kendall")$p.value,
-  rej_dp = p_dp < 0.01,
-  .by = c(river, unit)
-)
 # Boxplot
 cor_table |> 
   tidyr::pivot_longer(
@@ -515,7 +524,7 @@ cor_table |>
   ) |> 
   dplyr::mutate(
     tau = dplyr::case_when(
-      tau == "tau_dp" ~ "Duration-Peak",
+      tau == "tau_dp" ~ "Duration - Peak",
       tau == "tau_vd" ~ "Volume - Duration",
       tau == "tau_vp" ~ "Volume - Peak"
     ),
@@ -523,6 +532,7 @@ cor_table |>
   ) |> 
   ggplot() + 
   geom_boxplot(aes(y = val, x = tau, color = tau)) + 
+  geom_point(data = paper_tau, aes(y = value, x = tau), color = "black", alpha = 0.7) + # Add paper taus
   geom_hline(yintercept = 0, linetype = 2) + 
   theme(
     legend.position = "none",
@@ -539,8 +549,50 @@ cor_table |>
   ) + 
   ylim(-0.12, 1) + 
   facet_wrap(~ river )
-savegg("tau_boxplots", width = 15, height = 5)
+if(save_plots) savegg("tau_boxplots", width = 15, height = 5)
 
+# Dependence structure by threshold
+all_cops |> dplyr::summarise(
+  n = dplyr::n(),
+  tau_vd = cor(volume, duration_min, method = "kendall"),
+  tau_vp = cor(volume, peak, method = "kendall"),
+  tau_dp = cor(duration_min, peak, method = "kendall"),
+  .by = c(river, unit, p_threshold)
+) |> 
+  dplyr::filter(n > 30, river == "Donau") |> 
+  tidyr::pivot_longer(
+    cols = c(tau_vd, tau_vp, tau_dp),
+    names_to = "tau",
+    values_to = "val"
+  ) |> 
+  dplyr::mutate(
+    tau = dplyr::case_when(
+      tau == "tau_dp" ~ "Duration - Peak",
+      tau == "tau_vd" ~ "Volume - Duration",
+      tau == "tau_vp" ~ "Volume - Peak"
+    ),
+    tau = as.factor(tau)
+  ) |> 
+  ggplot() + 
+  geom_line(aes(y = val, x = p_threshold, color = tau)) + 
+  # geom_point(data = paper_tau, aes(y = value, x = p_), color = "black", alpha = 0.7) + # Add paper taus
+  geom_hline(yintercept = 0, linetype = 2) + 
+  theme(
+    legend.position = "none",
+    strip.text = element_text(size = 15)
+  ) + 
+  labs(
+    y = latex2exp::TeX("$ \\widehat{\\tau}$"),
+    x = ""
+  ) + 
+  theme(
+    title = element_text(size = 20),
+    axis.text = element_text(size = 15),
+    axis.title = element_text(size = 20)
+  ) +
+  ylim(-0.12, 1) + 
+  facet_wrap(~ unit)
+if (save_plots) savegg("tau_for_different_thresholds")
 
 
 # Methods -----------------------------------------------------------------
@@ -548,9 +600,240 @@ savegg("tau_boxplots", width = 15, height = 5)
 tau = list(low = 0.1, high = 0.7)
 source("functions.R")
 showcase_copula_contours(tau$low, title = latex2exp::TeX(paste("Copula Families ($\\tau =", tau$low, "$)")), textsize_lab = 20, textsize_tick = 10, textsize_strip = 10)
-savegg("CopFams_lowtau", width = 10, height = 5)
+if(save_plots) savegg("CopFams_lowtau", width = 10, height = 5)
 showcase_copula_contours(tau$high, title = latex2exp::TeX(paste("Copula Families ($\\tau =", tau$high, "$)")), textsize_lab = 20, textsize_tick = 10, textsize_strip = 10)
-savegg("CopFams_hightau", width = 10, height = 5)
+if(save_plots) savegg("CopFams_hightau", width = 10, height = 5)
+
+
+
+# Simulation --------------------------------------------------------------
+
+
+# Results -----------------------------------------------------------------
+# TODO
+# > Taildependencies in results
+# > Taildependence in intro: 
+#   Difference Taildependence and heavy tail in distribution
+
+
+# Fit Copulas -------------------------------------------------------------
+# NACs
+nacs = fit_nacs(cop_df, all_units)
+# Vines
+vines = fit_vines(cop_df, all_units)
+
+# Visual GoF judging by SynData -------------------------------------------
+
+
+
+# Tail dependence analysis ------------------------------------------------
+vines
+
+
+# Extension of Hydrology lecture to trivariate ----------------------------
+# Compare probability of event univariate (HQ only) vs trivariate 
+# -> Extension of hydrology lecture
+# Contour plots
+x = seq(from = 0.01, to = 0.99, length.out = 50)
+y = seq(from = 0.01, to = 0.99, length.out = 50)
+density_grid = expand.grid(x = x, y = y)
+
+# df containing density values over a grid
+plot_dfs = lapply(
+  all_units,
+  function(name) get_density_values(vines[[name]], density_grid, name)
+)
+plot_df = plot_dfs |> dplyr::bind_rows()
+# Station specfic
+splot_df = plot_df |> dplyr::filter(unit == station)
+
+# Synthetic data
+syn_dfs = lapply(
+  all_units,
+  function(name) get_synthetic_data(vines[[name]], n_syn, name)
+)
+syn_df = syn_dfs |> dplyr::bind_rows()
+ssyn_df = syn_df |> dplyr::filter(unit == station)
+
+p1 = get_contour("z12", splot_df, scop_df, "pobs_dur", "pobs_peak")
+p2 = get_contour("z23", splot_df, scop_df, "pobs_peak", "pobs_vol")
+p3 = get_contour("z13_2", splot_df, scop_df, "pobs_dur", "pobs_vol")
+# Synthetic data on [0, 1]
+p4 = get_syn_scatter(ssyn_df, "pobs_dur", "pobs_peak", scop_df, "pobs_dur", "pobs_peak")
+p5 = get_syn_scatter(ssyn_df, "pobs_peak", "pobs_vol", scop_df, "pobs_peak", "pobs_vol")
+p6 = get_syn_scatter(ssyn_df, "pobs_dur", "pobs_vol", scop_df, "pobs_dur", "pobs_vol")
+
+p = (p1 | p2 | p3) / 
+    (p4 | p5 | p6)
+plot(p)
+
+# Mark last flood in here
+last_flood = scop_df |> 
+  dplyr::filter(year == max(scop_df$year))
+
+p1 = get_contour("z12", splot_df, scop_df, "pobs_dur", "pobs_peak") + geom_point(data = last_flood, aes(x = pobs_dur, y = pobs_peak), color = "red")
+p2 = get_contour("z23", splot_df, scop_df, "pobs_peak", "pobs_vol") + geom_point(data = last_flood, aes(x = pobs_peak, y = pobs_vol), color = "red")
+p3 = get_contour("z13_2", splot_df, scop_df, "pobs_dur", "pobs_vol") + geom_point(data = last_flood, aes(x = pobs_dur, y = pobs_vol), color = "red")
+p = (p1 | p2 | p3)
+plot(p)
+
+
+# P(X>x, Y>y, Z>z)
+syn_vals = ssyn_df |> dplyr::select(pobs_dur, pobs_peak, pobs_vol)  
+thresh_vals = c(last_flood$pobs_dur, last_flood$pobs_peak, last_flood$pobs_vol)
+# Idea: Use threshold from last flood
+# For every entry in synthetic data, check if value is larger corresponding threshold
+# If all three (rowsum) are larger than their thresholds, they are an occurance of X>x, Y>y, Z>z
+# Determine frequence of these events
+prob = sum(rowSums(syn_vals >= thresh_vals) == 3) / nrow(ssyn_df)
+
+print(paste("Probability of this event P(P <= p, V <= v, D <= d)", prob))
+
+# Compared to if only marginal
+# Approach from hydrology lecture: extReme package and fit gevd 
+gev_peak = marginal_fit(scop_df$peak, type = "GEV")
+# According to univariate approach:
+#   Probability of this event or a more severe flood occuring
+1 - pmarginal(last_flood$peak, gev_peak)
+# -> Big difference in probability --> Underline relevance of trivariate analysis 
+
+
+# Volume - Duration pairs for HQ values -----------------------------------
+# IMPORTANT: This analysis is STATION specific
+# Marginals:
+gev_vol = marginal_fit(scop_df$volume / 1e6, type = "GEV")
+gev_dur = marginal_fit(scop_df$duration_min / 60 / 24, type = "GEV")
+
+
+# 
+# # Use HQ return period bzw. resulting probabilities as pobs_peak to condition on
+# HQ_probs
+# # Draw random sample from conditional copula and get inverse to unconditional 
+# cons_vine = lapply(
+#   HQ_probs,
+#   function(HQ_prob) rcond_vine_draws(HQ_prob, vines[[station]]) |> 
+#     dplyr::mutate(
+#       peak = qmarginal(pobs_peak, gev_peak),
+#       mio_vol= qmarginal(pobs_vol, gev_vol),
+#       d_dur = qmarginal(pobs_dur, gev_dur)
+#     )
+# )  |> 
+#   dplyr::bind_rows()
+# 
+# con_vine_smry = cons_vine |> 
+#   dplyr::summarise(
+#     avg_vol = mean(mio_vol),
+#     med_vol = median(mio_vol),
+#     mod_vol = "",
+#     avg_dur = mean(d_dur),
+#     med_dur = median(d_dur),
+#     mod_dur = "",
+#     cop = "vine",
+#     .by = hq_prob
+#   )
+
+
+
+
+
+
+# Initial values:
+# München: nac: vol = 400, dur = 20 --- vines: vol = 500, dur = 20
+con_nac_smry = lapply(
+  HQ_probs,
+  function(hq_prob) get_most_probable_voldur(
+      hq_prob = hq_prob,
+      initial_vol = 0,
+      initial_dur = 0,
+      gev_vol = gev_vol,
+      gev_dur = gev_dur,   
+      gev_peak = gev_peak,
+      mdl = nacs[[station]],
+      mdl_type = "nac",
+      trace = 0
+    )
+) |> 
+  dplyr::bind_rows() |> 
+  dplyr::mutate(type = "nac")
+con_nac_smry
+
+con_vine_smry = lapply(
+  HQ_probs,
+  function(hq_prob) get_most_probable_voldur(
+      hq_prob = hq_prob,
+      initial_vol = 500,
+      initial_dur = 20,
+      gev_vol = gev_vol,
+      gev_dur = gev_dur,   
+      gev_peak = gev_peak,
+      mdl = vines[[station]],
+      mdl_type = "vine",
+      trace = 0
+    )
+) |> 
+  dplyr::bind_rows() |> 
+  dplyr::mutate(type = "vine")
+con_vine_smry
+
+con_smry = rbind(
+  con_vine_smry,
+  con_nac_smry
+) |> dplyr::mutate(HQ = 1 / hq_prob, .after = hq_prob)
+con_smry
+
+# Check somewhat of bivariate quantile
+#   Sort observed data by volume and duration
+#   Select empirical quantiles of this and plot it to get a feeling of which one is a better fit
+checkpoints = scop_df |> 
+  dplyr::arrange(
+    volume, duration_min
+    # duration_min, volume
+  ) |> 
+  dplyr::mutate(
+    idx = dplyr::row_number()
+  ) |> 
+  dplyr::filter(
+    idx %in% ceiling((1 - HQ_probs) * nrow(scop_df))
+  )
+
+
+ggplot(con_smry) + 
+  geom_line(aes(x = vol, y = dur, group = type)) +
+  geom_point(aes(x = vol, y = dur, shape = type)) +
+  geom_label(aes(x = vol, y = dur, label = 1 / hq_prob)) +
+  geom_point(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60), color = "red") + 
+  facet_wrap(~type)
+# Vines capture underlying data way better than NACs. 
+# According to NACs, our data contains multiple flood events that were more severe than a 
+# flood with a HQ200 which triplet of (vol, peak, dur) would only appear every 200 years
+# BUT also vines have some odd observations where we have seemed to observe a triplet that would onyl appear every 500 years
+# The flood event is:
+scop_df |> dplyr::filter(volume == max(volume))
+# A potential reason for this might be that our model does not capture the effect of climate change
+# It assumes a time constant dependence structure / copula and thus may underestimate probabilities of 
+# extreme events if they become more probable over time (due to climate change)
+# Check flood behavior over time:
+scop_df |> 
+  ggplot() + 
+  geom_line(aes(x = year, y = volume / 1e6)) 
+# Nope, there is no real time trend I'd say....
+
+
+
+
+
+
+# Beobachtete Daten, um Werte zu checken:
+summary(scop_df$volume / 1e6)
+summary(scop_df$duration_min / 24 / 60)
+summary(scop_df$peak)
+
+
+cop_df |> 
+  dplyr::summarise(
+    vol_quant50 = quantile(volume, 0.5) / 1e6,
+    .by = c(river, unit)
+  ) 
 
 
 
@@ -586,7 +869,7 @@ plot_pd = ggplot(cop_df |> dplyr::filter(unit == "München"), aes(y = peak, x = 
 
 plot_all3 = plot_vp | plot_vd | plot_pd
 plot_all3
-savegg("Appendix_munichstation_scatter", width = 10, height = 5)
+if(save_plots) savegg("Appendix_munichstation_scatter", width = 10, height = 5)
 
 # Munich station scatterplots
 # y: Volume, x: Peak
@@ -618,4 +901,13 @@ plot_pd = ggplot(cop_df |> dplyr::filter(unit == "Mittenwald"), aes(y = peak, x 
 
 plot_all3 = plot_vp | plot_vd | plot_pd
 plot_all3
-savegg("Appendix_mittenwaldstation_scatter", width = 10, height = 5)
+if(save_plots) savegg("Appendix_mittenwaldstation_scatter", width = 10, height = 5)
+
+# Marginal fits using extReme-package
+plot(gev_peak, type = "density")
+plot(gev_vol, type = "density")
+plot(gev_dur, type = "density")
+
+
+# TODO
+# > Appendix: Hydrographen für die Tabellen-Events

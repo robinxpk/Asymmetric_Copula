@@ -331,7 +331,7 @@ write_log = function(logfilepath, logmessage){
 apply_and_save_slm = function(
     in_dir = "../data/output/rdata/extended_dfs/",
     out_dir = "../data/output/rdata/threshold_dfs/",
-    p_threshold = c(.5, .75, .95) # TODO: Make it deal with multiple thresholds; just create different dfs and safe as DF_tXX.Rdata
+    p_thresholds = c(.5, .75, .95) # TODO: Make it deal with multiple thresholds; just create different dfs and safe as DF_tXX.Rdata
   ){
   "
   This function applies the logic in the straight line method to multiple data frames to identify the year's most extreme flood event.
@@ -361,25 +361,27 @@ apply_and_save_slm = function(
   
   # Iterate through all filenames
   for (filename in filenames){
-    # Load the df in the Rdata files. These are the data frame produced by create_and_save_dfs
-    load(paste(in_dir, filename, sep = ""))
-    
-    # Add p to identify quantile value
-    df = df |> dplyr::mutate(p_threshold = p_threshold)
-    # A df contains all observations 
-    # Here, we split the observations by year and determine the most extreme flood event
-    df = df |>
-      dplyr::group_by(year) |>
-      # This part takes each sub-data.frame (grouped by year) and applies the straight line method (via function apply_slm_quants)
-      # Theapply_slm_quants return a df containing the original columns and the column peak_flood indicating if flood was most extreme
-      dplyr::group_modify(~ apply_slm_quants(.x, p_threshold = p_threshold, plot = F)) |>
-      # Join sub-data.frames into one big one containing all years
-      dplyr::ungroup()
-    
-    # Save the data frames with the addition _t followed by the p used to determine the quantile
-    #   _t: means "threshold" and the following p denotes the used p-th quantile used to identify the most extreme flood
-    df_filename = paste(unique(df$id), "_t", p_threshold, ".Rdata", sep = "")
-    save(df, file = paste(out_dir, df_filename, sep = ""))
+    for (p_threshold in p_thresholds){
+      # Load the df in the Rdata files. These are the data frame produced by create_and_save_dfs
+      load(paste(in_dir, filename, sep = ""))
+      
+      # Add p to identify quantile value
+      df = df |> dplyr::mutate(p_threshold = p_threshold)
+      # A df contains all observations 
+      # Here, we split the observations by year and determine the most extreme flood event
+      df = df |>
+        dplyr::group_by(year) |>
+        # This part takes each sub-data.frame (grouped by year) and applies the straight line method (via function apply_slm_quants)
+        # Theapply_slm_quants return a df containing the original columns and the column peak_flood indicating if flood was most extreme
+        dplyr::group_modify(~ apply_slm_quants(.x, p_threshold = p_threshold, plot = F)) |>
+        # Join sub-data.frames into one big one containing all years
+        dplyr::ungroup()
+      
+      # Save the data frames with the addition _t followed by the p used to determine the quantile
+      #   _t: means "threshold" and the following p denotes the used p-th quantile used to identify the most extreme flood
+      df_filename = paste(unique(df$id), "_t", p_threshold, ".Rdata", sep = "")
+      save(df, file = paste(out_dir, df_filename, sep = ""))
+    }
   }
 }
 
@@ -432,7 +434,7 @@ create_and_save_hydrographs <- function(
     plots = df |> dplyr::group_split(year) |> purrr::map(create_hydrograph) 
     
     # Assign graph names to each output graph
-    graphnames = paste0(out_dir, unique(df$id), "_", 1:length(plots), ".png", sep = "")
+    graphnames = paste0(out_dir, df$id[[1]], "_p", df$p_threshold[[1]], "_", 1:length(plots), ".png", sep = "")
     # We have a list of graphs and a list of names. Use both and the ggsave function to save the graphs in the output dir
     purrr::walk2(graphnames, plots, ggsave)
   }
@@ -638,7 +640,7 @@ create_and_save_copula_dfs = function(
     cop_df = create_copula_df(df)
     
     # Filename to save df in
-    df_filename = paste(unique(df$id), "_copula.Rdata", sep = "")
+    df_filename = paste(df$id[[1]], "_", df$p_threshold[[1]], "_copula.Rdata", sep = "")
     # Save df in output path
     save(cop_df, file = paste(out_dir, df_filename, sep = ""))
   }
@@ -652,28 +654,28 @@ load_rdata = function(filepath){
   get(ls(env)[1], envir = env)
 }
 
-get_copula_df = function(
-    in_dir = "../data/output/rdata/copula_dfs/"
-  ){
-  "
-  Read all copula dfs and join them to one large copula df
-  "
-  filenames = paste(in_dir, list.files(in_dir, pattern = "*data"), sep = "")
-  
-  return(purrr::map_dfr(filenames, load_rdata))
-}
-
-get_long_df = function(
-    in_dir = "../data/output/rdata/threshold_dfs/"
-  ){
-  #TODO: SAME as get_copula_df, but with different path. lol. Just have one function....!
-  "
-  Read all long ('extended') data frames and join to one large one
-  "
-  filenames = paste(in_dir, list.files(in_dir, pattern = "*data"), sep = "")
-  
-  return(purrr::map_dfr(filenames, load_rdata))
-}
+# get_copula_df = function(
+#     in_dir = "../data/output/rdata/copula_dfs/"
+#   ){
+#   "
+#   Read all copula dfs and join them to one large copula df
+#   "
+#   filenames = paste(in_dir, list.files(in_dir, pattern = "*data"), sep = "")
+#   
+#   return(purrr::map_dfr(filenames, load_rdata))
+# }
+# 
+# get_long_df = function(
+#     in_dir = "../data/output/rdata/threshold_dfs/"
+#   ){
+#   #TODO: SAME as get_copula_df, but with different path. lol. Just have one function....!
+#   "
+#   Read all long ('extended') data frames and join to one large one
+#   "
+#   filenames = paste(in_dir, list.files(in_dir, pattern = "*data"), sep = "")
+# 
+#   return(purrr::map_dfr(filenames, load_rdata))
+# }
 
 # TODO: Did not run this function yet... ever. Will take quite some time!
 create_dfs = function(
@@ -691,6 +693,7 @@ create_dfs = function(
   
   # Create extended data frames for all CSVs
   create_and_save_dfs(in_dir = data_path, out_dir = extended_dfs_path)
+  
   # Plot of complete cases
   if (evalCompleteness) evaluateCompleteness(in_dir = extended_dfs_path)
   
@@ -699,10 +702,10 @@ create_dfs = function(
   apply_and_save_slm(in_dir = extended_dfs_path, out_dir = threshold_dfs_path, p_threshold = p_threshold)
   
   # Create hydrograph plots for every station and every year so I can go through them and check if it worked
-  if (hydros) create_and_save_hydrographs(in_dir = threshold_dfs_path, out_dir = hydrograph_path)
+  if (hydros) create_and_save_hydrographs(in_dir = threshold_dfs_path, out_dir = hydrograph_path) # TODO: Merge Hydrographs for thresholds into one plot and fix the ugly ass solution of what I called a plot. wtf.
   
   # Create and save all the data frames containing the info for copula determination
-  create_and_save_copula_dfs(in_dir = extended_dfs_path, out_dir = copula_dfs_path)
+  create_and_save_copula_dfs(in_dir = threshold_dfs_path, out_dir = copula_dfs_path)
   
   if (debug){
     # Summary statistics (discharge distribution)
@@ -711,6 +714,7 @@ create_dfs = function(
     ggplot(sum_df, aes(x = unit)) + geom_boxplot(aes(y = n))
   }
 }
+# create_dfs(p_threshold = c(.8, .9, .95), hydros = T)
 
 # # Isar data only
 # # create_and_save_dfs(in_dir = "../data/isar data/bis311224/", out_dir = "../data/output/rdata/extended_dfs/")
