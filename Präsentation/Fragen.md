@@ -1,0 +1,2 @@
+- Critique on Flood definition; Can answer with the correlation plots and maybe some examples where it worked really well and where it worked badly. But due to number of stations we had, we used that solution
+- Could you again go into how the u values are obtained from the observed value (re-explain PIT)
