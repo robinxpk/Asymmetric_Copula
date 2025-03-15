@@ -7,3 +7,5 @@ Also, paper has this plot for varying thresholds and how correlation behaves. Di
 - In case I do not put tau estimates for AC given NAC into PP, ask if we could reproduce the paper's AC NAC ratio
     ("You applied this to NAC vs Vines, paper mentions this ratio, could you reproduce it?)
 - Save too much for slides. Put some into backup
+- First, you used empirical PIT, then used parametric fit / parametric quantile function. Why change approaches (probably not ask-able bc I wont mention that first PIT is empircal. lol)
+- (If we only show summary of simulation) Explain how you used simulation to show that NACs overestimate the dependence strength (correlation value)

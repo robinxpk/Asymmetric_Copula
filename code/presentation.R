@@ -662,7 +662,7 @@ all_res_nacs |>
   geom_line(aes(y = paper_ratio, x = x), color = "red") + 
   theme_minimal() +
   facet_grid(river ~ n, scale = "free_x", axes = "margins")
-savegg("paper ratio confirmed", width = 10, height = 5)
+if (save_plots) savegg("paper ratio confirmed", width = 10, height = 5)
 # Each column contains 9k observations
 # Length of river differ: 
 #   I drew correlation structure on random as it was easier to implement. Especially in the vine case 
@@ -677,45 +677,105 @@ addmargins(with(all_res_nacs, table(river, n)))
 
 
 # Vine Sim ----------------------------------------------------------------
+all_res_vines = read_dep_files(true_dep = "vine", in_dir = "../data/simulation/") |>
+  dplyr::mutate(
+    true_famname_12 = get_vine_famname(true_fam_12),
+    true_famname_13 = get_vine_famname(true_fam_13),
+    true_famname_23 = get_vine_famname(true_fam_23),
+    famcomb = as.factor(
+      paste(
+        substr(true_famname_12, start = 1, stop = 1),
+        substr(true_famname_23, 1, 1),
+        substr(true_famname_13, 1, 1),
+        sep = "-"
+      )
+    )
+  )
 
+all_res_vines |>
+    dplyr::select(n, river, contains("_kl")) |>
+    tidyr::pivot_longer(
+      cols = contains("_kl"),
+      names_to = "dep",
+      values_to = "kld"
+    ) |>
+  dplyr::filter(dep != "ac_kl") |> # Remove AC density cause nobody cares for AC
+  ggplot() +
+  geom_density(aes(x = kld, fill = dep), color = "black", alpha = 0.3) +
+  facet_wrap(~ river, scale = "free") +
+  geom_vline(xintercept = 0, color = "black") + 
+  labs(
+    title = "Vine DGP: KLD by Correlation Values",
+    x = "Kullback Leibler Divergence",
+    y = "Density"
+  ) +
+  theme(
+    title = element_text(size = 20),
+    axis.text = element_text(size = 15),
+    axis.title = element_text(size = 20),
+    legend.text = element_text(size = 15)  # Increase legend text size
+  ) +
+  theme(
+    legend.position = "top",
+    strip.text = element_text(size = 15)
+  ) +
+  scale_fill_manual(
+    name = "Model", 
+    values = c("ac_kl" = "red", "nac_kl" = "green", "vine_kl" = "blue"),
+    labels = c("ac_kl" = "ac", "nac_kl" = "nac", "vine_kl" = "vine")
+  )
+if (save_plots) savegg("sim_VineDGP_kld", width = 10, height = 5)
+
+
+
+all_res_vines |> 
+  dplyr::mutate(
+    x = dplyr::row_number(),
+    .by = c(river, n)
+  ) |> 
+  ggplot() +
+  geom_line(aes(y = true_tau_12, x = x)) + 
+  geom_line(aes(y = true_tau_23, x = x)) + 
+  geom_line(aes(y = true_tau_13, x = x)) + 
+  geom_line(aes(y = nac_tau_outer, x = x), color = "blue", alpha = 0.4) + 
+  geom_line(aes(y = nac_tau_inner, x = x), color = "red", alpha = 0.4) + 
+  facet_grid(river ~ n, scale = "free_x")
+if (save_plots) savegg("VineDGP_NACs applied Lineplot", width = 10, height = 5)
+
+
+all_res_vines |> 
+  dplyr::mutate(
+    inner_large = nac_tau_inner / true_tau_12, # tau_12 is largest (tree: 1 - 2 - 3)
+    outer_med = nac_tau_outer / true_tau_23, # tau_23 is 2nd largest / medium dependence strength
+    outer_small = nac_tau_outer / true_tau_13,
+    .b = river
+  ) |> 
+  tidyr::pivot_longer(
+    cols = c(inner_large, outer_med, outer_small),
+    values_to = "val",
+    names_to = "nest"
+  ) |> 
+  ggplot() + 
+  geom_boxplot(aes(y = val, color = nest)) + 
+  geom_hline(yintercept = 1, alpha = .7, linetype = 2) + 
+  facet_grid(river ~ n)
+if (save_plots) savegg("VineDGP_NACs applied Boxplot", width = 10, height = 5)
 
 # Results -----------------------------------------------------------------
-# TODO
-# > Taildependencies in results
-# > Taildependence in intro: 
-#   Difference Taildependence and heavy tail in distribution
-
-
-# Fit Copulas -------------------------------------------------------------
 # NACs
 nacs = fit_nacs(cop_df, all_units)
 # Vines
 vines = fit_vines(cop_df, all_units)
 
-# Visual GoF judging by SynData -------------------------------------------
-
-
-
-# Tail dependence analysis ------------------------------------------------
-vines
-
-
-# Extension of Hydrology lecture to trivariate ----------------------------
-# Compare probability of event univariate (HQ only) vs trivariate 
-# -> Extension of hydrology lecture
-# Contour plots
+# Density plot df
 x = seq(from = 0.01, to = 0.99, length.out = 50)
 y = seq(from = 0.01, to = 0.99, length.out = 50)
 density_grid = expand.grid(x = x, y = y)
-
-# df containing density values over a grid
 plot_dfs = lapply(
   all_units,
   function(name) get_density_values(vines[[name]], density_grid, name)
 )
 plot_df = plot_dfs |> dplyr::bind_rows()
-# Station specfic
-splot_df = plot_df |> dplyr::filter(unit == station)
 
 # Synthetic data
 syn_dfs = lapply(
@@ -723,30 +783,326 @@ syn_dfs = lapply(
   function(name) get_synthetic_data(vines[[name]], n_syn, name)
 )
 syn_df = syn_dfs |> dplyr::bind_rows()
-ssyn_df = syn_df |> dplyr::filter(unit == station)
 
-p1 = get_contour("z12", splot_df, scop_df, "pobs_dur", "pobs_peak")
-p2 = get_contour("z23", splot_df, scop_df, "pobs_peak", "pobs_vol")
-p3 = get_contour("z13_2", splot_df, scop_df, "pobs_dur", "pobs_vol")
-# Synthetic data on [0, 1]
-p4 = get_syn_scatter(ssyn_df, "pobs_dur", "pobs_peak", scop_df, "pobs_dur", "pobs_peak")
-p5 = get_syn_scatter(ssyn_df, "pobs_peak", "pobs_vol", scop_df, "pobs_peak", "pobs_vol")
-p6 = get_syn_scatter(ssyn_df, "pobs_dur", "pobs_vol", scop_df, "pobs_dur", "pobs_vol")
+### Station specfic
 
-p = (p1 | p2 | p3) / 
-    (p4 | p5 | p6)
-plot(p)
+# Marginal GEV fits
+gev_peak = marginal_fit(scop_df$peak, type = "GEV")
+gev_vol = marginal_fit(scop_df$volume / 1e6, type = "GEV")
+gev_dur = marginal_fit(scop_df$duration_min / 60 / 24, type = "GEV")
 
-# Mark last flood in here
+# countour and syn data dfs
+splot_df = plot_df |> dplyr::filter(unit == station)
+ssyn_df = syn_df |> 
+  dplyr::filter(unit == station) |> 
+  dplyr::mutate(
+    dur = qmarginal(pobs_dur, gev_dur),
+    vol = qmarginal(pobs_vol, gev_vol),
+    peak = qmarginal(pobs_peak, gev_peak)
+  )
+  
+
+# Last recorded flood for the station of choice
 last_flood = scop_df |> 
   dplyr::filter(year == max(scop_df$year))
 
-p1 = get_contour("z12", splot_df, scop_df, "pobs_dur", "pobs_peak") + geom_point(data = last_flood, aes(x = pobs_dur, y = pobs_peak), color = "red")
-p2 = get_contour("z23", splot_df, scop_df, "pobs_peak", "pobs_vol") + geom_point(data = last_flood, aes(x = pobs_peak, y = pobs_vol), color = "red")
-p3 = get_contour("z13_2", splot_df, scop_df, "pobs_dur", "pobs_vol") + geom_point(data = last_flood, aes(x = pobs_dur, y = pobs_vol), color = "red")
+
+# Visual GoF judging by SynData -------------------------------------------
+vine = vines[[station]]
+# Contour plots
+p1 = get_contour(
+  rel = "z12", 
+  splot_df = splot_df, 
+  sdf = scop_df, 
+  varx = "pobs_dur", 
+  vary = "pobs_peak", 
+  title = "Peak - Duration [G]", 
+  y_lab = "P.Obs. Peak",
+  # x_lab = "P.Obs. Duration",
+  x_lab = "",
+  bwidth = 0.1,
+  contour_alpha = 0.7
+) 
+p2 = get_contour(
+  rel = "z23", 
+  splot_df = splot_df, 
+  sdf = scop_df, 
+  varx = "pobs_peak", 
+  vary = "pobs_vol", 
+  title = "Volume - Peak [G]", 
+  y_lab = "P.Obs. Volume",
+  # x_lab = "P.Obs. Duration",
+  x_lab = "",
+  bwidth = 0.1,
+  contour_alpha = 0.7
+) 
+p3 = get_contour(
+  rel = "z13_2", 
+  splot_df = splot_df, 
+  sdf = scop_df, 
+  varx = "pobs_dur", 
+  vary = "pobs_vol", 
+  title = "Volume - Duration | Peak [SG]", 
+  y_lab = "P.Obs. Volume",
+  # x_lab = "P.Obs. Duration",
+  x_lab = "",
+  bwidth = 0.1,
+  contour_alpha = 0.7
+) 
+# Synthetic data on [0, 1]
+p4 = get_syn_scatter(
+  ssyn_df = ssyn_df, 
+  varx_syn = "pobs_dur", 
+  vary_syn = "pobs_peak", 
+  sdf = scop_df, 
+  varx_df = "pobs_dur", 
+  vary_df = "pobs_peak", 
+  x_lab = "P.Obs. Duration",
+  y_lab = "P.Obs. Peak",
+  syn_alpha = 0.8,
+  x_min = 0,
+  x_max = 1,
+  y_min = 0,
+  y_max = 1
+)
+p5 = get_syn_scatter(
+  ssyn_df = ssyn_df, 
+  varx_syn = "pobs_peak", 
+  vary_syn = "pobs_vol", 
+  sdf = scop_df, 
+  varx_df = "pobs_peak", 
+  vary_df = "pobs_vol", 
+  x_lab = "P.Obs. Peak",
+  y_lab = "P.Obs. Volume",
+  syn_alpha = 0.8,
+  x_min = 0,
+  x_max = 1,
+  y_min = 0,
+  y_max = 1
+)
+p6 = get_syn_scatter(
+  ssyn_df = ssyn_df, 
+  varx_syn = "pobs_dur", 
+  vary_syn = "pobs_vol", 
+  sdf = scop_df, 
+  varx_df = "pobs_dur", 
+  vary_df = "pobs_vol", 
+  x_lab = "P.Obs. Duration",
+  y_lab = "P.Obs. Volume",
+  syn_alpha = 0.8,
+  x_min = 0,
+  x_max = 1,
+  y_min = 0,
+  y_max = 1
+)
+# Synthetic data on marginals
+p7 = get_syn_scatter(
+  ssyn_df = ssyn_df, 
+  varx_syn = "dur", 
+  vary_syn = "peak", 
+  scop_df |> dplyr::mutate(duration_d = duration_min / 24 / 60), 
+  varx_df = "duration_d", 
+  vary_df = "peak",
+  x_lab = "Duration (days)",
+  y_lab = latex2exp::TeX("Peak ($m^3/s$)")
+)
+p8 = get_syn_scatter(
+  ssyn_df = ssyn_df, 
+  varx_syn = "peak", 
+  vary_syn = "vol", 
+  scop_df |> dplyr::mutate(vol = volume / 1e6), 
+  varx_df = "peak", 
+  vary_df = "vol",
+  x_lab = latex2exp::TeX("Peak ($m^3/s$)"),
+  y_lab = latex2exp::TeX("Volume (Mio. $m^3$)")
+)
+p9 = get_syn_scatter(
+  ssyn_df = ssyn_df, 
+  varx_syn = "dur", 
+  vary_syn = "vol", 
+  scop_df |> dplyr::mutate(vol = volume / 1e6, dur_d = duration_min / 24 / 60), 
+  varx_df = "dur_d", 
+  vary_df = "vol",
+  x_lab = latex2exp::TeX("Duration (days)"),
+  y_lab = latex2exp::TeX("Volume (Mio. $m^3$)")
+)
+
+p = (p1 | p2 | p3) / 
+    (p4 | p5 | p6) /
+    (p7 | p8 | p9) + 
+  theme(
+    title = element_text(size = 20),
+    axis.text = element_text(size = 15),
+    axis.title = element_text(size = 20),
+    legend.text = element_text(size = 15)  # Increase legend text size
+  )
+plot(p)
+if (save_plots) savegg("visFit", width = 10, height = 5)
+# Do not apply any further hypothesis tests:
+#   a) Judging by AIC, the fitted copula is the best fitting copula
+#   Thus, we already selected the best fit we can possible fit. Independent of what a GoF test would tell us, we will use it in the following
+#   b) A better reason tho is that we use the AIC to select a model. 
+#   Hypothesis tests do not remain valid after selection after the data is used to select the best model
+# --> We default to a visual judgement and proceed
+
+# Tail dependence analysis ------------------------------------------------
+# > Taildependencies in results
+# > Taildependence in intro: 
+#   Difference Taildependence and heavy tail in distribution
+# 1: pobs_dur 
+# 2: pobs_peak
+# 3: pobs_vol
+get_copname = function(int){
+  cop_fams = list(
+    "3" = "Clayton",
+    "4" = "Gumbel",
+    "5" = "Frank",
+    "13" = "rotated Clayton",
+    "14" = "rotated Gumbel"
+  )
+  return(cop_fams[[as.character(int)]])
+}
+taildep_df = lapply(
+  vines,
+  function(vine) data.frame(
+    dur_peak_fam = get_copname(vine$family[3, 1]),
+    dur_peak_utd = vine$taildep$upper[3, 1],
+    dur_peak_ltd = vine$taildep$lower[3, 1],
+    
+    peak_dur_fam = get_copname(vine$family[3, 2]),
+    peak_dur_utd = vine$taildep$upper[3, 2],
+    peak_dur_ltd = vine$taildep$lower[3, 2],
+    
+    dur_vol_fam = get_copname(vine$family[2, 1]),
+    dur_vol_utd = vine$taildep$upper[2, 1],
+    dur_vol_ltd  = vine$taildep$lower[2, 1]
+  )
+) |> 
+  dplyr::bind_rows() |> 
+  tidyr::pivot_longer(
+    cols = c(contains("utd"), contains("ltd")),
+    names_to = "vars_td",
+    values_to = "td"
+  ) |> 
+  dplyr::mutate(
+    rowid = dplyr::row_number(), 
+  ) |> 
+  dplyr::mutate(
+    vars =  stringr::str_extract(vars_td, "^[^_]+_[^_]+"),  # Extract first two words
+    direction = stringr::str_extract(vars_td, "[^_]+$"),  # Extract third word
+    .by = rowid
+  ) |> dplyr::select(-vars_td, - rowid) 
+
+
+# Duration - Peak
+table(taildep_df$dur_peak_fam) / 6 # div by 6 to fix long df... This is so bad code but I am tired. Nice.
+taildep_df |> 
+  dplyr::filter(vars == "dur_peak", dur_peak_fam != "Frank") |> 
+  ggplot() + 
+  geom_boxplot(aes(y = td, color = direction)) + 
+  facet_wrap(~dur_peak_fam)
+
+
+# Peak - Duration
+table(taildep_df$peak_dur_fam) / 6
+taildep_df |> 
+  dplyr::filter(vars == "peak_dur", peak_dur_fam != "Frank") |> 
+  ggplot() + 
+  geom_boxplot(aes(y = td, color = direction)) + 
+  facet_wrap(~peak_dur_fam)
+
+# Duration - Volume
+table(taildep_df$dur_vol_fam) / 6
+taildep_df |> 
+  dplyr::filter(vars == "dur_vol", dur_vol_fam != "Frank") |> 
+  ggplot() + 
+  geom_boxplot(aes(y = td, color = direction)) + 
+  facet_wrap(~dur_vol_fam)
+
+# What is tail dependence, what is a survival copula, what is a 180 degrees rotated copula and how is it different to surcical
+#   And why choose survival Gumbel over Clayton and why does Clayton copula density look so much different to Gumbel, even if rotated such that tail dependence has same direction
+
+# Extension of Hydrology lecture to trivariate ----------------------------
+ggplot(
+    data = auc_plot_df <- data.frame(
+      x = seq(from = 0, to = max(scop_df$peak)),
+      y = dmarginal(x_marg, gev_peak)
+    ),
+    mapping = aes(x = x, y = y)
+  ) + 
+  geom_histogram(data = scop_df, mapping = aes(x = peak, y = after_stat(density)), fill = "white", alpha = 0.4, color = "black") + 
+  geom_line(color = "blue", linewidth = 1) + 
+  geom_area(data = auc_plot_df |> dplyr::filter(x >= last_flood$peak), fill = "red", alpha = 0.4) + 
+  geom_vline(xintercept = last_flood$peak, color = "red") 
+if (save_plots) savegg("marginal peak fit", width = 10, height = 5)
+# Compared to if only marginal
+# Approach from hydrology lecture: extReme package and fit gevd 
+# According to univariate approach:
+#   Probability of this event or a more severe flood occuring
+1 - pmarginal(last_flood$peak, gev_peak)
+# -> Big difference in probability --> Underline relevance of trivariate analysis 
+
+cdfs = lapply(
+  all_units,
+  function(name) get_cdf_values(vines[[name]], density_grid, name)
+) |> dplyr::bind_rows() |> dplyr::select(cdf) |> unlist()
+plot_df$cdf = cdfs 
+splot_df = plot_df |> dplyr::filter(unit == station)
+
+p1 = get_contour(
+  rel = "z12", 
+  splot_df = splot_df, 
+  sdf = scop_df, 
+  varx = "pobs_dur", 
+  vary = "pobs_peak", 
+  title = "Peak - Duration [G]", 
+  y_lab = "P.Obs. Peak",
+  x_lab = "P.Obs. Duration",
+  bwidth = 0.1,
+  contour_alpha = 0.7
+) +
+  geom_point(data = last_flood, aes(x = pobs_dur, y = pobs_peak), color = "red") + 
+  geom_segment(data = last_flood, aes(x = 0, xend = 1, y = pobs_peak, yend = pobs_peak), color = "red") +
+  geom_segment(data = last_flood, aes(x = pobs_dur, xend = pobs_dur, y = 0, yend = 1), color = "red") +
+  geom_rect(data = last_flood, aes(xmin = pobs_dur, xmax = 1, ymin = pobs_peak, ymax = 1), fill = "red", alpha = 0.3)
+p2 = get_contour(
+  rel = "z23", 
+  splot_df = splot_df, 
+  sdf = scop_df, 
+  varx = "pobs_peak", 
+  vary = "pobs_vol", 
+  title = "Volume - Peak [G]", 
+  y_lab = "P.Obs. Volume",
+  x_lab = "P.Obs. Duration",
+  bwidth = 0.1,
+  contour_alpha = 0.7
+)  + 
+   geom_point(data = last_flood, aes(x = pobs_peak, y = pobs_vol), color = "red") + 
+  geom_segment(data = last_flood, aes(x = 0, xend = 1, y = pobs_vol, yend = pobs_vol), color = "red") +
+  geom_segment(data = last_flood, aes(x = pobs_peak, xend = pobs_peak, y = 0, yend = 1), color = "red") +
+  geom_rect(data = last_flood, aes(xmin = pobs_peak, xmax = 1, ymin = pobs_vol, ymax = 1), fill = "red", alpha = 0.3)
+p3 = get_contour(
+  rel = "z13_2", 
+  splot_df = splot_df, 
+  sdf = scop_df, 
+  varx = "pobs_dur", 
+  vary = "pobs_vol", 
+  title = "Volume - Duration | Peak [SG]", 
+  y_lab = "P.Obs. Volume",
+  x_lab = "P.Obs. Duration",
+  bwidth = 0.1,
+  contour_alpha = 0.7
+)  + 
+   geom_point(data = last_flood, aes(x = pobs_dur, y = pobs_vol), color = "red") + 
+  geom_segment(data = last_flood, aes(x = 0, xend = 1, y = pobs_vol, yend = pobs_vol), color = "red") +
+  geom_segment(data = last_flood, aes(x = pobs_dur, xend = pobs_dur, y = 0, yend = 1), color = "red") +
+  # geom_hline(yintercept = last_flood$pobs_peak, color = "red") + 
+  # geom_vline(xintercept = last_flood$pobs_dur, color = "red") + 
+  geom_rect(data = last_flood, aes(xmin = pobs_dur, xmax = 1, ymin = pobs_vol, ymax = 1), fill = "red", alpha = 0.3)
+  
 p = (p1 | p2 | p3)
 plot(p)
-
+if (save_plots) savegg("trivariateProb", width = 10, height = 5)
 
 # P(X>x, Y>y, Z>z)
 syn_vals = ssyn_df |> dplyr::select(pobs_dur, pobs_peak, pobs_vol)  
@@ -759,22 +1115,22 @@ prob = sum(rowSums(syn_vals >= thresh_vals) == 3) / nrow(ssyn_df)
 
 print(paste("Probability of this event P(P <= p, V <= v, D <= d)", prob))
 
-# Compared to if only marginal
-# Approach from hydrology lecture: extReme package and fit gevd 
-gev_peak = marginal_fit(scop_df$peak, type = "GEV")
-# According to univariate approach:
-#   Probability of this event or a more severe flood occuring
-1 - pmarginal(last_flood$peak, gev_peak)
-# -> Big difference in probability --> Underline relevance of trivariate analysis 
+
 
 
 # Volume - Duration pairs for HQ values -----------------------------------
+# Return period value plot 
+HQ_probs
+data.frame(
+  peak  = qmarginal(1 - HQ_probs, gev_peak),
+  rperiod = 1 / HQ_probs
+) |> 
+  ggplot() + 
+  geom_line(aes(x = rperiod, y = peak))
+
+
 # IMPORTANT: This analysis is STATION specific
 # Marginals:
-gev_vol = marginal_fit(scop_df$volume / 1e6, type = "GEV")
-gev_dur = marginal_fit(scop_df$duration_min / 60 / 24, type = "GEV")
-
-
 # 
 # # Use HQ return period bzw. resulting probabilities as pobs_peak to condition on
 # HQ_probs
@@ -871,7 +1227,7 @@ ggplot(con_smry) +
   geom_line(aes(x = vol, y = dur, group = type)) +
   geom_point(aes(x = vol, y = dur, shape = type)) +
   geom_label(aes(x = vol, y = dur, label = 1 / hq_prob)) +
-  geom_point(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60), color = "red") + 
+  geom_point(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60), color = "red") +
   facet_wrap(~type)
 # Vines capture underlying data way better than NACs. 
 # According to NACs, our data contains multiple flood events that were more severe than a 

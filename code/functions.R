@@ -769,6 +769,34 @@ get_density_values = function(vine, dgrid, unit_name){
   return(plot_df)
 }
 
+get_cdf_values = function(vine, dgrid, unit_name){
+  plot_df = as.data.frame(dgrid) |>
+    # 1: pobs_dur, 2: pobs_peak, 3: pobs_vol
+    # 1-2: index [3, 1]
+    # 1-3: index [2, 1]
+    # 2-3: index [3, 2]
+    dplyr::mutate(
+      z12 = VineCopula::BiCopCDF(x, y, family = vine$family[3, 1], par = vine$par[3, 1]),
+      z13_2 = VineCopula::BiCopCDF(x, y, family = vine$family[2, 1], par = vine$par[2, 1]),
+      z23 = VineCopula::BiCopCDF(x, y, family = vine$family[3, 2], par = vine$par[3, 2])
+    ) |>
+    tidyr::pivot_longer(
+      cols = contains("z"),
+      names_to = "vars",
+      values_to = "cdf"
+    ) 
+    # Standardize density values so scale does not matter
+    # dplyr::group_by(vars) |>
+    # dplyr::mutate(
+    #   density = (cdf - mean(cdf)) / sd(cdf)
+    # ) |> 
+    # dplyr::ungroup()
+  # Add family 
+  # plot_df$fam = rep(c(f12 = vine$family[3, 1], f13 = vine$family[2, 1], f23 = vine$family[3, 2]), nrow(plot_df) / 3)
+  plot_df$unit = unit_name
+  return(plot_df)
+}
+
 get_tail_dependencies = function(vine, name){
   utdp = vine$taildep$upper
   ltdp = vine$taildep$lower
@@ -798,19 +826,59 @@ inverse_ecdf_unitwise <- function(syn, syn_col, df, df_col, unit_name) {
   return(unname(sapply(syn_, inverse_ecdf, data = df_)))
 }
 
-get_contour = function(rel, splot_df, sdf, var1, var2, bwidth = 0.1, plt_pts = TRUE){
+get_contour = function(
+    rel, 
+    splot_df, 
+    sdf, 
+    varx, 
+    vary, 
+    bwidth = 0.1, 
+    plt_pts = TRUE, 
+    title = "TITLE",
+    x_lab = "x",
+    y_lab = "y",
+    contour_alpha = 1,
+    z = "density"
+  ){
   p = ggplot() +
     # 1: pobs_dur, 2: pobs_peak, 3: pobs_vol
-    geom_contour(data = splot_df |> dplyr::filter(vars == rel), aes(x = x, y = y, z = density), binwidth = bwidth, alpha = .1) + 
-    labs(title = paste(var1, var2))
-  if (plt_pts) p = p + geom_point(data = sdf, mapping = aes_string(x = var1, y = var2), alpha = .8)
+    geom_contour(data = splot_df |> dplyr::filter(vars == rel), aes_string(x = "x", y = "y", z = z), binwidth = bwidth, alpha = contour_alpha) + 
+    labs(
+      title = title,
+      y = y_lab,
+      x = x_lab 
+    ) + 
+    scale_x_continuous(breaks = c(0, 1)) + 
+    scale_y_continuous(breaks = c(0, 1))
+  if (plt_pts) p = p + geom_point(data = sdf, mapping = aes_string(x = varx, y = vary), alpha = .8)
   return(p)
 }
 
-get_syn_scatter = function(ssyn_df, var1_syn, var2_syn, sdf, var1_df, var2_df, syn_color = "lightblue", syn_alpha = 0.3){
+get_syn_scatter = function(
+    ssyn_df, 
+    varx_syn,  
+    vary_syn, 
+    sdf,  
+    varx_df, 
+    vary_df,  
+    syn_color = "lightblue", 
+    syn_alpha = 0.3,
+    x_lab = "x",
+    y_lab = "y",
+    x_min = NULL,
+    x_max = NULL,
+    y_min = NULL,
+    y_max = NULL
+  ){
   p = ggplot() + 
-    geom_point(data = ssyn_df, mapping = aes_string(x = var1_syn, y = var2_syn), color = syn_color, alpha = syn_alpha) + 
-    geom_point(data = sdf, mapping = aes_string(x = var1_df, y = var2_df)) 
+    geom_point(data = ssyn_df, mapping = aes_string(x = varx_syn, y = vary_syn), color = syn_color, alpha = syn_alpha) + 
+    geom_point(data = sdf, mapping = aes_string(x = varx_df, y = vary_df)) +
+    labs(
+      x = x_lab,
+      y = y_lab
+    ) 
+    if (!is.null(c(x_min, x_max))) p = p + scale_x_continuous(breaks = c(x_min, x_max)) 
+    if (!is.null(c(y_min, y_max))) p = p + scale_y_continuous(breaks = c(y_min, y_max))
   return(p)
 }
 

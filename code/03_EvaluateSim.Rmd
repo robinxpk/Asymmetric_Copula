@@ -433,7 +433,6 @@ table(all_res$famcomb) # Realized family combinations
 
 # Checking for any NaNs
 any(is.na(all_res))
-all_res[!complete.cases(all_res), ]
 ```
 ### KLD
 
@@ -518,7 +517,7 @@ all_res |>
   geom_line(aes(y = true_tau_13, x = x)) + 
   geom_line(aes(y = nac_tau_outer, x = x), color = "blue", alpha = 0.4) + 
   geom_line(aes(y = nac_tau_inner, x = x), color = "red", alpha = 0.4) + 
-  facet_grid(n ~ river, scale = "free_x")
+  facet_grid(river ~ n, scale = "free_x")
 ```
 NAC seems to capture the two most strongly correlated relations. Thus, NACs totally overestimate the lowest strength of dependence by implying the same strength for the two lesser correlated variables. 
 Thereby, the bias due to NAC under true vines increases the more different the two lower correlations are. 
