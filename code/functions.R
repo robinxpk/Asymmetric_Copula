@@ -117,18 +117,19 @@ nac_theta2tau = function(family_index, theta){
   )
 }
 
-fit_ac = function(mat, cops){
+fit_ac = function(mat, cops, debug = FALSE){
   # HAC does not deal well with non-nested ACs, i.e. symmetric ACs. The fit seems to work, but then the logLikelihood cannot be evaluated
   # Solution: copula Package: Can fit ONLY non-nested ACs for more than 2 variables
   # Copula package uses bbmle to fit (see: https://cran.r-project.org/web/packages/bbmle/bbmle.pdf)
   # Due to the implementation in this package: 1) fit possible models 2) Use AIC to select the best one 
+  if (debug) browser()
   ac_fits = lapply(cops, function(cop) copula::emle(u = mat, cop = copula::onacopula(family = cop, nacStructure = C(1, 1:3))))
   
   # Select the one with smallest AIC
   # NOTE HERE: Since p identical, we can just select smallest negative loglikelihood
   ac_lls = lapply(ac_fits, function(fit) - fit@min) # min gives the NEGATIVE loglikelihood
   ac_best_fit = which.max(ac_lls)
-  if (is.integer(ac_best_fit) && length(ac_best_fit) == 0) ac_best_fit = 1
+  # if (is.integer(ac_best_fit) && length(ac_best_fit) == 0) ac_best_fit = sample(1:3, 1) # TODO: TEMP SOL: In case of it breaking down, select one copula at random
   ac_mle = ac_fits[[ac_best_fit]]@coef[[1]]
   
   # Actual copula
@@ -212,7 +213,6 @@ run_one_nac = function(
   mat = HAC::rHAC(n, mdl) 
   
   # Fit models --------------------------------------------------------------
-  if (cop == "Frank") print(paste("Start seed                                   ", seed))
   ac = fit_ac(mat, names(copula_families))
   
   nac = fit_nac(mat, copula_families)
@@ -247,7 +247,6 @@ run_one_nac = function(
       vine_kl = klMonteCarlo(mdl, vine, est_mdl_vine = TRUE)
     )
   )
-  if(cop == "Frank") print(paste("Success:                                 ", seed))
   return(res)
 }
 
@@ -1081,4 +1080,3 @@ get_most_probable_voldur = function(
     data.frame(vol = vol, dur = dur, hq_prob = hq_prob)
   )
 }
-

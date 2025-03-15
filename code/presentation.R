@@ -608,6 +608,76 @@ if(save_plots) savegg("CopFams_hightau", width = 10, height = 5)
 
 # Simulation --------------------------------------------------------------
 
+# NAC Sim -----------------------------------------------------------------
+all_res_nacs = read_dep_files(true_dep = "nac", in_dir = "../data/simulation/")
+
+# 
+with(all_res_nacs, table(cop, n, river))
+
+
+# KLD plot for all copula families bc separating by copula family did not make any difference
+all_res_nacs |> 
+  dplyr::select(n, contains("_kl")) |> 
+  tidyr::pivot_longer(
+    cols = contains("_kl"),
+    names_to = "dep",
+    values_to = "kld"
+  ) |>
+  dplyr::mutate(dep = as.factor(stringr::str_remove(dep, "_kl"))) |>
+  ggplot() + 
+  geom_density(aes(x = kld, fill = dep), color = "black", alpha = 0.3) +
+  geom_vline(xintercept = 0, color = "black") + 
+  facet_wrap(~ n, scale = "free", axis.labels = "margins") + # Cannot remove margins because scales are free
+  labs(
+    title = "NAC DGP: KLD by Sample Size",
+    x = "Kullback Leibler Divergence",
+    y = "Density"
+  ) +
+  theme(
+    title = element_text(size = 20),
+    axis.text = element_text(size = 15),
+    axis.title = element_text(size = 20),
+    legend.text = element_text(size = 15)  # Increase legend text size
+  ) +
+  theme(
+    legend.position = "top",
+    strip.text = element_text(size = 15)
+  ) +
+  scale_fill_manual(name = "Model", values = c("ac" = "red", "nac" = "green", "vine" = "blue"))
+if (save_plots) savegg("sim_NACDGP_KLD", width = 10, height = 5)
+# Note: each n plot contains 
+all_res_nacs |> dplyr::filter(n == 15) |> nrow()
+# That is, 3 * 3000 (3k observations for each copula family --> 750 obs per correlation structure)
+
+# Validation of what paper found
+all_res_nacs |>
+  dplyr::mutate(seed = as.numeric(seed)) |>
+  dplyr::group_by(river, n) |>
+  dplyr::mutate(x = dplyr::row_number()) |>
+  dplyr::ungroup() |>
+  dplyr::mutate(paper_ratio = 1 / 3 * (true_tau_inner - true_tau_outer) + true_tau_outer) |>  # l* rearrange s.t. tau_sym = f(l*)
+  ggplot() +
+  geom_ribbon(aes(ymin = true_tau_inner, ymax = true_tau_outer, x = x), fill = "lightblue", alpha = 0.2, color = "black") +
+  geom_line(aes(y = ac_tau, x = x), color = "blue") +
+  geom_line(aes(y = paper_ratio, x = x), color = "red") + 
+  theme_minimal() +
+  facet_grid(river ~ n, scale = "free_x", axes = "margins")
+savegg("paper ratio confirmed", width = 10, height = 5)
+# Each column contains 9k observations
+# Length of river differ: 
+#   I drew correlation structure on random as it was easier to implement. Especially in the vine case 
+#   (Instead of 3 nested for loops, I just drew 3 random numbers / families)
+#   Since these draws were uniform, I expect ~9k observation for each river. Realized values:
+# with(all_res_nacs, table(river))
+    # Donau        Isar LowHighHigh  LowMedHigh 
+    # 8676        9708        8604        9012 
+# Also, since I used a seed to ensure reproducablity and drew the correlation structure first, each n has the same distribution of correlation structure
+addmargins(with(all_res_nacs, table(river, n)))
+# Each entry contains ~ 3 * 750 observations (due to the choice of my iterations per setup...)
+
+
+# Vine Sim ----------------------------------------------------------------
+
 
 # Results -----------------------------------------------------------------
 # TODO

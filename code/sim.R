@@ -115,7 +115,7 @@ taus = list(
   # a) Two similar dependence structure, but both HIGH, so only one of them can be nested. 
   #   But outer cannot model two different degrees of dependence between the nested variables
   "LowHighHigh" = c(0.1, 0.8, 0.8),
-  "LowMedHigh" = c(0.1, 0.5, 0.9)
+  "LowMedHigh" = c(0.1, 0.5, 0.85)
 )
 
 # Cores used during parallelization
@@ -125,7 +125,7 @@ n_cores = parallel::detectCores() - 2
 # NACs ----
 
 # Number of simulations per setting
-B = 3000
+B = 4000
 
 # Copula families considered during the simulation
 copula_families = list("Gumbel" = 1, "Clayton" = 3, "Frank" = 5)
@@ -143,8 +143,6 @@ for (n in sample_sizes){
       res <- foreach(
         seed = 1:B,
         .combine = "rbind"
-        # .packages = pkg
-        # .export = ls()
       ) %dopar% {
         # Simulate
         tryCatch(
@@ -179,51 +177,51 @@ for (n in sample_sizes){
 
 stopCluster(cluster)
 
-
-# Vines ----
-# For drawing vines, we have 3^3 possible vine structures. Thus, draw 27000 so that every vine structure has 1k (on average bc I draw them randomly)
-B = 27 * 1000
-# Also, the copula families have a different encoding
-copula_families = list("Clayton" = 3, "Gumbel" = 4, "Frank" = 5)
-
-cluster <- parallel::makeCluster(n_cores, outfile = "vine.log")
-doParallel::registerDoParallel(cluster)
-
-# Ensure cluster stops after execution
-on.exit(parallel::stopCluster(cluster))
-
-for (n in sample_sizes){
-    # Run parallelized
-    res <- foreach(
-      seed = 1:B
-    ) %dopar% {
-      tryCatch(
-      run_one_vine(
-        seed = seed,
-        n = n,
-        taus = taus
-      ),
-        error = function(e){
-          message(paste("Vine -- Error at seed:", seed, " - ", e$message))
-          NULL
-        })
-    }
-
-    res = res |> dplyr::bind_rows(.id = "seed")
-    attr(res, "n") = n
-    attr(res, "dep") = "vine"
-
-    attr(res, "B") = B
-    attr(res, "sample sizes") = sample_sizes
-    attr(res, "copula families") = copula_families
-
-    # Save simulation results in file
-    filename = paste("../data/simulation/simulation_n", n, "_depvine.Rdata", sep = "")
-    save(res, file = filename)
-}
-
-stopCluster(cluster)
-
-# # # b) GAM ------------------------------------------------------------------
-# # # Here, I only care how the gamVine packages performs. NACs are not relevant for my use case so the coefficient estimation for a non-relevant
-# # #   structure is pointless anyway. Plus, HAC so unreliable anyway, who cares. Really. Fuck that package and all the other inconsistent copula packages
+# 
+# # Vines ----
+# # For drawing vines, we have 3^3 possible vine structures. Thus, draw 27000 so that every vine structure has 1k (on average bc I draw them randomly)
+# B = 27 * 1000
+# # Also, the copula families have a different encoding
+# copula_families = list("Clayton" = 3, "Gumbel" = 4, "Frank" = 5)
+# 
+# cluster <- parallel::makeCluster(n_cores, outfile = "vine.log")
+# doParallel::registerDoParallel(cluster)
+# 
+# # Ensure cluster stops after execution
+# on.exit(parallel::stopCluster(cluster))
+# 
+# for (n in sample_sizes){
+#     # Run parallelized
+#     res <- foreach(
+#       seed = 1:B
+#     ) %dopar% {
+#       tryCatch(
+#       run_one_vine(
+#         seed = seed,
+#         n = n,
+#         taus = taus
+#       ),
+#         error = function(e){
+#           message(paste("Vine -- Error at seed:", seed, " - ", e$message))
+#           NULL
+#         })
+#     }
+# 
+#     res = res |> dplyr::bind_rows(.id = "seed")
+#     attr(res, "n") = n
+#     attr(res, "dep") = "vine"
+# 
+#     attr(res, "B") = B
+#     attr(res, "sample sizes") = sample_sizes
+#     attr(res, "copula families") = copula_families
+# 
+#     # Save simulation results in file
+#     filename = paste("../data/simulation/simulation_n", n, "_depvine.Rdata", sep = "")
+#     save(res, file = filename)
+# }
+# 
+# stopCluster(cluster)
+# 
+# # # # b) GAM ------------------------------------------------------------------
+# # # # Here, I only care how the gamVine packages performs. NACs are not relevant for my use case so the coefficient estimation for a non-relevant
+# # # #   structure is pointless anyway. Plus, HAC so unreliable anyway, who cares. Really. Fuck that package and all the other inconsistent copula packages

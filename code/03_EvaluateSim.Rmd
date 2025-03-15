@@ -29,11 +29,7 @@ knitr::opts_knit$set(root.dir = normalizePath("."))
 ```{r}
 
 all_res = read_dep_files(true_dep = "nac", in_dir = "../data/simulation/")
-attr(all_res, "B") = 2000 # For now since simulation does not contain B
-attr(all_res, "sample sizes") = c(15, 30, 50, 1000)
-attr(all_res, "copula families") = list("Clayton" = 3, "Gumbel" = 4, "Frank" = 5)
-# Remove attributes that are no longer applicable
-for (a in c("n", "true dep", "true cop")) attr(all_res, a) = NULL
+
 sample_sizes = attr(all_res, "sample sizes")
 B_nac = attr(all_res, "B")
 copula_families = attr(all_res, "copula families")
@@ -58,7 +54,7 @@ table(all_res$river) # Distribution of selected correlation; Should be equivalen
 # Checking for any NaNs
 any(is.na(all_res))
 # Investiage:
-all_res[!complete.cases(all_res), ]
+# all_res[!complete.cases(all_res), ]
 ```
 ### KL Divergence
 
