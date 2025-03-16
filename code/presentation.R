@@ -7,27 +7,43 @@ library(ggplot2)
 # When (re)running the script, should plots be saved
 save_plots = FALSE
 # Selected station
-station = "München" # Isar
-# station = "Hofkirchen" # Donau
+# station = "München" # Isar
+station = "Hofkirchen" # Donau
 # station = "Sylvenstein"
 ref_year = 2024
-
-# Color
-color_vol_peak = "lightblue"
-color_vol_dur = "orange"
-color_dur_peak = "lightgreen"
 # Considered rivers 
+
+# Load data frames
+# Copula df with threshold of choice
+copula_threshold = 0.75
+# With: 
+#   1) Reduce to considered rivers
 considered = c("Isar", "Donau")
+#   2) Remove stations with too little observations
+min_num_obs = 30
+cop_df = get_copula_df(p_threshold = copula_threshold) |>  
+  dplyr::filter(river %in% considered)  # Focus only on desired rivers (i.e. remove this one random small river. lol.)
+# Of which have more than 30 observations
+obs_status = cop_df |> 
+  dplyr::summarise(
+    n = dplyr::n(),
+    .by = c(river, unit)
+  ) |> 
+  dplyr::mutate(
+    nlarge = n > min_num_obs 
+  ) 
+considered_stations = obs_status |> dplyr::filter(nlarge == TRUE)
+removed_stations = obs_status |> dplyr::filter(nlarge == FALSE)
+# cop_df only contains stations with more than threshold number of observations
+cop_df = cop_df |> dplyr::filter(unit %in% considered_stations$unit) 
+  
+# > pos
+# unit              east   north         river
+# Neu Ulm, Bad Held 573054 5360044         Donau
+pos = cop_df |> dplyr::select(unit, east, north, river) |> unique()
 
-# Data
-load("../data/output/presentation/pos.Rdata")
-load("../data/output/presentation/rivers.Rdata")
-
-
-all_cops = get_copula_df(all = TRUE)
-
-cop_df = get_copula_df(p_threshold = 0.75)
-cop_df = cop_df |> dplyr::filter(river %in% considered)
+# Copula df with all thresholds
+all_cops = get_copula_df(all = TRUE) |> dplyr::filter(river %in% considered)
 
 # Station specific data
 id = (cop_df |> dplyr::filter(unit == station))[1, "id"]
@@ -37,28 +53,7 @@ peak_info = cop_df |> dplyr::filter(year == ref_year, unit == station)
 scop_df = cop_df |> dplyr::filter(unit == station)
 
 # All stations
-# Total number Stations BEFORE filtering
-length(unique(cop_df$unit))
-# Of which have more than 30 observations
-thresh = 30
-obs_status = cop_df |> 
-  dplyr::summarise(
-    n = dplyr::n(),
-    .by = c(river, unit)
-  ) |> 
-  dplyr::mutate(
-    nlarge = n > thresh
-  ) 
-considered_stations = obs_status |> dplyr::filter(nlarge == TRUE)
-removed_stations = obs_status |> dplyr::filter(nlarge == FALSE)
-
-# cop_df only contains stations with more than threshold number of observations
-cop_df = cop_df |> dplyr::filter(unit %in% considered_stations$unit) 
-# Number stations AFTER filtering
-length(unique(cop_df$unit))
-
 all_units = unique(cop_df$unit)
-
 # Number of stations by river
 table(considered_stations$river)
 
@@ -76,14 +71,14 @@ paper_tau = data.frame(
 cor_table = cop_df |> dplyr::summarise(
   n = dplyr::n(),
   tau_vd = cor(volume, duration_min, method = "kendall"),
-  p_vd = cor.test(volume, duration_min, method = "kendall")$p.value,
-  rej_vd = p_vd < 0.01,
+  # p_vd = cor.test(volume, duration_min, method = "kendall")$p.value,
+  # rej_vd = p_vd < 0.01,
   tau_vp = cor(volume, peak, method = "kendall"),
-  p_vp = cor.test(volume, peak, method = "kendall")$p.value,
-  rej_vp = p_vp < 0.01,
+  # p_vp = cor.test(volume, peak, method = "kendall")$p.value,
+  # rej_vp = p_vp < 0.01,
   tau_dp = cor(duration_min, peak, method = "kendall"),
-  p_dp = cor.test(duration_min, peak, method = "kendall")$p.value,
-  rej_dp = p_dp < 0.01,
+  # p_dp = cor.test(duration_min, peak, method = "kendall")$p.value,
+  # rej_dp = p_dp < 0.01,
   .by = c(river, unit)
 )
 
@@ -122,7 +117,8 @@ HQ_probs = 1/HQs # Corresponding probability for return period
 # save(pos, file = "../data/output/presentation/pos.Rdata")
 
 
-# Map Parameters ----------------------------------------------------------
+# Map Data ----------------------------------------------------------------
+load("../data/output/presentation/rivers.Rdata")
 pos_sf = gkd2gg(pos, coord_cols = c("east", "north")) |> 
   dplyr::filter(river %in% considered) |> 
   dplyr::mutate(
@@ -170,14 +166,14 @@ rivers_bayern = rivers_bayern |>
     )
   )
 
-# Data --------------------------------------------------------------------
 
+# Presentation - Data -----------------------------------------------------
 # Bavaria plots -----------------------------------------------------------
 
 # NOTE: Plots may look super bad in RStudio. I save them using savegg. 
 #   Check the saved file or its look in PowerPoint to judge visual
 # Selected rivers and all stations 
-ggplot(rivers_bayern) + 
+bayern_plot = ggplot(rivers_bayern) + 
   # Displaying the actual data
   # 1) Make background look like map
   ggspatial::annotation_map_tile(type = "osm", zoom = 8) + 
@@ -235,24 +231,11 @@ ggplot(rivers_bayern) +
       order = 2
     )
   )
+bayern_plot
 if(save_plots) savegg("bayern_rivers")
 
 # Select one station to explain the data process on
-ggplot(rivers_bayern) + 
-  # Displaying the actual data
-  # 1) Make background look like map
-  ggspatial::annotation_map_tile(type = "osm", zoom = 8) + 
-  # 2) Add the rivers twice. 
-  #   1st in black to give a outline for each river
-  #   (combination of fill and color does not work for geom_sf)
-  #   2nd the actual rivers in desired colors
-  geom_sf(color = "black", linewidth = 2) + # Outlines for the rivers
-  geom_sf(aes(color = river, fill = river), linewidth = 1.5) +
-  # 3) Add the shape of Bayern on top to highlight the relevant area
-  geom_sf(data = bayern, fill = "white", alpha = 0.4, linewidth = .8) + 
-  # 4) Add station
-  geom_sf(data = pos_sf, aes(color = river_station, shape = river_station, fill = river_station), size = 4) + 
-  # Add highlight for selected station
+bayern_plot + 
   geom_sf(data = pos_sf |> dplyr::filter(unit == station), color = "black", size = 10, shape = 1, alpha = 1) + 
   geom_sf_label(
     data = pos_sf |> dplyr::filter(unit == station), 
@@ -260,51 +243,75 @@ ggplot(rivers_bayern) +
     nudge_x = .8,
     size = 10,
     fill = "white"
-  ) + 
-  # Prettify
-  theme_void() + 
-  theme(
-    # Remove the x and y ticks / labels
-    axis.title = element_blank(),
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    # Adjust the legend position and font size
-    legend.position = c(1, 1),  # Move legend to top-right
-    legend.justification= c(1, 1),  # Align legend inside the top-right
-    legend.background = element_rect(fill = "white", color = "black", linewidth = .5),
-    legend.box = "vertical",
-    legend.margin = margin(1, 1, 1, 1),  # (top, right, bottom, left) padding
-    legend.text = element_text(size = 20),  # Adjust size of legend labels
-    legend.title = element_text(size = 24, face = "bold")
-  ) + 
-  # The color aes is actually what colors the rivers and stations, but the legend is super ugly
-  # So I use the fill legend and do not display the color legend
-  scale_color_manual(
-    name = "River",
-    values = c(
-      "Donau" = "#7CAE00", "Isar" = "#F8766D", "Other" = "#00BfC4", # River colors
-      "Donau_Station" = "darkgreen", "Isar_Station" = "darkred" # Station colors
-    ), 
-    guide = "none" # Do not show color legend
-  ) +
-  scale_fill_manual(
-    name = "River",
-    values = c("Donau" = "#7CAE00", "Isar" = "#F8766D", "Other" = "#00BfC4"),
-    labels = c("Donau" = "Donau", "Isar" = "Isar", "Other" = "Other")
-  ) +
-  scale_shape_manual(
-    name = "Station",
-    values = c("Donau_Station" = 16, "Isar_Station" = 17),
-    labels = c("Donau_Station" = "Donau", "Isar_Station" = "Isar")
-  ) +
-  guides(
-    fill = guide_legend(order = 1),
-    shape = guide_legend(override.aes = list(
-      color = c("darkgreen", "darkred")
-      ),
-      order = 2
-    )
-  )
+  ) 
+
+# ggplot(rivers_bayern) + 
+#   # Displaying the actual data
+#   # 1) Make background look like map
+#   ggspatial::annotation_map_tile(type = "osm", zoom = 8) + 
+#   # 2) Add the rivers twice. 
+#   #   1st in black to give a outline for each river
+#   #   (combination of fill and color does not work for geom_sf)
+#   #   2nd the actual rivers in desired colors
+#   geom_sf(color = "black", linewidth = 2) + # Outlines for the rivers
+#   geom_sf(aes(color = river, fill = river), linewidth = 1.5) +
+#   # 3) Add the shape of Bayern on top to highlight the relevant area
+#   geom_sf(data = bayern, fill = "white", alpha = 0.4, linewidth = .8) + 
+#   # 4) Add station
+#   geom_sf(data = pos_sf, aes(color = river_station, shape = river_station, fill = river_station), size = 4) + 
+#   # Add highlight for selected station
+#   geom_sf(data = pos_sf |> dplyr::filter(unit == station), color = "black", size = 10, shape = 1, alpha = 1) + 
+#   geom_sf_label(
+#     data = pos_sf |> dplyr::filter(unit == station), 
+#     aes(label = unit),
+#     nudge_x = .8,
+#     size = 10,
+#     fill = "white"
+#   ) + 
+#   # Prettify
+#   theme_void() + 
+#   theme(
+#     # Remove the x and y ticks / labels
+#     axis.title = element_blank(),
+#     axis.text = element_blank(),
+#     axis.ticks = element_blank(),
+#     # Adjust the legend position and font size
+#     legend.position = c(1, 1),  # Move legend to top-right
+#     legend.justification= c(1, 1),  # Align legend inside the top-right
+#     legend.background = element_rect(fill = "white", color = "black", linewidth = .5),
+#     legend.box = "vertical",
+#     legend.margin = margin(1, 1, 1, 1),  # (top, right, bottom, left) padding
+#     legend.text = element_text(size = 20),  # Adjust size of legend labels
+#     legend.title = element_text(size = 24, face = "bold")
+#   ) + 
+#   # The color aes is actually what colors the rivers and stations, but the legend is super ugly
+#   # So I use the fill legend and do not display the color legend
+#   scale_color_manual(
+#     name = "River",
+#     values = c(
+#       "Donau" = "#7CAE00", "Isar" = "#F8766D", "Other" = "#00BfC4", # River colors
+#       "Donau_Station" = "darkgreen", "Isar_Station" = "darkred" # Station colors
+#     ), 
+#     guide = "none" # Do not show color legend
+#   ) +
+#   scale_fill_manual(
+#     name = "River",
+#     values = c("Donau" = "#7CAE00", "Isar" = "#F8766D", "Other" = "#00BfC4"),
+#     labels = c("Donau" = "Donau", "Isar" = "Isar", "Other" = "Other")
+#   ) +
+#   scale_shape_manual(
+#     name = "Station",
+#     values = c("Donau_Station" = 16, "Isar_Station" = 17),
+#     labels = c("Donau_Station" = "Donau", "Isar_Station" = "Isar")
+#   ) +
+#   guides(
+#     fill = guide_legend(order = 1),
+#     shape = guide_legend(override.aes = list(
+#       color = c("darkgreen", "darkred")
+#       ),
+#       order = 2
+#     )
+#   )
 if(save_plots) savegg("bayern_river_station_highlighted")
 
 
@@ -559,7 +566,7 @@ all_cops |> dplyr::summarise(
   tau_dp = cor(duration_min, peak, method = "kendall"),
   .by = c(river, unit, p_threshold)
 ) |> 
-  dplyr::filter(n > 30, river == "Donau") |> 
+  dplyr::filter(n > 30, river == "Isar") |> 
   tidyr::pivot_longer(
     cols = c(tau_vd, tau_vp, tau_dp),
     names_to = "tau",
@@ -578,7 +585,7 @@ all_cops |> dplyr::summarise(
   # geom_point(data = paper_tau, aes(y = value, x = p_), color = "black", alpha = 0.7) + # Add paper taus
   geom_hline(yintercept = 0, linetype = 2) + 
   theme(
-    legend.position = "none",
+    legend.position = "bottom",
     strip.text = element_text(size = 15)
   ) + 
   labs(
@@ -590,9 +597,9 @@ all_cops |> dplyr::summarise(
     axis.text = element_text(size = 15),
     axis.title = element_text(size = 20)
   ) +
-  ylim(-0.12, 1) + 
+  ylim(-.5,  1) + 
   facet_wrap(~ unit)
-if (save_plots) savegg("tau_for_different_thresholds")
+if (save_plots) savegg("tau_for_different_thresholds_Isar", width = 10, height = 5)
 
 
 # Methods -----------------------------------------------------------------
@@ -788,8 +795,12 @@ syn_df = syn_dfs |> dplyr::bind_rows()
 
 # Marginal GEV fits
 gev_peak = marginal_fit(scop_df$peak, type = "GEV")
+plot(gev_peak, type = "density")
 gev_vol = marginal_fit(scop_df$volume / 1e6, type = "GEV")
+plot(gev_vol, type = "density")
 gev_dur = marginal_fit(scop_df$duration_min / 60 / 24, type = "GEV")
+plot(gev_dur, type = "density")
+summary(scop_df$duration_min / 60 / 24)
 
 # countour and syn data dfs
 splot_df = plot_df |> dplyr::filter(unit == station)
@@ -816,7 +827,7 @@ p1 = get_contour(
   sdf = scop_df, 
   varx = "pobs_dur", 
   vary = "pobs_peak", 
-  title = "Peak - Duration [G]", 
+  title = "Peak - Duration [C]", 
   y_lab = "P.Obs. Peak",
   # x_lab = "P.Obs. Duration",
   x_lab = "",
@@ -829,7 +840,7 @@ p2 = get_contour(
   sdf = scop_df, 
   varx = "pobs_peak", 
   vary = "pobs_vol", 
-  title = "Volume - Peak [G]", 
+  title = "Volume - Peak [SG]", 
   y_lab = "P.Obs. Volume",
   # x_lab = "P.Obs. Duration",
   x_lab = "",
@@ -846,7 +857,7 @@ p3 = get_contour(
   y_lab = "P.Obs. Volume",
   # x_lab = "P.Obs. Duration",
   x_lab = "",
-  bwidth = 0.1,
+  bwidth = 0.2,
   contour_alpha = 0.7
 ) 
 # Synthetic data on [0, 1]
@@ -928,8 +939,8 @@ p9 = get_syn_scatter(
 )
 
 p = (p1 | p2 | p3) / 
-    (p4 | p5 | p6) /
-    (p7 | p8 | p9) + 
+    (p4 | p5 | p6) + 
+    # (p7 | p8 | p9) + 
   theme(
     title = element_text(size = 20),
     axis.text = element_text(size = 15),
@@ -962,78 +973,117 @@ get_copname = function(int){
   )
   return(cop_fams[[as.character(int)]])
 }
+
 taildep_df = lapply(
-  vines,
-  function(vine) data.frame(
-    dur_peak_fam = get_copname(vine$family[3, 1]),
-    dur_peak_utd = vine$taildep$upper[3, 1],
-    dur_peak_ltd = vine$taildep$lower[3, 1],
-    
-    peak_dur_fam = get_copname(vine$family[3, 2]),
-    peak_dur_utd = vine$taildep$upper[3, 2],
-    peak_dur_ltd = vine$taildep$lower[3, 2],
-    
-    dur_vol_fam = get_copname(vine$family[2, 1]),
-    dur_vol_utd = vine$taildep$upper[2, 1],
-    dur_vol_ltd  = vine$taildep$lower[2, 1]
-  )
-) |> 
-  dplyr::bind_rows() |> 
-  tidyr::pivot_longer(
-    cols = c(contains("utd"), contains("ltd")),
-    names_to = "vars_td",
-    values_to = "td"
-  ) |> 
+  names(vines),
+  function(name) grab_taildeps(name, vines, cop_df)
+) |> dplyr::bind_rows()  
+taildep_df
+
+taildep_pos_sf = gkd2gg(taildep_df, coord_cols = c("east", "north")) |> 
+  dplyr::filter(river %in% considered) |> 
   dplyr::mutate(
-    rowid = dplyr::row_number(), 
+    river_station = dplyr::case_when(
+      river == "Isar" ~ "Isar_Station",
+      river == "Donau" ~ "Donau_Station"
+    )
   ) |> 
+  # Because I only used Gumbel, Frank and Clayton: A station has either upper or lower or neigher taildependence, but never both
   dplyr::mutate(
-    vars =  stringr::str_extract(vars_td, "^[^_]+_[^_]+"),  # Extract first two words
-    direction = stringr::str_extract(vars_td, "[^_]+$"),  # Extract third word
-    .by = rowid
-  ) |> dplyr::select(-vars_td, - rowid) 
+    # Let lower taildependence have negative sign FOR DISPLAY PURPSE
+    # Let upper tp have positive sign FOR DISPLAY PURPOSE
+    signed_taildep =  upper - lower  
+  ) 
 
 
-# Duration - Peak
-table(taildep_df$dur_peak_fam) / 6 # div by 6 to fix long df... This is so bad code but I am tired. Nice.
-taildep_df |> 
-  dplyr::filter(vars == "dur_peak", dur_peak_fam != "Frank") |> 
-  ggplot() + 
-  geom_boxplot(aes(y = td, color = direction)) + 
-  facet_wrap(~dur_peak_fam)
+taildep_bayern = ggplot(rivers_bayern) + 
+  # Displaying the actual data
+  # 1) Make background look like map
+  ggspatial::annotation_map_tile(type = "osm", zoom = 8) + 
+  # 2) Add the rivers twice. 
+  #   1st in black to give a outline for each river
+  #   (combination of fill and color does not work for geom_sf)
+  #   2nd the actual rivers in desired colors
+  # geom_sf(color = "black", linewidth = 2, alpha = 0.5) + # Outlines for the rivers
+  # geom_sf(linewidth = 1.5, color = "#00BfC4", alpha = 0.5) +
+  geom_sf(data = rivers_bayern |> dplyr::filter(river == "Isar"), linewidth = 2, color = "black") +
+  geom_sf(data = rivers_bayern |> dplyr::filter(river == "Isar"), linewidth = 1.5, color = "#F8766D") +
+  geom_sf(data = rivers_bayern |> dplyr::filter(river == "Donau"), linewidth = 2, color = "black") +
+  geom_sf(data = rivers_bayern |> dplyr::filter(river == "Donau"), linewidth = 1.5, color = "#7CAE00") +
+  # 3) Add the shape of Bayern on top to highlight the relevant area
+  geom_sf(data = bayern, fill = "white", alpha = 0.6, linewidth = .8) + 
+  # 4) Add station
+  # geom_sf(data = pos_sf, aes(color = river_station, shape = river_station, fill = river_station), size = 4) + 
+  # Formatiing of Data
+  theme_void() + 
+  theme(
+    # Remove the x and y ticks / labels
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    # Adjust the legend position and font size
+    legend.position = "bottom",  # Move legend to top-right
+    legend.margin = margin(1, 1, 1, 1),  # (top, right, bottom, left) padding
+    # legend.text = element_text(size = 20),  # Adjust size of legend labels
+    legend.title = element_text(size = 15, face = "bold"),
+    strip.text.x = element_text(size = 18)  # Adjust size of facet labels
+  ) 
 
+taildep_bayern + 
+  geom_sf(data = taildep_pos_sf, aes(color = signed_taildep), size = 4) + 
+  scale_color_gradient2(
+    low = "black",   
+    mid = "white",    
+    high = "#7B3294",  
+    midpoint = 0,
+    limits = c(-1, 1),
+    name = "Signed Tail.Dep."
+  ) + 
+  # scale_shape_manual(
+  #   name = "Copula",
+  #   values = c("Gumbel" = 15, "Clayton" = 16, "Frank" = 13, "rotated Gumbel" = 18, "rotated Clayton" = 17),
+  # ) + 
+  guides(
+    fill = guide_legend(order = 1),
+    color = guide_colorbar(barwidth = 10, barheight = 0.8, title.position = "top"),
+    shape = guide_legend(nrow = 2, byrow = TRUE)  # Arrange legend neatly in 2 rows
+  ) + 
+  theme(strip.text = element_text(size = 10)) + 
+  facet_wrap(~variables, labeller = 
+               as_labeller(c(
+                 "D - P" = "Duration - Peak",
+                 "D - V" = "Duration- Volume",
+                 "P - V" = "Peak - Volume"
+               )))
+if (save_plots) savegg("Taildep_Bayern", width = 10, height = 5)
 
-# Peak - Duration
-table(taildep_df$peak_dur_fam) / 6
-taildep_df |> 
-  dplyr::filter(vars == "peak_dur", peak_dur_fam != "Frank") |> 
-  ggplot() + 
-  geom_boxplot(aes(y = td, color = direction)) + 
-  facet_wrap(~peak_dur_fam)
-
-# Duration - Volume
-table(taildep_df$dur_vol_fam) / 6
-taildep_df |> 
-  dplyr::filter(vars == "dur_vol", dur_vol_fam != "Frank") |> 
-  ggplot() + 
-  geom_boxplot(aes(y = td, color = direction)) + 
-  facet_wrap(~dur_vol_fam)
-
-# What is tail dependence, what is a survival copula, what is a 180 degrees rotated copula and how is it different to surcical
-#   And why choose survival Gumbel over Clayton and why does Clayton copula density look so much different to Gumbel, even if rotated such that tail dependence has same direction
+  
 
 # Extension of Hydrology lecture to trivariate ----------------------------
 ggplot(
     data = auc_plot_df <- data.frame(
       x = seq(from = 0, to = max(scop_df$peak)),
-      y = dmarginal(x_marg, gev_peak)
+      y = dmarginal(seq(from = 0, to = max(scop_df$peak)), gev_peak)
     ),
     mapping = aes(x = x, y = y)
   ) + 
   geom_histogram(data = scop_df, mapping = aes(x = peak, y = after_stat(density)), fill = "white", alpha = 0.4, color = "black") + 
   geom_line(color = "blue", linewidth = 1) + 
   geom_area(data = auc_plot_df |> dplyr::filter(x >= last_flood$peak), fill = "red", alpha = 0.4) + 
-  geom_vline(xintercept = last_flood$peak, color = "red") 
+  geom_vline(xintercept = last_flood$peak, color = "red") +
+  labs(
+    x = latex2exp::TeX("Peak ($m^3/s$)"),
+    y = "Density",
+    title = "Munich station - GEV Fit on Peak"
+  ) + 
+  theme(
+    title = element_text(size = 20),
+    axis.text = element_text(size = 15),
+    axis.text.x = element_text(angle = 90),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title = element_text(size = 20)
+  )
 if (save_plots) savegg("marginal peak fit", width = 10, height = 5)
 # Compared to if only marginal
 # Approach from hydrology lecture: extReme package and fit gevd 
@@ -1055,7 +1105,7 @@ p1 = get_contour(
   sdf = scop_df, 
   varx = "pobs_dur", 
   vary = "pobs_peak", 
-  title = "Peak - Duration [G]", 
+  title = "Peak - Duration [C]", 
   y_lab = "P.Obs. Peak",
   x_lab = "P.Obs. Duration",
   bwidth = 0.1,
@@ -1071,7 +1121,7 @@ p2 = get_contour(
   sdf = scop_df, 
   varx = "pobs_peak", 
   vary = "pobs_vol", 
-  title = "Volume - Peak [G]", 
+  title = "Volume - Peak [SG]", 
   y_lab = "P.Obs. Volume",
   x_lab = "P.Obs. Duration",
   bwidth = 0.1,
@@ -1122,46 +1172,28 @@ print(paste("Probability of this event P(P <= p, V <= v, D <= d)", prob))
 # Return period value plot 
 HQ_probs
 data.frame(
-  peak  = qmarginal(1 - HQ_probs, gev_peak),
+  Peak  = qmarginal(1 - HQ_probs, gev_peak),
   rperiod = 1 / HQ_probs
 ) |> 
   ggplot() + 
-  geom_line(aes(x = rperiod, y = peak))
+  geom_line(aes(x = rperiod, y = Peak)) + 
+  geom_label(aes(x = rperiod, y = Peak, label = rperiod), size = 5) + 
+  labs(title = "Munich station - Return Periods", x = "Return Period (years)") + 
+  theme(
+    title = element_text(size = 20),
+    axis.text = element_text(size = 15),
+    axis.text.x = element_text(angle = 90),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title = element_text(size = 20)
+  )
+if (save_plots) savegg("univariateReturnPeriodsPeak", width = 10, height = 5)
 
 
 # IMPORTANT: This analysis is STATION specific
 # Marginals:
-# 
-# # Use HQ return period bzw. resulting probabilities as pobs_peak to condition on
-# HQ_probs
-# # Draw random sample from conditional copula and get inverse to unconditional 
-# cons_vine = lapply(
-#   HQ_probs,
-#   function(HQ_prob) rcond_vine_draws(HQ_prob, vines[[station]]) |> 
-#     dplyr::mutate(
-#       peak = qmarginal(pobs_peak, gev_peak),
-#       mio_vol= qmarginal(pobs_vol, gev_vol),
-#       d_dur = qmarginal(pobs_dur, gev_dur)
-#     )
-# )  |> 
-#   dplyr::bind_rows()
-# 
-# con_vine_smry = cons_vine |> 
-#   dplyr::summarise(
-#     avg_vol = mean(mio_vol),
-#     med_vol = median(mio_vol),
-#     mod_vol = "",
-#     avg_dur = mean(d_dur),
-#     med_dur = median(d_dur),
-#     mod_dur = "",
-#     cop = "vine",
-#     .by = hq_prob
-#   )
 
-
-
-
-
+# Use HQ return period bzw. resulting probabilities as pobs_peak to condition on
 
 # Initial values:
 # München: nac: vol = 400, dur = 20 --- vines: vol = 500, dur = 20
@@ -1169,10 +1201,10 @@ con_nac_smry = lapply(
   HQ_probs,
   function(hq_prob) get_most_probable_voldur(
       hq_prob = hq_prob,
-      initial_vol = 0,
-      initial_dur = 0,
+      initial_vol = 130,
+      initial_dur = 7,
       gev_vol = gev_vol,
-      gev_dur = gev_dur,   
+      gev_dur = gev_dur,
       gev_peak = gev_peak,
       mdl = nacs[[station]],
       mdl_type = "nac",
@@ -1187,7 +1219,7 @@ con_vine_smry = lapply(
   HQ_probs,
   function(hq_prob) get_most_probable_voldur(
       hq_prob = hq_prob,
-      initial_vol = 500,
+      initial_vol = 200,
       initial_dur = 20,
       gev_vol = gev_vol,
       gev_dur = gev_dur,   
@@ -1220,15 +1252,42 @@ checkpoints = scop_df |>
   ) |> 
   dplyr::filter(
     idx %in% ceiling((1 - HQ_probs) * nrow(scop_df))
+  ) |> 
+  dplyr::mutate(
+    hq = round(1 - (idx / nrow(scop_df)), 2)
   )
 
-
+# Issue:
+# The copula fit is fine, but the marginal fit is an issue
+# I underestimate duration for pretty much all stations. Reason ist seen in the syn data points after using marginal to re-transform
+#     --> There are data points far below the observed minimum and even around 0
+#   Thus: We have to improve marginal fit! 
+#   Else, our prediction is useless
+#   AND: I cannot really use inverse empirical PIT because then my data is thresholded by the observed data points
+#     i.e. I cannot really predict something that is outside of my data because empirical PIT basically bins all the data 
+#     and whenever a value is within a bin, it is assigned the observed value
+#   Good example: Hofkirchen
+# Another Issue:
+# Our estimation of most probable pair is numerically instable (yet)
 ggplot(con_smry) + 
-  geom_line(aes(x = vol, y = dur, group = type)) +
-  geom_point(aes(x = vol, y = dur, shape = type)) +
-  geom_label(aes(x = vol, y = dur, label = 1 / hq_prob)) +
+  geom_line(aes(x = vol, y = dur)) +
+  geom_point(aes(x = vol, y = dur)) +
+  geom_label(aes(x = vol, y = dur, label = 1 / hq_prob), size = 5) +
   geom_point(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60), color = "red") +
-  facet_wrap(~type)
+  geom_text(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60, label = ifelse(is.infinite(1 / hq), 500, round(1 / hq))), color = "red", nudge_y = 2, size = 5) +
+  facet_wrap(~type, scale = "free") + 
+  theme(
+    title = element_text(size = 20),
+    axis.text = element_text(size = 15),
+    axis.title = element_text(size = 20),
+    strip.text = element_text(size = 15)
+  ) + 
+  labs(
+    title = paste(station, "station - Most Likely Conditional Vol - Dur Pairs"),
+    x = latex2exp::TeX("Volume (Mio. $m^3$)"),
+    y = "Duration (days)"
+  )
+if (save_plots) savegg(paste("500HQ", station), width = 10, height = 5)
 # Vines capture underlying data way better than NACs. 
 # According to NACs, our data contains multiple flood events that were more severe than a 
 # flood with a HQ200 which triplet of (vol, peak, dur) would only appear every 200 years
@@ -1262,8 +1321,52 @@ cop_df |>
   ) 
 
 
+# TODO: Run this for all stations and explain why average and different sample method
+#   Then, go into how bad the model performs due to marginal duration fit 
+# Bc  approach so far is numerically instable, consider the average / median (/mode only if I have time) for stations for vines
+# This approach is actually numerically stable!
+# Draw random sample from conditional copula and get inverse to unconditional
+cons_vine = lapply(
+  HQ_probs,
+  function(HQ_prob) rcond_vine_draws(HQ_prob, vines[[station]]) |>
+    dplyr::mutate(
+      peak = qmarginal(pobs_peak, gev_peak),
+      mio_vol= qmarginal(pobs_vol, gev_vol),
+      d_dur = qmarginal(pobs_dur, gev_dur)
+    )
+)  |>
+  dplyr::bind_rows()
 
-
+con_vine_smry = cons_vine |>
+  dplyr::summarise(
+    avg_vol = mean(mio_vol),
+    med_vol = median(mio_vol),
+    mod_vol = "",
+    avg_dur = mean(d_dur),
+    med_dur = median(d_dur),
+    mod_dur = "",
+    cop = "vine",
+    .by = hq_prob
+  )
+con_vine_smry
+ggplot(con_vine_smry) + 
+  geom_line(aes(x = avg_vol, y = avg_dur)) +
+  geom_point(aes(x = avg_vol, y = avg_dur)) +
+  geom_label(aes(x = avg_vol, y = avg_dur, label = 1 / hq_prob), size = 5) + 
+  geom_text(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60, label = ifelse(is.infinite(1 / hq), 500, round(1 / hq))), color = "red", nudge_y = 2, size = 5) +
+  geom_point(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60), color = "red") + 
+  theme(
+    title = element_text(size = 20),
+    axis.text = element_text(size = 15),
+    axis.title = element_text(size = 20),
+    strip.text = element_text(size = 15)
+  ) + 
+  labs(
+    title = paste(station, "station - Most Likely Conditional Vol - Dur Pairs"),
+    x = latex2exp::TeX("Volume (Mio. $m^3$)"),
+    y = "Duration (days)"
+  )
+if (save_plots) savegg("500HQStableAverage", width = 10, height = 5)
 # Appendix ----------------------------------------------------------------
 # Munich station scatterplots
 # y: Volume, x: Peak

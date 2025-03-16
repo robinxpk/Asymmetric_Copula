@@ -616,10 +616,12 @@ create_copula_df = function(df){
   # Add meta data: id, unit, river, p_threshold
   copula_df = copula_df |> 
     dplyr::mutate(
-      id = unique(df$id),
-      unit = unique(df$unit),
-      river = unique(df$river),
-      p_threshold = unique(df$p_threshold)
+      id = df$id[1],
+      unit = df$unit[1],
+      east = df$pos_east[1],
+      north = df$pos_north[1],
+      river = df$river[1],
+      p_threshold = df$p_threshold[1]
     )
   
   return(copula_df)
@@ -692,14 +694,14 @@ create_dfs = function(
   if (debug) browser()
   
   # Create extended data frames for all CSVs
-  create_and_save_dfs(in_dir = data_path, out_dir = extended_dfs_path)
+  # create_and_save_dfs(in_dir = data_path, out_dir = extended_dfs_path)
   
   # Plot of complete cases
   if (evalCompleteness) evaluateCompleteness(in_dir = extended_dfs_path)
   
   # Apply straight line method to identify the most extreme flood event in each year
   # IMPORTANT: Flood event threshold uses QUANTILE of yearly distribution of discharge. Thus, threshold is p-th quantile
-  apply_and_save_slm(in_dir = extended_dfs_path, out_dir = threshold_dfs_path, p_threshold = p_threshold)
+  # apply_and_save_slm(in_dir = extended_dfs_path, out_dir = threshold_dfs_path, p_threshold = p_threshold)
   
   # Create hydrograph plots for every station and every year so I can go through them and check if it worked
   if (hydros) create_and_save_hydrographs(in_dir = threshold_dfs_path, out_dir = hydrograph_path) # TODO: Merge Hydrographs for thresholds into one plot and fix the ugly ass solution of what I called a plot. wtf.
@@ -714,7 +716,7 @@ create_dfs = function(
     ggplot(sum_df, aes(x = unit)) + geom_boxplot(aes(y = n))
   }
 }
-# create_dfs(p_threshold = c(.8, .9, .95), hydros = T)
+create_dfs(p_threshold = c(.75, .8, .9, .95))
 
 # # Isar data only
 # # create_and_save_dfs(in_dir = "../data/isar data/bis311224/", out_dir = "../data/output/rdata/extended_dfs/")

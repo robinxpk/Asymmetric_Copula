@@ -576,3 +576,44 @@ TODO:
 - (8 min start + daten)
 - (10min) Zeit für Methodik und Statistik part
 - 
+
+
+
+# Taildependence
+- How likely is it that two random variables jointly exhibit extreme behavior
+  - The coefficient itself is a probability in its limits
+    Thus, only positive values are possible and tail dependencies are at most 1
+  Meaning of limiting probability: 
+    The further we go towards 1 for one variable, the event of both variables being extreme shrinks towards 0   
+  - 0-value: For large values in one variable, the other is not affected 
+- Interpretation:
+  - Upper: As one variables takes on extremely large values, so does the other
+  - Lower: Vice-Versa
+- Copula families and Tail dependence:
+  - Tail dependence are determined by the parameter of the generator
+  - Frank: No tail dependence in either tail
+  - Clayton: Lower > 0, Upper = 0
+  - Gumbel: Lower = 0, Upper > 0
+    Note on Gumbel contour plot: 
+      - The plot does not reveal what happens in the limit, gives more of an overall feeling
+        That is, densitiy is high for Gumbel in both corners, but that does not reflect the limiting case
+        Since tail dependence is a function in the parameter, the limiting probability / lower tail dependence can be shown to be 0 
+
+- Important analysis aspect:
+  - For lower tail dependence: 
+    Variables are likely to both be small. 
+    That is, for a certain station, we expect a low peak if the volume is low too 
+  - For upper tail dependence:
+    Variables are likely to both be large:
+    For a certain station, we expect a large peak if the volume is large too
+  --> Our analysis suggests that these behaviors vary from station to station
+    Two variable pairs do not always keep one tail dependence behavior
+
+## Survival / rotated copulas and why to choose rotated Gumbel of Clayton
+- A 180 degree rotated copula is a survival copula
+- By rotation, upper tail dependence of a copula is turned into lower and vice versa
+
+- Choosing to rotate a copula family over another copula family that already contains a certain tail dependence is useful because a copula
+  family is not only described by their tail dependence. 
+  e.g. see (rotated) Gumbel copula and copare to Clayton. Even if both now describe upper tail dependence, the contour plots for the remaining 
+  structure still totally differs

@@ -888,13 +888,16 @@ marginal_fit = function(vec, type){
 
 dmarginal = function(vec, obj, type = "GEV"){
   mle = obj$results$par
+  shape = FALSE
+  if (type != "Gumbel") shape = mle[["shape"]]
+  
   
   return(
     extRemes::devd(
       vec, 
       loc = mle[["location"]],
       scale = mle[["scale"]], 
-      shape = mle[["shape"]], 
+      shape = shape,
       type = type 
     )
   )
@@ -902,13 +905,15 @@ dmarginal = function(vec, obj, type = "GEV"){
 
 pmarginal = function(vec, obj, type = "GEV"){
   mle = obj$results$par
+  shape = FALSE
+  if (type != "Gumbel") shape = mle[["shape"]]
   
   return(
     extRemes::pevd(
       vec, 
       loc = mle[["location"]],
       scale = mle[["scale"]], 
-      shape = mle[["shape"]], 
+      shape = shape,
       type = type 
     )
   )
@@ -1147,4 +1152,41 @@ get_most_probable_voldur = function(
   return(
     data.frame(vol = vol, dur = dur, hq_prob = hq_prob)
   )
+}
+
+grab_taildeps = function(station, vines, cop_df){
+  vine = vines[[station]]
+  df = cop_df |> dplyr::filter(unit == station)
+  river = df$river[1]
+  north = df$north[1]
+  east = df$east[1]
+  
+  data.frame(
+    variables = c(
+      "D - P",
+      "P - V",
+      "D - V"
+    ),
+    cop_fam = c(
+      get_copname(vine$family[3, 1]),
+      get_copname(vine$family[3, 2]),
+      get_copname(vine$family[2, 1])
+    ),
+    upper = c(
+      vine$taildep$upper[3, 1],
+      vine$taildep$upper[3, 2],
+      vine$taildep$upper[2, 1]
+    ),
+    lower = c(
+      vine$taildep$lower[3, 1],
+      vine$taildep$lower[3, 2],
+      vine$taildep$lower[2, 1]
+    )
+  ) |> 
+    dplyr::mutate(
+      river = river,
+      unit = station,
+      north = north,
+      east = east
+    )
 }
