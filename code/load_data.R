@@ -701,7 +701,7 @@ create_dfs = function(
   
   # Apply straight line method to identify the most extreme flood event in each year
   # IMPORTANT: Flood event threshold uses QUANTILE of yearly distribution of discharge. Thus, threshold is p-th quantile
-  # apply_and_save_slm(in_dir = extended_dfs_path, out_dir = threshold_dfs_path, p_threshold = p_threshold)
+  apply_and_save_slm(in_dir = extended_dfs_path, out_dir = threshold_dfs_path, p_threshold = p_threshold)
   
   # Create hydrograph plots for every station and every year so I can go through them and check if it worked
   if (hydros) create_and_save_hydrographs(in_dir = threshold_dfs_path, out_dir = hydrograph_path) # TODO: Merge Hydrographs for thresholds into one plot and fix the ugly ass solution of what I called a plot. wtf.

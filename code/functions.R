@@ -1055,7 +1055,21 @@ fit_nacs = function(cop_df, all_units){
 }
 
 
-fit_vines = function(cop_df, all_units){
+fit_vines = function(
+    cop_df, 
+    all_units,
+    # Vine structure we assumed (Conditional copula is dur|peak - vol|peak)
+    assumed_vine_structure =  matrix(
+      # 1 - 2 - 3 where: 1:dur, 2:peak, 3:vol
+      c(
+        1, 0, 0,
+        3, 2, 0,
+        2, 3, 3
+      ),
+      nrow = 3, ncol = 3,
+      byrow = TRUE
+    )
+  ){
   vines = lapply(
     all_units,
     function(name) {
@@ -1190,3 +1204,39 @@ grab_taildeps = function(station, vines, cop_df){
       east = east
     )
 }
+
+
+filter_cop_df = function(cop_df, n_minobs){
+  "
+  This functions removes the stations that have too little information to fit a copula on.
+  "
+  obs_status = cop_df |> 
+  dplyr::summarise(
+    n = dplyr::n(),
+    .by = c(river, unit)
+  ) |> 
+  dplyr::mutate(
+    nlarge = n > min_num_obs 
+  ) 
+  considered_stations = obs_status |> dplyr::filter(nlarge == TRUE)
+  removed_stations = obs_status |> dplyr::filter(nlarge == FALSE)
+  # cop_df only contains stations with more than threshold number of observations
+  message(
+    paste(length(considered_stations$unit), "stations considered")
+  )
+  message(
+    paste(length(removed_stations$unit), "stations removed")
+  )
+  message("Removed station table:")
+  table_details = data.frame(table(removed_stations$n))
+  colnames(table_details) = c("n", "count")
+  message(
+    paste0(
+      capture.output(table_details),
+      collapse = "\n"
+    )
+  )
+      
+  return(cop_df |> dplyr::filter(unit %in% considered_stations$unit))
+}
+

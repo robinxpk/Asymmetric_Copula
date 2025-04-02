@@ -7,15 +7,15 @@ library(ggplot2)
 # When (re)running the script, should plots be saved
 save_plots = FALSE
 # Selected station
-# station = "München" # Isar
-station = "Hofkirchen" # Donau
+station = "München" # Isar
+# station = "Hofkirchen" # Donau
 # station = "Sylvenstein"
 ref_year = 2024
 # Considered rivers 
 
 # Load data frames
 # Copula df with threshold of choice
-copula_threshold = 0.75
+copula_threshold = 0.9
 # With: 
 #   1) Reduce to considered rivers
 considered = c("Isar", "Donau")
@@ -1170,7 +1170,6 @@ print(paste("Probability of this event P(P <= p, V <= v, D <= d)", prob))
 
 # Volume - Duration pairs for HQ values -----------------------------------
 # Return period value plot 
-HQ_probs
 data.frame(
   Peak  = qmarginal(1 - HQ_probs, gev_peak),
   rperiod = 1 / HQ_probs
@@ -1244,7 +1243,7 @@ con_smry
 #   Select empirical quantiles of this and plot it to get a feeling of which one is a better fit
 checkpoints = scop_df |> 
   dplyr::arrange(
-    volume, duration_min
+    peak
     # duration_min, volume
   ) |> 
   dplyr::mutate(
@@ -1254,8 +1253,37 @@ checkpoints = scop_df |>
     idx %in% ceiling((1 - HQ_probs) * nrow(scop_df))
   ) |> 
   dplyr::mutate(
-    hq = round(1 - (idx / nrow(scop_df)), 2)
-  )
+    hq = pmax(round(1 - (idx / nrow(scop_df)), 2), 1 / 500),
+    hq_years = 1 / hq
+  ) |> 
+  dplyr::select(-c(id, east, north, river, n_floodevent))
+checkpoints
+# My prognosis is sucks giga hard as soon as the quantile method fails
+#     Idea: 1) Flood starts with stark rise in slop in hydrograph
+#             -> Calc slope using triangle and then use quantile slop to define when flood starts
+#               For now: Check a plot of slope. How does that look?
+#               i.e. Find peak --> Hydrograph (as now)
+#                   Find start of flood using quantiles of slope around that peak
+#                   Use indices to translate slop data at point with discharge values at point; 
+#                   -> Grab index of peak, Grab indices of start and end of flood --> Habe the 3 indices needed; Basically straight line method, but on the slopes
+#           2) Two flood events are considered the same event if there are only x hours between them 
+
+
+scop_df |> 
+  dplyr::arrange(
+    peak, volume, duration_min
+    # duration_min, volume
+  ) |> 
+  dplyr::select(year, duration_min, peak, volume, dplyr::contains("pobs")) |> 
+  dplyr::mutate(
+    idx = dplyr::row_number(),
+    .before = year
+  ) |> 
+  dplyr::arrange(desc(peak)) |> 
+  ggplot() + 
+  geom_point(aes(y = duration_min, x = volume, color = peak)) + 
+  # geom_point(data = checkpoints, aes(y = duration_min, x = volume), color = "red")
+  geom_text(data = checkpoints, mapping = aes(x = volume, y = duration_min, label = ifelse(is.infinite(1 / hq), 500, round(1 / hq))), color = "red") 
 
 # Issue:
 # The copula fit is fine, but the marginal fit is an issue
@@ -1274,7 +1302,7 @@ ggplot(con_smry) +
   geom_point(aes(x = vol, y = dur)) +
   geom_label(aes(x = vol, y = dur, label = 1 / hq_prob), size = 5) +
   geom_point(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60), color = "red") +
-  geom_text(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60, label = ifelse(is.infinite(1 / hq), 500, round(1 / hq))), color = "red", nudge_y = 2, size = 5) +
+  geom_text(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60, label = hq_years), color = "red", nudge_y = 2, size = 5) +
   facet_wrap(~type, scale = "free") + 
   theme(
     title = element_text(size = 20),
