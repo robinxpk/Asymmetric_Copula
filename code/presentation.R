@@ -7,8 +7,8 @@ library(ggplot2)
 # When (re)running the script, should plots be saved
 save_plots = FALSE
 # Selected station
-# station = "München" # Isar
-station = "Hofkirchen" # Donau
+station = "München" # Isar
+# station = "Hofkirchen" # Donau
 # station = "Sylvenstein"
 ref_year = 2024
 # Considered rivers 
@@ -497,8 +497,8 @@ table(considered_stations$n)
 print(paste("Total number of flood events:", cop_df |> nrow()))
 
 l_in_bathtub = 302
-l_therme_erdingen = 3.3e6
-cop_df |> 
+l_therme_erdingen = 3.3 # in Mio Liter
+sum_df = cop_df |> 
   dplyr::summarise(
     max_peak = max(peak),
     max_vol = max(volume),
@@ -506,12 +506,11 @@ cop_df |>
     .by = river
   ) |> dplyr::mutate(
     max_peak_tub = max_peak / l_in_bathtub,
-    max_vol_in_therme_erdingen = max_vol / l_therme_erdingen,
-    max_vol_in_mio_l = max_vol / 1e6
+    max_vol_in_therme_erdingen = max_vol / l_therme_erdingen
   )
+sum_df
 # Duration of the maximum volume floodings
-cop_df |> dplyr::filter(volume %in% c(6824363400, 1808050500)) |> dplyr::mutate(duration_days = duration_days)
-cop_df |> dplyr::mutate(duration_days = duration_days) |> dplyr::filter(duration_days > 87)
+cop_df |> dplyr::mutate(duration_days = duration_days) |> dplyr::filter(duration_days >= min(sum_df$max_dur))
 
 
 # All Stations - Corr Boxplots --------------------------------------------
@@ -553,47 +552,47 @@ cor_table |>
 if(save_plots) savegg("tau_boxplots", width = 15, height = 5)
 
 # Dependence structure by threshold
-all_cops |> dplyr::summarise(
-  n = dplyr::n(),
-  tau_vd = cor(volume, duration_days, method = "kendall"),
-  tau_vp = cor(volume, peak, method = "kendall"),
-  tau_dp = cor(duration_days, peak, method = "kendall"),
-  .by = c(river, unit, p_threshold)
-) |> 
-  dplyr::filter(n > 30, river == "Isar") |> 
-  tidyr::pivot_longer(
-    cols = c(tau_vd, tau_vp, tau_dp),
-    names_to = "tau",
-    values_to = "val"
-  ) |> 
-  dplyr::mutate(
-    tau = dplyr::case_when(
-      tau == "tau_dp" ~ "Duration - Peak",
-      tau == "tau_vd" ~ "Volume - Duration",
-      tau == "tau_vp" ~ "Volume - Peak"
-    ),
-    tau = as.factor(tau)
-  ) |> 
-  ggplot() + 
-  geom_line(aes(y = val, x = p_threshold, color = tau)) + 
-  # geom_point(data = paper_tau, aes(y = value, x = p_), color = "black", alpha = 0.7) + # Add paper taus
-  geom_hline(yintercept = 0, linetype = 2) + 
-  theme(
-    legend.position = "bottom",
-    strip.text = element_text(size = 15)
-  ) + 
-  labs(
-    y = latex2exp::TeX("$ \\widehat{\\tau}$"),
-    x = ""
-  ) + 
-  theme(
-    title = element_text(size = 20),
-    axis.text = element_text(size = 15),
-    axis.title = element_text(size = 20)
-  ) +
-  ylim(-.5,  1) + 
-  facet_wrap(~ unit)
-if (save_plots) savegg("tau_for_different_thresholds_Isar", width = 10, height = 5)
+# all_cops |> dplyr::summarise(
+#   n = dplyr::n(),
+#   tau_vd = cor(volume, duration_days, method = "kendall"),
+#   tau_vp = cor(volume, peak, method = "kendall"),
+#   tau_dp = cor(duration_days, peak, method = "kendall"),
+#   .by = c(river, unit, p_threshold)
+# ) |> 
+#   dplyr::filter(n > 30, river == "Isar") |> 
+#   tidyr::pivot_longer(
+#     cols = c(tau_vd, tau_vp, tau_dp),
+#     names_to = "tau",
+#     values_to = "val"
+#   ) |> 
+#   dplyr::mutate(
+#     tau = dplyr::case_when(
+#       tau == "tau_dp" ~ "Duration - Peak",
+#       tau == "tau_vd" ~ "Volume - Duration",
+#       tau == "tau_vp" ~ "Volume - Peak"
+#     ),
+#     tau = as.factor(tau)
+#   ) |> 
+#   ggplot() + 
+#   geom_line(aes(y = val, x = p_threshold, color = tau)) + 
+#   # geom_point(data = paper_tau, aes(y = value, x = p_), color = "black", alpha = 0.7) + # Add paper taus
+#   geom_hline(yintercept = 0, linetype = 2) + 
+#   theme(
+#     legend.position = "bottom",
+#     strip.text = element_text(size = 15)
+#   ) + 
+#   labs(
+#     y = latex2exp::TeX("$ \\widehat{\\tau}$"),
+#     x = ""
+#   ) + 
+#   theme(
+#     title = element_text(size = 20),
+#     axis.text = element_text(size = 15),
+#     axis.title = element_text(size = 20)
+#   ) +
+#   ylim(-.5,  1) + 
+#   facet_wrap(~ unit)
+# if (save_plots) savegg("tau_for_different_thresholds_Isar", width = 10, height = 5)
 
 
 # Methods -----------------------------------------------------------------
@@ -1212,7 +1211,7 @@ con_vine_smry = lapply(
   HQ_probs,
   function(hq_prob) get_most_probable_voldur(
       hq_prob = hq_prob,
-      initial_vol = 3000,
+      initial_vol = 200,
       initial_dur = 40,
       gev_vol = gev_vol,
       gev_dur = gev_dur,   
@@ -1383,9 +1382,9 @@ con_vine_smry = cons_vine |>
 con_vine_smry
 ggplot(con_vine_smry) + 
   geom_point(data = scop_df, aes(y = duration_days, x = volume, color = peak)) + 
-  geom_line(aes(x = mod_vol, y = mod_dur)) +
-  geom_point(aes(x = mod_vol, y = mod_dur)) +
-  geom_label(aes(x = mod_vol, y = mod_dur, label = 1 / hq_prob), size = 5) + 
+  geom_line(aes(x = avg_vol, y = avg_dur)) +
+  geom_point(aes(x = avg_vol, y = avg_dur)) +
+  geom_label(aes(x = avg_vol, y = avg_dur, label = 1 / hq_prob), size = 5) + 
   # geom_text(data = checkpoints, mapping = aes(x = volume, y = duration_days, label = ifelse(is.infinite(1 / hq), 500, round(1 / hq))), color = "red", nudge_y = 2, size = 5) +
   # geom_point(data = checkpoints, mapping = aes(x = volume, y = duration_days), color = "red") + 
   theme(

@@ -1,48 +1,1642 @@
-starting worker pid=19836 on localhost:11526 at 13:19:11.070
-starting worker pid=22612 on localhost:11526 at 13:19:11.309
-starting worker pid=13672 on localhost:11526 at 13:19:11.538
-starting worker pid=22308 on localhost:11526 at 13:19:11.770
-starting worker pid=12572 on localhost:11526 at 13:19:12.016
-starting worker pid=18592 on localhost:11526 at 13:19:12.240
-starting worker pid=16664 on localhost:11526 at 13:19:31.664
-starting worker pid=5640 on localhost:11526 at 13:19:31.927
-starting worker pid=16824 on localhost:11526 at 13:19:32.147
-starting worker pid=13588 on localhost:11526 at 13:19:32.353
-starting worker pid=23460 on localhost:11526 at 13:19:32.573
-starting worker pid=23404 on localhost:11526 at 13:19:32.791
-Fehler in unserialize(node$con) : Lesefehler aus Verbindung
-Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
-Ausführung angehalten
-Ausführung angehalten
-Fehler in unserialize(node$con) : Lesefehler aus Verbindung
-Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
-Ausführung angehalten
-Fehler in unserialize(node$con) : Lesefehler aus Verbindung
-Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
-Ausführung angehalten
-Fehler in unserialize(node$con) : Lesefehler aus Verbindung
-Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
-Ausführung angehalten
-starting worker pid=14396 on localhost:11526 at 13:20:26.927
-starting worker pid=21880 on localhost:11526 at 13:20:27.139
-starting worker pid=10968 on localhost:11526 at 13:20:27.363
-starting worker pid=23236 on localhost:11526 at 13:20:27.600
-starting worker pid=12916 on localhost:11526 at 13:20:27.846
-starting worker pid=23160 on localhost:11526 at 13:20:28.064
-Fehler in unserialize(node$con) : Lesefehler aus Verbindung
-Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
-Ausführung angehalten
-Fehler in unserialize(node$con) : Lesefehler aus Verbindung
-Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
-Ausführung angehalten
-Fehler in unserialize(node$con) : Lesefehler aus Verbindung
-Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
-Ausführung angehalten
-Fehler in unserialize(node$con) : Lesefehler aus Verbindung
-Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
-Fehler in unserialize(node$con) : Lesefehler aus Verbindung
-Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
-Ausführung angehalten
-Fehler in unserialize(node$con) : Lesefehler aus Verbindung
-Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
-Ausführung angehalten
+starting worker pid=21292 on localhost:11289 at 12:28:52.422
+starting worker pid=16196 on localhost:11289 at 12:28:52.626
+starting worker pid=16576 on localhost:11289 at 12:28:52.820
+starting worker pid=6592 on localhost:11289 at 12:28:52.988
+starting worker pid=16620 on localhost:11289 at 12:28:53.195
+starting worker pid=19028 on localhost:11289 at 12:28:53.388
+starting worker pid=20908 on localhost:11289 at 12:31:15.155
+starting worker pid=20848 on localhost:11289 at 12:31:15.335
+starting worker pid=20952 on localhost:11289 at 12:31:15.506
+starting worker pid=9452 on localhost:11289 at 12:31:15.675
+starting worker pid=21080 on localhost:11289 at 12:31:15.853
+starting worker pid=15820 on localhost:11289 at 12:31:16.078
+starting worker pid=10344 on localhost:11289 at 12:36:24.706
+starting worker pid=11260 on localhost:11289 at 12:36:24.861
+starting worker pid=8040 on localhost:11289 at 12:36:25.017
+starting worker pid=20160 on localhost:11289 at 12:36:25.213
+starting worker pid=16620 on localhost:11289 at 12:36:25.378
+starting worker pid=10028 on localhost:11289 at 12:36:25.539
+starting worker pid=18716 on localhost:11289 at 12:39:24.674
+starting worker pid=7724 on localhost:11289 at 12:39:24.831
+starting worker pid=20388 on localhost:11289 at 12:39:24.987
+starting worker pid=19588 on localhost:11289 at 12:39:25.149
+starting worker pid=19296 on localhost:11289 at 12:39:25.318
+starting worker pid=4180 on localhost:11289 at 12:39:25.479
+Warnmeldung:
+Paket 'patchwork' wurde unter R Version 4.4.2 erstellt 
+Warnmeldung:
+Paket 'patchwork' wurde unter R Version 4.4.2 erstellt 
+Warnmeldung:
+Paket 'patchwork' wurde unter R Version 4.4.2 erstellt 
+Warnmeldung:
+Paket 'patchwork' wurde unter R Version 4.4.2 erstellt 
+Warnmeldung:
+Paket 'patchwork' wurde unter R Version 4.4.2 erstellt 
+Warnmeldung:
+Paket 'patchwork' wurde unter R Version 4.4.2 erstellt 
+starting worker pid=20636 on localhost:11289 at 12:42:15.608
+starting worker pid=10148 on localhost:11289 at 12:42:15.769
+starting worker pid=15728 on localhost:11289 at 12:42:15.925
+starting worker pid=12444 on localhost:11289 at 12:42:16.086
+starting worker pid=13416 on localhost:11289 at 12:42:16.248
+starting worker pid=20848 on localhost:11289 at 12:42:16.423
+Called from: eval(.doSnowGlobals$expr, envir = .doSnowGlobals$exportenv)
+Warnmeldungen:
+1: Paket 'patchwork' wurde unter R Version 4.4.2 erstellt 
+2: Unknown or uninitialised column: `p_threshold`. 
+3: Unknown or uninitialised column: `p_threshold`. 
+4: Unknown or uninitialised column: `p_threshold`. 
+5: Unknown or uninitialised column: `p_threshold`. 
+6: Unknown or uninitialised column: `p_threshold`. 
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10026302_2020.png
+Saving:../data/output/graphs/hydrographs/10026302_2021.png
+Saving:../data/output/graphs/hydrographs/10026302_2022.png
+Called from: eval(.doSnowGlobals$expr, envir = .doSnowGlobals$exportenv)
+Es gab 28 Warnungen (Anzeige mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10032009_1972.png
+Saving:../data/output/graphs/hydrographs/10026302_2023.png
+Saving:../data/output/graphs/hydrographs/10032009_1973.png
+Saving:../data/output/graphs/hydrographs/10026302_2024.png
+Saving:../data/output/graphs/hydrographs/10032009_1974.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Called from: eval(.doSnowGlobals$expr, envir = .doSnowGlobals$exportenv)
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10026301_1971.png
+Saving:../data/output/graphs/hydrographs/10032009_1975.png
+Called from: eval(.doSnowGlobals$expr, envir = .doSnowGlobals$exportenv)
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10035801_1971.png
+Called from: eval(.doSnowGlobals$expr, envir = .doSnowGlobals$exportenv)
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10039802_1971.png
+Called from: eval(.doSnowGlobals$expr, envir = .doSnowGlobals$exportenv)
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10046105_1971.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/10032009_1999.png
+Saving:../data/output/graphs/hydrographs/10026301_1972.png
+Saving:../data/output/graphs/hydrographs/10039802_1972.png
+Saving:../data/output/graphs/hydrographs/10035801_1972.png
+debug bei functions.R#561: browser()
+Es gab 15 Warnungen (Anzeige mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10051105_2010.png
+Saving:../data/output/graphs/hydrographs/10046105_1972.png
+Saving:../data/output/graphs/hydrographs/10032009_2000.png
+Saving:../data/output/graphs/hydrographs/10026301_1973.png
+Saving:../data/output/graphs/hydrographs/10039802_1973.png
+Saving:../data/output/graphs/hydrographs/10035801_1973.png
+Saving:../data/output/graphs/hydrographs/10051105_2011.png
+Saving:../data/output/graphs/hydrographs/10046105_1973.png
+Saving:../data/output/graphs/hydrographs/10032009_2001.png
+Saving:../data/output/graphs/hydrographs/10026301_1974.png
+Saving:../data/output/graphs/hydrographs/10039802_1974.png
+Saving:../data/output/graphs/hydrographs/10035801_1974.png
+Saving:../data/output/graphs/hydrographs/10046105_1974.png
+Saving:../data/output/graphs/hydrographs/10051105_2012.png
+Saving:../data/output/graphs/hydrographs/10032009_2002.png
+Saving:../data/output/graphs/hydrographs/10026301_1975.png
+Saving:../data/output/graphs/hydrographs/10039802_1975.png
+Saving:../data/output/graphs/hydrographs/10035801_1975.png
+Saving:../data/output/graphs/hydrographs/10046105_1975.png
+Saving:../data/output/graphs/hydrographs/10051105_2013.png
+Saving:../data/output/graphs/hydrographs/10032009_2003.png
+Saving:../data/output/graphs/hydrographs/10026301_1976.png
+Saving:../data/output/graphs/hydrographs/10039802_1976.png
+Saving:../data/output/graphs/hydrographs/10035801_1976.png
+Saving:../data/output/graphs/hydrographs/10046105_1976.png
+Saving:../data/output/graphs/hydrographs/10051105_2014.png
+Saving:../data/output/graphs/hydrographs/10032009_2004.png
+Saving:../data/output/graphs/hydrographs/10039802_1977.png
+Saving:../data/output/graphs/hydrographs/10026301_1977.png
+Saving:../data/output/graphs/hydrographs/10035801_1977.png
+Saving:../data/output/graphs/hydrographs/10046105_1977.png
+Saving:../data/output/graphs/hydrographs/10051105_2015.png
+Saving:../data/output/graphs/hydrographs/10032009_2005.png
+Saving:../data/output/graphs/hydrographs/10039802_1978.png
+Saving:../data/output/graphs/hydrographs/10026301_1978.png
+Saving:../data/output/graphs/hydrographs/10035801_1978.png
+Saving:../data/output/graphs/hydrographs/10046105_1978.png
+Saving:../data/output/graphs/hydrographs/10051105_2016.png
+Saving:../data/output/graphs/hydrographs/10032009_2006.png
+Saving:../data/output/graphs/hydrographs/10039802_1979.png
+Saving:../data/output/graphs/hydrographs/10026301_1979.png
+Saving:../data/output/graphs/hydrographs/10035801_1979.png
+Saving:../data/output/graphs/hydrographs/10046105_1979.png
+Saving:../data/output/graphs/hydrographs/10051105_2017.png
+Saving:../data/output/graphs/hydrographs/10032009_2007.png
+Saving:../data/output/graphs/hydrographs/10039802_1980.png
+Saving:../data/output/graphs/hydrographs/10026301_1980.png
+Saving:../data/output/graphs/hydrographs/10035801_1980.png
+Saving:../data/output/graphs/hydrographs/10046105_1980.png
+Saving:../data/output/graphs/hydrographs/10051105_2018.png
+Saving:../data/output/graphs/hydrographs/10039802_1981.png
+Saving:../data/output/graphs/hydrographs/10032009_2008.png
+Saving:../data/output/graphs/hydrographs/10026301_1981.png
+Saving:../data/output/graphs/hydrographs/10035801_1981.png
+Saving:../data/output/graphs/hydrographs/10046105_1981.png
+Saving:../data/output/graphs/hydrographs/10051105_2019.png
+Saving:../data/output/graphs/hydrographs/10039802_1982.png
+Saving:../data/output/graphs/hydrographs/10032009_2009.png
+Saving:../data/output/graphs/hydrographs/10035801_1982.png
+Saving:../data/output/graphs/hydrographs/10026301_1982.png
+Saving:../data/output/graphs/hydrographs/10046105_1982.png
+Saving:../data/output/graphs/hydrographs/10051105_2020.png
+Saving:../data/output/graphs/hydrographs/10035801_1983.png
+Saving:../data/output/graphs/hydrographs/10039802_1983.png
+Saving:../data/output/graphs/hydrographs/10032009_2010.png
+Saving:../data/output/graphs/hydrographs/10026301_1983.png
+Saving:../data/output/graphs/hydrographs/10046105_1983.png
+Saving:../data/output/graphs/hydrographs/10051105_2021.png
+Saving:../data/output/graphs/hydrographs/10035801_1984.png
+Saving:../data/output/graphs/hydrographs/10039802_1984.png
+Saving:../data/output/graphs/hydrographs/10026301_1984.png
+Saving:../data/output/graphs/hydrographs/10046105_1984.png
+Saving:../data/output/graphs/hydrographs/10032009_2011.png
+Saving:../data/output/graphs/hydrographs/10051105_2022.png
+Saving:../data/output/graphs/hydrographs/10035801_1985.png
+Saving:../data/output/graphs/hydrographs/10039802_1985.png
+Saving:../data/output/graphs/hydrographs/10026301_1985.png
+Saving:../data/output/graphs/hydrographs/10046105_1985.png
+Saving:../data/output/graphs/hydrographs/10032009_2012.png
+Saving:../data/output/graphs/hydrographs/10051105_2023.png
+Saving:../data/output/graphs/hydrographs/10035801_1986.png
+Saving:../data/output/graphs/hydrographs/10039802_1986.png
+Saving:../data/output/graphs/hydrographs/10046105_1986.png
+Saving:../data/output/graphs/hydrographs/10026301_1986.png
+Saving:../data/output/graphs/hydrographs/10032009_2013.png
+Saving:../data/output/graphs/hydrographs/10035801_1987.png
+Saving:../data/output/graphs/hydrographs/10051105_2024.png
+Saving:../data/output/graphs/hydrographs/10039802_1987.png
+Saving:../data/output/graphs/hydrographs/10046105_1987.png
+Saving:../data/output/graphs/hydrographs/10026301_1987.png
+Saving:../data/output/graphs/hydrographs/10032009_2014.png
+Saving:../data/output/graphs/hydrographs/10035801_1988.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Warnmeldung:
+Removed 1 row containing missing values or values outside the scale range
+(`geom_line()`). 
+Saving:../data/output/graphs/hydrographs/10039802_1988.png
+Saving:../data/output/graphs/hydrographs/10046105_1988.png
+Saving:../data/output/graphs/hydrographs/10026301_1988.png
+Saving:../data/output/graphs/hydrographs/10032009_2015.png
+Saving:../data/output/graphs/hydrographs/10035801_1989.png
+Saving:../data/output/graphs/hydrographs/10039802_1989.png
+Saving:../data/output/graphs/hydrographs/10046105_1989.png
+Saving:../data/output/graphs/hydrographs/10026301_1989.png
+Saving:../data/output/graphs/hydrographs/10032009_2016.png
+Saving:../data/output/graphs/hydrographs/10035801_1990.png
+Saving:../data/output/graphs/hydrographs/10039802_1990.png
+Saving:../data/output/graphs/hydrographs/10046105_1990.png
+Saving:../data/output/graphs/hydrographs/10026301_1990.png
+Saving:../data/output/graphs/hydrographs/10032009_2020.png
+Saving:../data/output/graphs/hydrographs/10035801_1991.png
+Saving:../data/output/graphs/hydrographs/10046105_1991.png
+Saving:../data/output/graphs/hydrographs/10039802_1991.png
+Saving:../data/output/graphs/hydrographs/10026301_1991.png
+Saving:../data/output/graphs/hydrographs/10032009_2021.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/10035801_1992.png
+Saving:../data/output/graphs/hydrographs/10046105_1992.png
+Saving:../data/output/graphs/hydrographs/10039802_1992.png
+Saving:../data/output/graphs/hydrographs/10026301_1992.png
+Saving:../data/output/graphs/hydrographs/10032009_2022.png
+Saving:../data/output/graphs/hydrographs/10035801_1993.png
+Saving:../data/output/graphs/hydrographs/10046105_1993.png
+Saving:../data/output/graphs/hydrographs/10039802_1993.png
+Saving:../data/output/graphs/hydrographs/10026301_1993.png
+Saving:../data/output/graphs/hydrographs/10035801_1994.png
+Saving:../data/output/graphs/hydrographs/10032009_2023.png
+Saving:../data/output/graphs/hydrographs/10046105_1994.png
+Saving:../data/output/graphs/hydrographs/10039802_1994.png
+Saving:../data/output/graphs/hydrographs/10026301_1994.png
+Saving:../data/output/graphs/hydrographs/10035801_1995.png
+Saving:../data/output/graphs/hydrographs/10032009_2024.png
+Saving:../data/output/graphs/hydrographs/10046105_1995.png
+Saving:../data/output/graphs/hydrographs/10039802_1995.png
+Saving:../data/output/graphs/hydrographs/10026301_1995.png
+Saving:../data/output/graphs/hydrographs/10035801_1996.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10053009_1971.png
+Saving:../data/output/graphs/hydrographs/10039802_1996.png
+Saving:../data/output/graphs/hydrographs/10046105_1996.png
+Saving:../data/output/graphs/hydrographs/10026301_1996.png
+Saving:../data/output/graphs/hydrographs/10035801_1997.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/10039802_1997.png
+Saving:../data/output/graphs/hydrographs/10046105_1997.png
+Saving:../data/output/graphs/hydrographs/10026301_1997.png
+Saving:../data/output/graphs/hydrographs/10035801_1998.png
+Saving:../data/output/graphs/hydrographs/10039802_1998.png
+debug bei functions.R#561: browser()
+Es gab 20 Warnungen (Anzeige mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10054500_2005.png
+Saving:../data/output/graphs/hydrographs/10046105_1998.png
+Saving:../data/output/graphs/hydrographs/10026301_1998.png
+Saving:../data/output/graphs/hydrographs/10035801_1999.png
+Saving:../data/output/graphs/hydrographs/10039802_1999.png
+Saving:../data/output/graphs/hydrographs/10046105_1999.png
+Saving:../data/output/graphs/hydrographs/10054500_2006.png
+Saving:../data/output/graphs/hydrographs/10026301_1999.png
+Saving:../data/output/graphs/hydrographs/10035801_2000.png
+Saving:../data/output/graphs/hydrographs/10053009_1972.png
+Saving:../data/output/graphs/hydrographs/10039802_2000.png
+Saving:../data/output/graphs/hydrographs/10046105_2000.png
+Saving:../data/output/graphs/hydrographs/10026301_2000.png
+Saving:../data/output/graphs/hydrographs/10054500_2007.png
+Saving:../data/output/graphs/hydrographs/10035801_2001.png
+Saving:../data/output/graphs/hydrographs/10046105_2001.png
+Saving:../data/output/graphs/hydrographs/10039802_2001.png
+Saving:../data/output/graphs/hydrographs/10026301_2001.png
+Saving:../data/output/graphs/hydrographs/10054500_2008.png
+Saving:../data/output/graphs/hydrographs/10035801_2002.png
+Saving:../data/output/graphs/hydrographs/10053009_1973.png
+Saving:../data/output/graphs/hydrographs/10046105_2002.png
+Saving:../data/output/graphs/hydrographs/10039802_2002.png
+Saving:../data/output/graphs/hydrographs/10026301_2002.png
+Saving:../data/output/graphs/hydrographs/10054500_2009.png
+Saving:../data/output/graphs/hydrographs/10035801_2003.png
+Saving:../data/output/graphs/hydrographs/10046105_2003.png
+Saving:../data/output/graphs/hydrographs/10039802_2003.png
+Saving:../data/output/graphs/hydrographs/10026301_2003.png
+Saving:../data/output/graphs/hydrographs/10035801_2004.png
+Saving:../data/output/graphs/hydrographs/10054500_2010.png
+Saving:../data/output/graphs/hydrographs/10053009_1974.png
+Saving:../data/output/graphs/hydrographs/10046105_2004.png
+Saving:../data/output/graphs/hydrographs/10039802_2004.png
+Saving:../data/output/graphs/hydrographs/10026301_2004.png
+Saving:../data/output/graphs/hydrographs/10035801_2005.png
+Saving:../data/output/graphs/hydrographs/10054500_2011.png
+Saving:../data/output/graphs/hydrographs/10046105_2005.png
+Saving:../data/output/graphs/hydrographs/10039802_2005.png
+Saving:../data/output/graphs/hydrographs/10026301_2005.png
+Saving:../data/output/graphs/hydrographs/10053009_1975.png
+Saving:../data/output/graphs/hydrographs/10035801_2006.png
+Saving:../data/output/graphs/hydrographs/10054500_2012.png
+Saving:../data/output/graphs/hydrographs/10039802_2006.png
+Saving:../data/output/graphs/hydrographs/10046105_2006.png
+Saving:../data/output/graphs/hydrographs/10026301_2006.png
+Saving:../data/output/graphs/hydrographs/10035801_2007.png
+Saving:../data/output/graphs/hydrographs/10054500_2013.png
+Saving:../data/output/graphs/hydrographs/10053009_1976.png
+Saving:../data/output/graphs/hydrographs/10039802_2007.png
+Saving:../data/output/graphs/hydrographs/10046105_2007.png
+Saving:../data/output/graphs/hydrographs/10026301_2007.png
+Saving:../data/output/graphs/hydrographs/10035801_2008.png
+Saving:../data/output/graphs/hydrographs/10054500_2014.png
+Saving:../data/output/graphs/hydrographs/10039802_2008.png
+Saving:../data/output/graphs/hydrographs/10046105_2008.png
+Saving:../data/output/graphs/hydrographs/10026301_2008.png
+Saving:../data/output/graphs/hydrographs/10053009_1977.png
+Saving:../data/output/graphs/hydrographs/10035801_2009.png
+Saving:../data/output/graphs/hydrographs/10054500_2015.png
+Saving:../data/output/graphs/hydrographs/10039802_2009.png
+Saving:../data/output/graphs/hydrographs/10046105_2009.png
+Saving:../data/output/graphs/hydrographs/10026301_2009.png
+Saving:../data/output/graphs/hydrographs/10053009_1978.png
+Saving:../data/output/graphs/hydrographs/10035801_2010.png
+Saving:../data/output/graphs/hydrographs/10054500_2016.png
+Saving:../data/output/graphs/hydrographs/10046105_2010.png
+Saving:../data/output/graphs/hydrographs/10039802_2010.png
+Saving:../data/output/graphs/hydrographs/10026301_2010.png
+Saving:../data/output/graphs/hydrographs/10035801_2011.png
+Saving:../data/output/graphs/hydrographs/10053009_1979.png
+Saving:../data/output/graphs/hydrographs/10054500_2017.png
+Saving:../data/output/graphs/hydrographs/10046105_2011.png
+Saving:../data/output/graphs/hydrographs/10039802_2011.png
+Saving:../data/output/graphs/hydrographs/10026301_2011.png
+Saving:../data/output/graphs/hydrographs/10035801_2012.png
+Saving:../data/output/graphs/hydrographs/10053009_1980.png
+Saving:../data/output/graphs/hydrographs/10054500_2018.png
+Saving:../data/output/graphs/hydrographs/10039802_2012.png
+Saving:../data/output/graphs/hydrographs/10026301_2012.png
+Saving:../data/output/graphs/hydrographs/10046105_2012.png
+Saving:../data/output/graphs/hydrographs/10035801_2013.png
+Saving:../data/output/graphs/hydrographs/10054500_2019.png
+Saving:../data/output/graphs/hydrographs/10053009_1981.png
+Saving:../data/output/graphs/hydrographs/10039802_2013.png
+Saving:../data/output/graphs/hydrographs/10026301_2013.png
+Saving:../data/output/graphs/hydrographs/10046105_2013.png
+Saving:../data/output/graphs/hydrographs/10035801_2014.png
+Saving:../data/output/graphs/hydrographs/10054500_2020.png
+Saving:../data/output/graphs/hydrographs/10053009_1982.png
+Saving:../data/output/graphs/hydrographs/10039802_2014.png
+Saving:../data/output/graphs/hydrographs/10026301_2014.png
+Saving:../data/output/graphs/hydrographs/10046105_2014.png
+Saving:../data/output/graphs/hydrographs/10035801_2015.png
+Saving:../data/output/graphs/hydrographs/10054500_2021.png
+Saving:../data/output/graphs/hydrographs/10053009_1983.png
+Saving:../data/output/graphs/hydrographs/10039802_2015.png
+Saving:../data/output/graphs/hydrographs/10026301_2015.png
+Saving:../data/output/graphs/hydrographs/10046105_2015.png
+Saving:../data/output/graphs/hydrographs/10035801_2016.png
+Saving:../data/output/graphs/hydrographs/10053009_1984.png
+Saving:../data/output/graphs/hydrographs/10054500_2022.png
+Saving:../data/output/graphs/hydrographs/10039802_2016.png
+Saving:../data/output/graphs/hydrographs/10026301_2016.png
+Saving:../data/output/graphs/hydrographs/10046105_2016.png
+Saving:../data/output/graphs/hydrographs/10035801_2017.png
+Saving:../data/output/graphs/hydrographs/10053009_1985.png
+Saving:../data/output/graphs/hydrographs/10054500_2023.png
+Saving:../data/output/graphs/hydrographs/10039802_2017.png
+Saving:../data/output/graphs/hydrographs/10026301_2017.png
+Saving:../data/output/graphs/hydrographs/10046105_2017.png
+Saving:../data/output/graphs/hydrographs/10035801_2018.png
+Saving:../data/output/graphs/hydrographs/10053009_1986.png
+Saving:../data/output/graphs/hydrographs/10054500_2024.png
+Saving:../data/output/graphs/hydrographs/10039802_2018.png
+Saving:../data/output/graphs/hydrographs/10026301_2018.png
+Saving:../data/output/graphs/hydrographs/10046105_2018.png
+Saving:../data/output/graphs/hydrographs/10035801_2019.png
+Saving:../data/output/graphs/hydrographs/10053009_1987.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/10039802_2019.png
+Saving:../data/output/graphs/hydrographs/10026301_2019.png
+Saving:../data/output/graphs/hydrographs/10046105_2019.png
+Saving:../data/output/graphs/hydrographs/10035801_2020.png
+Saving:../data/output/graphs/hydrographs/10053009_1988.png
+Saving:../data/output/graphs/hydrographs/10039802_2020.png
+Saving:../data/output/graphs/hydrographs/10026301_2020.png
+Saving:../data/output/graphs/hydrographs/10046105_2020.png
+Saving:../data/output/graphs/hydrographs/10035801_2021.png
+Saving:../data/output/graphs/hydrographs/10053009_1989.png
+Saving:../data/output/graphs/hydrographs/10039802_2021.png
+Saving:../data/output/graphs/hydrographs/10026301_2021.png
+Saving:../data/output/graphs/hydrographs/10046105_2021.png
+Saving:../data/output/graphs/hydrographs/10035801_2022.png
+Saving:../data/output/graphs/hydrographs/10053009_1990.png
+Saving:../data/output/graphs/hydrographs/10026301_2024.png
+Saving:../data/output/graphs/hydrographs/10039802_2022.png
+Saving:../data/output/graphs/hydrographs/10046105_2022.png
+Saving:../data/output/graphs/hydrographs/10035801_2023.png
+Saving:../data/output/graphs/hydrographs/10053009_1991.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/10039802_2023.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/10046105_2023.png
+Saving:../data/output/graphs/hydrographs/10035801_2024.png
+Saving:../data/output/graphs/hydrographs/10053009_1992.png
+Saving:../data/output/graphs/hydrographs/10046105_2024.png
+Saving:../data/output/graphs/hydrographs/10039802_2024.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/10053009_1993.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/10053009_1994.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+Saving:../data/output/graphs/hydrographs/10053009_1995.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10056302_1971.png
+Saving:../data/output/graphs/hydrographs/10056302_1972.png
+Saving:../data/output/graphs/hydrographs/10053009_1996.png
+debug bei functions.R#561: browser()
+Es gab 20 Warnungen (Anzeige mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10092000_2005.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/10056302_1973.png
+Saving:../data/output/graphs/hydrographs/10053009_1997.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/10092000_2006.png
+Saving:../data/output/graphs/hydrographs/10056302_1974.png
+Saving:../data/output/graphs/hydrographs/10053009_1998.png
+Saving:../data/output/graphs/hydrographs/10092000_2007.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10062000_1971.png
+Saving:../data/output/graphs/hydrographs/10053009_1999.png
+Saving:../data/output/graphs/hydrographs/10056302_1975.png
+Saving:../data/output/graphs/hydrographs/10092000_2008.png
+Saving:../data/output/graphs/hydrographs/10053009_2000.png
+Saving:../data/output/graphs/hydrographs/10062000_1972.png
+Saving:../data/output/graphs/hydrographs/10056302_1976.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+Saving:../data/output/graphs/hydrographs/10092000_2009.png
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10078000_1971.png
+Saving:../data/output/graphs/hydrographs/10062000_1973.png
+Saving:../data/output/graphs/hydrographs/10053009_2001.png
+Saving:../data/output/graphs/hydrographs/10056302_1977.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/10088003_1971.png
+Saving:../data/output/graphs/hydrographs/10092000_2010.png
+Saving:../data/output/graphs/hydrographs/10078000_1972.png
+Saving:../data/output/graphs/hydrographs/10053009_2002.png
+Saving:../data/output/graphs/hydrographs/10062000_1974.png
+Saving:../data/output/graphs/hydrographs/10056302_1978.png
+Saving:../data/output/graphs/hydrographs/10088003_1972.png
+Saving:../data/output/graphs/hydrographs/10078000_1973.png
+Saving:../data/output/graphs/hydrographs/10092000_2011.png
+Saving:../data/output/graphs/hydrographs/10053009_2003.png
+Saving:../data/output/graphs/hydrographs/10056302_1979.png
+Saving:../data/output/graphs/hydrographs/10088003_1973.png
+Saving:../data/output/graphs/hydrographs/10062000_1975.png
+Saving:../data/output/graphs/hydrographs/10078000_1974.png
+Saving:../data/output/graphs/hydrographs/10092000_2012.png
+Saving:../data/output/graphs/hydrographs/10053009_2004.png
+Saving:../data/output/graphs/hydrographs/10056302_1980.png
+Saving:../data/output/graphs/hydrographs/10088003_1974.png
+Saving:../data/output/graphs/hydrographs/10062000_1976.png
+Saving:../data/output/graphs/hydrographs/10078000_1975.png
+Saving:../data/output/graphs/hydrographs/10092000_2013.png
+Saving:../data/output/graphs/hydrographs/10053009_2005.png
+Saving:../data/output/graphs/hydrographs/10056302_1981.png
+Saving:../data/output/graphs/hydrographs/10088003_1975.png
+Saving:../data/output/graphs/hydrographs/10062000_1977.png
+Saving:../data/output/graphs/hydrographs/10078000_1976.png
+Saving:../data/output/graphs/hydrographs/10092000_2014.png
+Saving:../data/output/graphs/hydrographs/10053009_2006.png
+Saving:../data/output/graphs/hydrographs/10056302_1982.png
+Saving:../data/output/graphs/hydrographs/10088003_1976.png
+Saving:../data/output/graphs/hydrographs/10062000_1978.png
+Saving:../data/output/graphs/hydrographs/10078000_1977.png
+Saving:../data/output/graphs/hydrographs/10092000_2015.png
+Saving:../data/output/graphs/hydrographs/10053009_2007.png
+Saving:../data/output/graphs/hydrographs/10056302_1983.png
+Saving:../data/output/graphs/hydrographs/10088003_1977.png
+Saving:../data/output/graphs/hydrographs/10062000_1979.png
+Saving:../data/output/graphs/hydrographs/10078000_1978.png
+Saving:../data/output/graphs/hydrographs/10092000_2016.png
+Saving:../data/output/graphs/hydrographs/10053009_2008.png
+Saving:../data/output/graphs/hydrographs/10056302_1984.png
+Saving:../data/output/graphs/hydrographs/10062000_1980.png
+Saving:../data/output/graphs/hydrographs/10088003_1978.png
+Saving:../data/output/graphs/hydrographs/10078000_1979.png
+Saving:../data/output/graphs/hydrographs/10092000_2017.png
+Saving:../data/output/graphs/hydrographs/10053009_2009.png
+Saving:../data/output/graphs/hydrographs/10056302_1985.png
+Saving:../data/output/graphs/hydrographs/10062000_1981.png
+Saving:../data/output/graphs/hydrographs/10078000_1980.png
+Saving:../data/output/graphs/hydrographs/10088003_1979.png
+Saving:../data/output/graphs/hydrographs/10092000_2018.png
+Saving:../data/output/graphs/hydrographs/10056302_1986.png
+Saving:../data/output/graphs/hydrographs/10053009_2010.png
+Saving:../data/output/graphs/hydrographs/10078000_1981.png
+Saving:../data/output/graphs/hydrographs/10062000_1982.png
+Saving:../data/output/graphs/hydrographs/10088003_1980.png
+Saving:../data/output/graphs/hydrographs/10092000_2019.png
+Saving:../data/output/graphs/hydrographs/10056302_1987.png
+Saving:../data/output/graphs/hydrographs/10078000_1982.png
+Saving:../data/output/graphs/hydrographs/10053009_2011.png
+Saving:../data/output/graphs/hydrographs/10062000_1983.png
+Saving:../data/output/graphs/hydrographs/10088003_1981.png
+Saving:../data/output/graphs/hydrographs/10092000_2020.png
+Saving:../data/output/graphs/hydrographs/10078000_1983.png
+Saving:../data/output/graphs/hydrographs/10056302_1988.png
+Saving:../data/output/graphs/hydrographs/10062000_1984.png
+Saving:../data/output/graphs/hydrographs/10053009_2012.png
+Saving:../data/output/graphs/hydrographs/10088003_1982.png
+Saving:../data/output/graphs/hydrographs/10092000_2021.png
+Saving:../data/output/graphs/hydrographs/10078000_1984.png
+Saving:../data/output/graphs/hydrographs/10062000_1985.png
+Saving:../data/output/graphs/hydrographs/10056302_1989.png
+Saving:../data/output/graphs/hydrographs/10053009_2013.png
+Saving:../data/output/graphs/hydrographs/10088003_1983.png
+Saving:../data/output/graphs/hydrographs/10092000_2022.png
+Saving:../data/output/graphs/hydrographs/10078000_1985.png
+Saving:../data/output/graphs/hydrographs/10062000_1986.png
+Saving:../data/output/graphs/hydrographs/10056302_1990.png
+Saving:../data/output/graphs/hydrographs/10053009_2014.png
+Saving:../data/output/graphs/hydrographs/10088003_1984.png
+Saving:../data/output/graphs/hydrographs/10092000_2023.png
+Saving:../data/output/graphs/hydrographs/10078000_1986.png
+Saving:../data/output/graphs/hydrographs/10062000_1987.png
+Saving:../data/output/graphs/hydrographs/10056302_1991.png
+Saving:../data/output/graphs/hydrographs/10053009_2015.png
+Saving:../data/output/graphs/hydrographs/10088003_1985.png
+Saving:../data/output/graphs/hydrographs/10092000_2024.png
+Saving:../data/output/graphs/hydrographs/10078000_1987.png
+Saving:../data/output/graphs/hydrographs/10062000_1988.png
+Saving:../data/output/graphs/hydrographs/10056302_1992.png
+Saving:../data/output/graphs/hydrographs/10053009_2016.png
+Saving:../data/output/graphs/hydrographs/10088003_1986.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/10078000_1988.png
+Saving:../data/output/graphs/hydrographs/10062000_1989.png
+Saving:../data/output/graphs/hydrographs/10088003_1987.png
+Saving:../data/output/graphs/hydrographs/10053009_2017.png
+Saving:../data/output/graphs/hydrographs/10056302_1993.png
+Saving:../data/output/graphs/hydrographs/10078000_1989.png
+Saving:../data/output/graphs/hydrographs/10088003_1988.png
+Saving:../data/output/graphs/hydrographs/10062000_1990.png
+Saving:../data/output/graphs/hydrographs/10053009_2018.png
+Saving:../data/output/graphs/hydrographs/10056302_1994.png
+Saving:../data/output/graphs/hydrographs/10078000_1990.png
+Saving:../data/output/graphs/hydrographs/10088003_1989.png
+Saving:../data/output/graphs/hydrographs/10062000_1991.png
+Saving:../data/output/graphs/hydrographs/10053009_2019.png
+Saving:../data/output/graphs/hydrographs/10056302_1995.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/10078000_1991.png
+Saving:../data/output/graphs/hydrographs/10088003_1990.png
+Saving:../data/output/graphs/hydrographs/10062000_1992.png
+Saving:../data/output/graphs/hydrographs/10053009_2020.png
+Saving:../data/output/graphs/hydrographs/10056302_1996.png
+Saving:../data/output/graphs/hydrographs/10078000_1992.png
+Saving:../data/output/graphs/hydrographs/10088003_1991.png
+Saving:../data/output/graphs/hydrographs/10062000_1993.png
+Saving:../data/output/graphs/hydrographs/10053009_2021.png
+Saving:../data/output/graphs/hydrographs/10056302_1997.png
+Saving:../data/output/graphs/hydrographs/10078000_1993.png
+Saving:../data/output/graphs/hydrographs/10088003_1992.png
+Saving:../data/output/graphs/hydrographs/10053009_2022.png
+Saving:../data/output/graphs/hydrographs/10062000_1994.png
+Saving:../data/output/graphs/hydrographs/10056302_1998.png
+debug bei functions.R#561: browser()
+Es gab 44 Warnungen (Anzeige mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/13242008_1981.png
+Saving:../data/output/graphs/hydrographs/10078000_1994.png
+Saving:../data/output/graphs/hydrographs/10088003_1993.png
+Saving:../data/output/graphs/hydrographs/10053009_2023.png
+Saving:../data/output/graphs/hydrographs/10062000_1995.png
+Saving:../data/output/graphs/hydrographs/10056302_1999.png
+Saving:../data/output/graphs/hydrographs/13242008_1982.png
+Saving:../data/output/graphs/hydrographs/10078000_1995.png
+Saving:../data/output/graphs/hydrographs/10088003_1994.png
+Saving:../data/output/graphs/hydrographs/10053009_2024.png
+Saving:../data/output/graphs/hydrographs/10062000_1996.png
+Saving:../data/output/graphs/hydrographs/10056302_2000.png
+Saving:../data/output/graphs/hydrographs/13242008_1983.png
+Saving:../data/output/graphs/hydrographs/10078000_1996.png
+Saving:../data/output/graphs/hydrographs/10088003_1995.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/10062000_1997.png
+Saving:../data/output/graphs/hydrographs/10056302_2001.png
+Saving:../data/output/graphs/hydrographs/13242008_1984.png
+Saving:../data/output/graphs/hydrographs/10078000_1997.png
+Saving:../data/output/graphs/hydrographs/10088003_1996.png
+Saving:../data/output/graphs/hydrographs/10062000_1998.png
+Saving:../data/output/graphs/hydrographs/10056302_2002.png
+Saving:../data/output/graphs/hydrographs/13242008_1985.png
+Saving:../data/output/graphs/hydrographs/10078000_1998.png
+Saving:../data/output/graphs/hydrographs/10088003_1997.png
+Saving:../data/output/graphs/hydrographs/10062000_1999.png
+Saving:../data/output/graphs/hydrographs/10056302_2003.png
+Saving:../data/output/graphs/hydrographs/13242008_1986.png
+Saving:../data/output/graphs/hydrographs/10078000_1999.png
+Saving:../data/output/graphs/hydrographs/10088003_1998.png
+Saving:../data/output/graphs/hydrographs/10062000_2000.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/10056302_2004.png
+Saving:../data/output/graphs/hydrographs/13242008_1987.png
+Saving:../data/output/graphs/hydrographs/10078000_2000.png
+Saving:../data/output/graphs/hydrographs/10088003_1999.png
+Saving:../data/output/graphs/hydrographs/10062000_2001.png
+Saving:../data/output/graphs/hydrographs/10056302_2005.png
+Saving:../data/output/graphs/hydrographs/13242008_1988.png
+Saving:../data/output/graphs/hydrographs/10078000_2001.png
+Saving:../data/output/graphs/hydrographs/10088003_2000.png
+Saving:../data/output/graphs/hydrographs/10062000_2002.png
+Saving:../data/output/graphs/hydrographs/10056302_2006.png
+Saving:../data/output/graphs/hydrographs/13242008_1989.png
+Saving:../data/output/graphs/hydrographs/10078000_2002.png
+Saving:../data/output/graphs/hydrographs/10088003_2001.png
+debug bei functions.R#561: browser()
+Es gab 44 Warnungen (Anzeige mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/13242507_1981.png
+Saving:../data/output/graphs/hydrographs/10062000_2003.png
+Saving:../data/output/graphs/hydrographs/10056302_2007.png
+Saving:../data/output/graphs/hydrographs/13242008_1990.png
+Saving:../data/output/graphs/hydrographs/10078000_2003.png
+Saving:../data/output/graphs/hydrographs/10088003_2002.png
+Saving:../data/output/graphs/hydrographs/13242507_1982.png
+Saving:../data/output/graphs/hydrographs/10062000_2004.png
+Saving:../data/output/graphs/hydrographs/10056302_2008.png
+Saving:../data/output/graphs/hydrographs/13242008_1991.png
+Saving:../data/output/graphs/hydrographs/10078000_2004.png
+Saving:../data/output/graphs/hydrographs/10088003_2003.png
+Saving:../data/output/graphs/hydrographs/13242507_1983.png
+Saving:../data/output/graphs/hydrographs/10062000_2005.png
+Saving:../data/output/graphs/hydrographs/10056302_2009.png
+Saving:../data/output/graphs/hydrographs/13242008_1992.png
+Saving:../data/output/graphs/hydrographs/10078000_2005.png
+Saving:../data/output/graphs/hydrographs/10088003_2004.png
+Saving:../data/output/graphs/hydrographs/13242507_1984.png
+Saving:../data/output/graphs/hydrographs/10062000_2006.png
+Saving:../data/output/graphs/hydrographs/10056302_2010.png
+Saving:../data/output/graphs/hydrographs/13242008_1993.png
+Saving:../data/output/graphs/hydrographs/10078000_2006.png
+Saving:../data/output/graphs/hydrographs/10088003_2005.png
+Saving:../data/output/graphs/hydrographs/13242507_1985.png
+Saving:../data/output/graphs/hydrographs/10062000_2007.png
+Saving:../data/output/graphs/hydrographs/13242008_1994.png
+Saving:../data/output/graphs/hydrographs/10056302_2011.png
+Saving:../data/output/graphs/hydrographs/10078000_2007.png
+Saving:../data/output/graphs/hydrographs/10088003_2006.png
+Saving:../data/output/graphs/hydrographs/13242507_1986.png
+Saving:../data/output/graphs/hydrographs/10062000_2008.png
+Saving:../data/output/graphs/hydrographs/13242008_1995.png
+Saving:../data/output/graphs/hydrographs/10056302_2012.png
+Saving:../data/output/graphs/hydrographs/10078000_2008.png
+Saving:../data/output/graphs/hydrographs/10088003_2007.png
+Saving:../data/output/graphs/hydrographs/13242507_1987.png
+Saving:../data/output/graphs/hydrographs/10062000_2009.png
+Saving:../data/output/graphs/hydrographs/13242008_1996.png
+Saving:../data/output/graphs/hydrographs/10056302_2013.png
+Saving:../data/output/graphs/hydrographs/10078000_2009.png
+Saving:../data/output/graphs/hydrographs/13242507_1988.png
+Saving:../data/output/graphs/hydrographs/10088003_2008.png
+Saving:../data/output/graphs/hydrographs/10062000_2010.png
+Saving:../data/output/graphs/hydrographs/13242008_1997.png
+Saving:../data/output/graphs/hydrographs/10056302_2014.png
+Saving:../data/output/graphs/hydrographs/10078000_2010.png
+Saving:../data/output/graphs/hydrographs/10088003_2009.png
+Saving:../data/output/graphs/hydrographs/13242507_1989.png
+Saving:../data/output/graphs/hydrographs/10062000_2011.png
+Saving:../data/output/graphs/hydrographs/13242008_1998.png
+Saving:../data/output/graphs/hydrographs/10056302_2015.png
+Saving:../data/output/graphs/hydrographs/10078000_2011.png
+Saving:../data/output/graphs/hydrographs/10088003_2010.png
+Saving:../data/output/graphs/hydrographs/13242507_1990.png
+Saving:../data/output/graphs/hydrographs/10062000_2012.png
+Saving:../data/output/graphs/hydrographs/13242008_1999.png
+Saving:../data/output/graphs/hydrographs/10056302_2016.png
+Saving:../data/output/graphs/hydrographs/10078000_2012.png
+Saving:../data/output/graphs/hydrographs/10088003_2011.png
+Saving:../data/output/graphs/hydrographs/13242507_1991.png
+Saving:../data/output/graphs/hydrographs/13242008_2000.png
+Saving:../data/output/graphs/hydrographs/10062000_2013.png
+Saving:../data/output/graphs/hydrographs/10088003_2012.png
+Saving:../data/output/graphs/hydrographs/10078000_2013.png
+Saving:../data/output/graphs/hydrographs/10056302_2017.png
+Saving:../data/output/graphs/hydrographs/13242507_1992.png
+Saving:../data/output/graphs/hydrographs/13242008_2001.png
+Saving:../data/output/graphs/hydrographs/10062000_2014.png
+Saving:../data/output/graphs/hydrographs/10088003_2013.png
+Saving:../data/output/graphs/hydrographs/10078000_2014.png
+Saving:../data/output/graphs/hydrographs/13242507_1993.png
+Saving:../data/output/graphs/hydrographs/10056302_2018.png
+Saving:../data/output/graphs/hydrographs/13242008_2002.png
+Saving:../data/output/graphs/hydrographs/10062000_2015.png
+Saving:../data/output/graphs/hydrographs/10088003_2014.png
+Saving:../data/output/graphs/hydrographs/13242507_1994.png
+Saving:../data/output/graphs/hydrographs/10078000_2015.png
+Saving:../data/output/graphs/hydrographs/10056302_2019.png
+Saving:../data/output/graphs/hydrographs/13242008_2003.png
+Saving:../data/output/graphs/hydrographs/10062000_2016.png
+Saving:../data/output/graphs/hydrographs/10088003_2015.png
+Saving:../data/output/graphs/hydrographs/13242507_1995.png
+Saving:../data/output/graphs/hydrographs/10078000_2016.png
+Saving:../data/output/graphs/hydrographs/10056302_2020.png
+Saving:../data/output/graphs/hydrographs/13242008_2004.png
+Saving:../data/output/graphs/hydrographs/10062000_2017.png
+Saving:../data/output/graphs/hydrographs/13242507_1996.png
+Saving:../data/output/graphs/hydrographs/10088003_2016.png
+Saving:../data/output/graphs/hydrographs/10078000_2017.png
+Saving:../data/output/graphs/hydrographs/10056302_2021.png
+Saving:../data/output/graphs/hydrographs/13242008_2005.png
+Saving:../data/output/graphs/hydrographs/13242507_1997.png
+Saving:../data/output/graphs/hydrographs/10088003_2017.png
+Saving:../data/output/graphs/hydrographs/10062000_2018.png
+Saving:../data/output/graphs/hydrographs/10078000_2018.png
+Saving:../data/output/graphs/hydrographs/10056302_2022.png
+Saving:../data/output/graphs/hydrographs/13242008_2006.png
+Saving:../data/output/graphs/hydrographs/13242507_1998.png
+Saving:../data/output/graphs/hydrographs/10088003_2018.png
+Saving:../data/output/graphs/hydrographs/10062000_2019.png
+Saving:../data/output/graphs/hydrographs/10078000_2019.png
+Saving:../data/output/graphs/hydrographs/10056302_2023.png
+Saving:../data/output/graphs/hydrographs/13242008_2007.png
+Saving:../data/output/graphs/hydrographs/13242507_1999.png
+Saving:../data/output/graphs/hydrographs/10088003_2019.png
+Saving:../data/output/graphs/hydrographs/10062000_2020.png
+Saving:../data/output/graphs/hydrographs/10078000_2020.png
+Saving:../data/output/graphs/hydrographs/10056302_2024.png
+Saving:../data/output/graphs/hydrographs/13242008_2008.png
+Saving:../data/output/graphs/hydrographs/13242507_2000.png
+Saving:../data/output/graphs/hydrographs/10088003_2020.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/10078000_2021.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/13242008_2009.png
+Saving:../data/output/graphs/hydrographs/13242507_2001.png
+Saving:../data/output/graphs/hydrographs/10088003_2021.png
+Saving:../data/output/graphs/hydrographs/10078000_2022.png
+Saving:../data/output/graphs/hydrographs/13242008_2010.png
+Saving:../data/output/graphs/hydrographs/13242507_2002.png
+Saving:../data/output/graphs/hydrographs/10088003_2022.png
+Saving:../data/output/graphs/hydrographs/10078000_2023.png
+Saving:../data/output/graphs/hydrographs/13242008_2011.png
+Saving:../data/output/graphs/hydrographs/13242507_2003.png
+Saving:../data/output/graphs/hydrographs/10088003_2023.png
+Saving:../data/output/graphs/hydrographs/10078000_2024.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/13242008_2012.png
+Saving:../data/output/graphs/hydrographs/13242507_2004.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/10088003_2024.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/13242008_2013.png
+Saving:../data/output/graphs/hydrographs/13242507_2005.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/13242008_2014.png
+Saving:../data/output/graphs/hydrographs/13242507_2006.png
+debug bei functions.R#561: browser()
+Es gab 44 Warnungen (Anzeige mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/16001303_1981.png
+Saving:../data/output/graphs/hydrographs/13242008_2015.png
+Saving:../data/output/graphs/hydrographs/13242507_2007.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/16000708_1971.png
+Saving:../data/output/graphs/hydrographs/16001303_1982.png
+Saving:../data/output/graphs/hydrographs/13242008_2016.png
+Saving:../data/output/graphs/hydrographs/13242507_2008.png
+Saving:../data/output/graphs/hydrographs/16000708_1972.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/16001303_1983.png
+Saving:../data/output/graphs/hydrographs/13242008_2017.png
+Saving:../data/output/graphs/hydrographs/13242507_2009.png
+Saving:../data/output/graphs/hydrographs/16000708_1973.png
+Saving:../data/output/graphs/hydrographs/16001303_1984.png
+Saving:../data/output/graphs/hydrographs/13242008_2018.png
+Saving:../data/output/graphs/hydrographs/13242507_2010.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/16000708_1974.png
+Saving:../data/output/graphs/hydrographs/16001303_1985.png
+Saving:../data/output/graphs/hydrographs/13242008_2019.png
+Saving:../data/output/graphs/hydrographs/13242507_2011.png
+Saving:../data/output/graphs/hydrographs/16000708_1975.png
+Saving:../data/output/graphs/hydrographs/16001303_1986.png
+Saving:../data/output/graphs/hydrographs/13242008_2020.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/16002500_1971.png
+Saving:../data/output/graphs/hydrographs/13242507_2012.png
+Saving:../data/output/graphs/hydrographs/16000708_1976.png
+Saving:../data/output/graphs/hydrographs/16001303_1987.png
+Saving:../data/output/graphs/hydrographs/13242008_2021.png
+Saving:../data/output/graphs/hydrographs/16002500_1972.png
+Saving:../data/output/graphs/hydrographs/13242507_2013.png
+Saving:../data/output/graphs/hydrographs/16000708_1977.png
+Saving:../data/output/graphs/hydrographs/16001303_1988.png
+Saving:../data/output/graphs/hydrographs/13242008_2022.png
+Saving:../data/output/graphs/hydrographs/16002500_1973.png
+Saving:../data/output/graphs/hydrographs/13242507_2014.png
+Saving:../data/output/graphs/hydrographs/16000708_1978.png
+Saving:../data/output/graphs/hydrographs/16001303_1989.png
+Saving:../data/output/graphs/hydrographs/13242008_2023.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+Saving:../data/output/graphs/hydrographs/16002500_1974.png
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/16003003_1956.png
+Saving:../data/output/graphs/hydrographs/16000708_1979.png
+Saving:../data/output/graphs/hydrographs/13242507_2015.png
+Saving:../data/output/graphs/hydrographs/16001303_1990.png
+Saving:../data/output/graphs/hydrographs/13242008_2024.png
+Saving:../data/output/graphs/hydrographs/16003003_1957.png
+Saving:../data/output/graphs/hydrographs/16002500_1975.png
+Saving:../data/output/graphs/hydrographs/16000708_1980.png
+Saving:../data/output/graphs/hydrographs/13242507_2016.png
+Saving:../data/output/graphs/hydrographs/16001303_1991.png
+Saving:../data/output/graphs/hydrographs/16002500_1976.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/16003003_1958.png
+Saving:../data/output/graphs/hydrographs/16000708_1981.png
+Saving:../data/output/graphs/hydrographs/16001303_1992.png
+Saving:../data/output/graphs/hydrographs/13242507_2017.png
+Saving:../data/output/graphs/hydrographs/16002500_1977.png
+Saving:../data/output/graphs/hydrographs/16003003_1959.png
+Saving:../data/output/graphs/hydrographs/16000708_1982.png
+Saving:../data/output/graphs/hydrographs/16001303_1993.png
+Saving:../data/output/graphs/hydrographs/13242507_2018.png
+Saving:../data/output/graphs/hydrographs/16002500_1978.png
+Saving:../data/output/graphs/hydrographs/16003003_1960.png
+Saving:../data/output/graphs/hydrographs/16000708_1983.png
+Saving:../data/output/graphs/hydrographs/16001303_1994.png
+Saving:../data/output/graphs/hydrographs/13242507_2019.png
+Saving:../data/output/graphs/hydrographs/16003003_1961.png
+Saving:../data/output/graphs/hydrographs/16002500_1979.png
+Saving:../data/output/graphs/hydrographs/16000708_1984.png
+Saving:../data/output/graphs/hydrographs/16001303_1995.png
+Saving:../data/output/graphs/hydrographs/13242507_2020.png
+Saving:../data/output/graphs/hydrographs/16002500_1980.png
+Saving:../data/output/graphs/hydrographs/16003003_1962.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/16000708_1985.png
+Saving:../data/output/graphs/hydrographs/16001303_1996.png
+Saving:../data/output/graphs/hydrographs/13242507_2021.png
+Saving:../data/output/graphs/hydrographs/16002500_1981.png
+Saving:../data/output/graphs/hydrographs/16003003_1963.png
+Saving:../data/output/graphs/hydrographs/16000708_1986.png
+Saving:../data/output/graphs/hydrographs/16001303_1997.png
+Saving:../data/output/graphs/hydrographs/13242507_2022.png
+Saving:../data/output/graphs/hydrographs/16002500_1982.png
+Saving:../data/output/graphs/hydrographs/16003003_1964.png
+Saving:../data/output/graphs/hydrographs/16000708_1987.png
+Saving:../data/output/graphs/hydrographs/16001303_1998.png
+Saving:../data/output/graphs/hydrographs/16002500_1983.png
+Saving:../data/output/graphs/hydrographs/13242507_2023.png
+Saving:../data/output/graphs/hydrographs/16003003_1965.png
+Saving:../data/output/graphs/hydrographs/16000708_1988.png
+Saving:../data/output/graphs/hydrographs/16001303_1999.png
+Saving:../data/output/graphs/hydrographs/16002500_1984.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+Saving:../data/output/graphs/hydrographs/16003003_1966.png
+Saving:../data/output/graphs/hydrographs/13242507_2024.png
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/16004006_1971.png
+Saving:../data/output/graphs/hydrographs/16000708_1989.png
+Saving:../data/output/graphs/hydrographs/16001303_2000.png
+Saving:../data/output/graphs/hydrographs/16002500_1985.png
+Saving:../data/output/graphs/hydrographs/16003003_1967.png
+Saving:../data/output/graphs/hydrographs/16004006_1972.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/16000708_1990.png
+Saving:../data/output/graphs/hydrographs/16001303_2001.png
+Saving:../data/output/graphs/hydrographs/16002500_1986.png
+Saving:../data/output/graphs/hydrographs/16003003_1968.png
+Saving:../data/output/graphs/hydrographs/16004006_1973.png
+Saving:../data/output/graphs/hydrographs/16000708_1991.png
+Saving:../data/output/graphs/hydrographs/16001303_2002.png
+Saving:../data/output/graphs/hydrographs/16002500_1987.png
+Saving:../data/output/graphs/hydrographs/16003003_1969.png
+Saving:../data/output/graphs/hydrographs/16004006_1974.png
+Saving:../data/output/graphs/hydrographs/16000708_1992.png
+Saving:../data/output/graphs/hydrographs/16001303_2003.png
+Saving:../data/output/graphs/hydrographs/16002500_1988.png
+Saving:../data/output/graphs/hydrographs/16003003_1970.png
+Saving:../data/output/graphs/hydrographs/16004006_1975.png
+Saving:../data/output/graphs/hydrographs/16000708_1993.png
+Saving:../data/output/graphs/hydrographs/16001303_2004.png
+Saving:../data/output/graphs/hydrographs/16002500_1989.png
+Saving:../data/output/graphs/hydrographs/16003003_1971.png
+Saving:../data/output/graphs/hydrographs/16004006_1976.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/16000708_1994.png
+Saving:../data/output/graphs/hydrographs/16001303_2005.png
+Saving:../data/output/graphs/hydrographs/16002500_1990.png
+Saving:../data/output/graphs/hydrographs/16003003_1972.png
+Saving:../data/output/graphs/hydrographs/16004006_1977.png
+Saving:../data/output/graphs/hydrographs/16000708_1995.png
+Saving:../data/output/graphs/hydrographs/16001303_2006.png
+Saving:../data/output/graphs/hydrographs/16002500_1991.png
+Saving:../data/output/graphs/hydrographs/16003003_1973.png
+Saving:../data/output/graphs/hydrographs/16004006_1978.png
+Saving:../data/output/graphs/hydrographs/16001303_2007.png
+Saving:../data/output/graphs/hydrographs/16000708_1996.png
+Saving:../data/output/graphs/hydrographs/16002500_1992.png
+Saving:../data/output/graphs/hydrographs/16003003_1974.png
+Saving:../data/output/graphs/hydrographs/16004006_1979.png
+Saving:../data/output/graphs/hydrographs/16001303_2008.png
+Saving:../data/output/graphs/hydrographs/16000708_1997.png
+Saving:../data/output/graphs/hydrographs/16002500_1993.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/16004403_1971.png
+Saving:../data/output/graphs/hydrographs/16003003_1975.png
+Saving:../data/output/graphs/hydrographs/16004006_1980.png
+Saving:../data/output/graphs/hydrographs/16000708_1998.png
+Saving:../data/output/graphs/hydrographs/16001303_2009.png
+Saving:../data/output/graphs/hydrographs/16002500_1994.png
+Saving:../data/output/graphs/hydrographs/16003003_1976.png
+Saving:../data/output/graphs/hydrographs/16004403_1972.png
+Saving:../data/output/graphs/hydrographs/16004006_1981.png
+Saving:../data/output/graphs/hydrographs/16001303_2010.png
+Saving:../data/output/graphs/hydrographs/16000708_1999.png
+Saving:../data/output/graphs/hydrographs/16002500_1995.png
+Saving:../data/output/graphs/hydrographs/16003003_1977.png
+Saving:../data/output/graphs/hydrographs/16004403_1973.png
+Saving:../data/output/graphs/hydrographs/16004006_1982.png
+Saving:../data/output/graphs/hydrographs/16001303_2011.png
+Saving:../data/output/graphs/hydrographs/16000708_2000.png
+Saving:../data/output/graphs/hydrographs/16002500_1996.png
+Saving:../data/output/graphs/hydrographs/16003003_1978.png
+Saving:../data/output/graphs/hydrographs/16004006_1983.png
+Saving:../data/output/graphs/hydrographs/16004403_1974.png
+Saving:../data/output/graphs/hydrographs/16001303_2012.png
+Saving:../data/output/graphs/hydrographs/16000708_2001.png
+Saving:../data/output/graphs/hydrographs/16002500_1997.png
+Saving:../data/output/graphs/hydrographs/16003003_1979.png
+Saving:../data/output/graphs/hydrographs/16004006_1984.png
+Saving:../data/output/graphs/hydrographs/16004403_1975.png
+Saving:../data/output/graphs/hydrographs/16001303_2013.png
+Saving:../data/output/graphs/hydrographs/16000708_2002.png
+Saving:../data/output/graphs/hydrographs/16002500_1998.png
+Saving:../data/output/graphs/hydrographs/16003003_1980.png
+Saving:../data/output/graphs/hydrographs/16004006_1985.png
+Saving:../data/output/graphs/hydrographs/16004403_1976.png
+Saving:../data/output/graphs/hydrographs/16001303_2014.png
+Saving:../data/output/graphs/hydrographs/16000708_2003.png
+Saving:../data/output/graphs/hydrographs/16002500_1999.png
+Saving:../data/output/graphs/hydrographs/16003003_1981.png
+Saving:../data/output/graphs/hydrographs/16004006_1986.png
+Saving:../data/output/graphs/hydrographs/16004403_1977.png
+Saving:../data/output/graphs/hydrographs/16000708_2004.png
+Saving:../data/output/graphs/hydrographs/16001303_2015.png
+Saving:../data/output/graphs/hydrographs/16002500_2000.png
+Saving:../data/output/graphs/hydrographs/16003003_1982.png
+Saving:../data/output/graphs/hydrographs/16004006_1987.png
+Saving:../data/output/graphs/hydrographs/16004403_1978.png
+Saving:../data/output/graphs/hydrographs/16000708_2005.png
+Saving:../data/output/graphs/hydrographs/16001303_2016.png
+Saving:../data/output/graphs/hydrographs/16003003_1983.png
+Saving:../data/output/graphs/hydrographs/16002500_2001.png
+Saving:../data/output/graphs/hydrographs/16004006_1988.png
+Saving:../data/output/graphs/hydrographs/16004403_1979.png
+Saving:../data/output/graphs/hydrographs/16000708_2006.png
+Saving:../data/output/graphs/hydrographs/16001303_2017.png
+Saving:../data/output/graphs/hydrographs/16003003_1984.png
+Saving:../data/output/graphs/hydrographs/16002500_2002.png
+Saving:../data/output/graphs/hydrographs/16004006_1989.png
+Saving:../data/output/graphs/hydrographs/16004403_1980.png
+Saving:../data/output/graphs/hydrographs/16000708_2007.png
+Saving:../data/output/graphs/hydrographs/16001303_2018.png
+Saving:../data/output/graphs/hydrographs/16003003_1985.png
+Saving:../data/output/graphs/hydrographs/16002500_2003.png
+Saving:../data/output/graphs/hydrographs/16004006_1990.png
+Saving:../data/output/graphs/hydrographs/16004403_1981.png
+Saving:../data/output/graphs/hydrographs/16001303_2019.png
+Saving:../data/output/graphs/hydrographs/16000708_2008.png
+Saving:../data/output/graphs/hydrographs/16003003_1986.png
+Saving:../data/output/graphs/hydrographs/16002500_2004.png
+Saving:../data/output/graphs/hydrographs/16004006_1991.png
+Saving:../data/output/graphs/hydrographs/16004403_1982.png
+Saving:../data/output/graphs/hydrographs/16001303_2020.png
+Saving:../data/output/graphs/hydrographs/16000708_2012.png
+Saving:../data/output/graphs/hydrographs/16003003_1987.png
+Saving:../data/output/graphs/hydrographs/16002500_2005.png
+Saving:../data/output/graphs/hydrographs/16004006_1992.png
+Saving:../data/output/graphs/hydrographs/16004403_1983.png
+Saving:../data/output/graphs/hydrographs/16001303_2021.png
+Saving:../data/output/graphs/hydrographs/16003003_1988.png
+Saving:../data/output/graphs/hydrographs/16000708_2013.png
+Saving:../data/output/graphs/hydrographs/16002500_2006.png
+Saving:../data/output/graphs/hydrographs/16004006_1993.png
+Saving:../data/output/graphs/hydrographs/16004403_1984.png
+Saving:../data/output/graphs/hydrographs/16001303_2022.png
+Saving:../data/output/graphs/hydrographs/16003003_1989.png
+Saving:../data/output/graphs/hydrographs/16002500_2007.png
+Saving:../data/output/graphs/hydrographs/16000708_2014.png
+Saving:../data/output/graphs/hydrographs/16004006_1994.png
+Saving:../data/output/graphs/hydrographs/16004403_1985.png
+Saving:../data/output/graphs/hydrographs/16001303_2023.png
+Saving:../data/output/graphs/hydrographs/16002500_2008.png
+Saving:../data/output/graphs/hydrographs/16003003_1990.png
+Saving:../data/output/graphs/hydrographs/16000708_2015.png
+Saving:../data/output/graphs/hydrographs/16004006_1995.png
+Saving:../data/output/graphs/hydrographs/16004403_1986.png
+Saving:../data/output/graphs/hydrographs/16003003_1991.png
+Saving:../data/output/graphs/hydrographs/16002500_2009.png
+Saving:../data/output/graphs/hydrographs/16001303_2024.png
+Saving:../data/output/graphs/hydrographs/16000708_2016.png
+Saving:../data/output/graphs/hydrographs/16004006_1996.png
+Saving:../data/output/graphs/hydrographs/16004403_1987.png
+Saving:../data/output/graphs/hydrographs/16003003_1992.png
+Saving:../data/output/graphs/hydrographs/16002500_2010.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/16000708_2017.png
+Saving:../data/output/graphs/hydrographs/16004403_1988.png
+Saving:../data/output/graphs/hydrographs/16004006_1997.png
+Saving:../data/output/graphs/hydrographs/16003003_1993.png
+Saving:../data/output/graphs/hydrographs/16002500_2011.png
+Saving:../data/output/graphs/hydrographs/16000708_2018.png
+Saving:../data/output/graphs/hydrographs/16004403_1989.png
+Saving:../data/output/graphs/hydrographs/16003003_1994.png
+Saving:../data/output/graphs/hydrographs/16002500_2012.png
+Saving:../data/output/graphs/hydrographs/16004006_1998.png
+Saving:../data/output/graphs/hydrographs/16000708_2019.png
+Saving:../data/output/graphs/hydrographs/16004403_1990.png
+Saving:../data/output/graphs/hydrographs/16002500_2013.png
+Saving:../data/output/graphs/hydrographs/16003003_1995.png
+Saving:../data/output/graphs/hydrographs/16004006_1999.png
+Saving:../data/output/graphs/hydrographs/16000708_2020.png
+Saving:../data/output/graphs/hydrographs/16004403_1991.png
+Saving:../data/output/graphs/hydrographs/16002500_2014.png
+Saving:../data/output/graphs/hydrographs/16004006_2000.png
+Saving:../data/output/graphs/hydrographs/16003003_1996.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/16000708_2021.png
+Saving:../data/output/graphs/hydrographs/16004403_1992.png
+Saving:../data/output/graphs/hydrographs/16002500_2015.png
+Saving:../data/output/graphs/hydrographs/16003003_1997.png
+Saving:../data/output/graphs/hydrographs/16004006_2001.png
+Saving:../data/output/graphs/hydrographs/16000708_2022.png
+Saving:../data/output/graphs/hydrographs/16002500_2016.png
+Saving:../data/output/graphs/hydrographs/16004403_1993.png
+Saving:../data/output/graphs/hydrographs/16003003_1998.png
+Saving:../data/output/graphs/hydrographs/16004006_2002.png
+Saving:../data/output/graphs/hydrographs/16000708_2023.png
+Saving:../data/output/graphs/hydrographs/16002500_2017.png
+Saving:../data/output/graphs/hydrographs/16004403_1994.png
+Saving:../data/output/graphs/hydrographs/16004006_2003.png
+Saving:../data/output/graphs/hydrographs/16003003_1999.png
+Saving:../data/output/graphs/hydrographs/16000708_2024.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/16005701_1971.png
+Saving:../data/output/graphs/hydrographs/16002500_2018.png
+Saving:../data/output/graphs/hydrographs/16004006_2004.png
+Saving:../data/output/graphs/hydrographs/16004403_1995.png
+Saving:../data/output/graphs/hydrographs/16003003_2000.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/16005701_1972.png
+Saving:../data/output/graphs/hydrographs/16004006_2005.png
+Saving:../data/output/graphs/hydrographs/16002500_2019.png
+Saving:../data/output/graphs/hydrographs/16004403_1996.png
+Saving:../data/output/graphs/hydrographs/16003003_2001.png
+Saving:../data/output/graphs/hydrographs/16004006_2006.png
+Saving:../data/output/graphs/hydrographs/16005701_1973.png
+Saving:../data/output/graphs/hydrographs/16002500_2020.png
+Saving:../data/output/graphs/hydrographs/16004403_1997.png
+Saving:../data/output/graphs/hydrographs/16003003_2002.png
+Saving:../data/output/graphs/hydrographs/16004006_2007.png
+Saving:../data/output/graphs/hydrographs/16002500_2021.png
+Saving:../data/output/graphs/hydrographs/16005701_1974.png
+Saving:../data/output/graphs/hydrographs/16004403_1998.png
+Saving:../data/output/graphs/hydrographs/16003003_2003.png
+Saving:../data/output/graphs/hydrographs/16002500_2022.png
+Saving:../data/output/graphs/hydrographs/16004006_2008.png
+Saving:../data/output/graphs/hydrographs/16005701_1975.png
+Saving:../data/output/graphs/hydrographs/16004403_1999.png
+Saving:../data/output/graphs/hydrographs/16003003_2004.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/16002500_2023.png
+Saving:../data/output/graphs/hydrographs/16004006_2009.png
+Saving:../data/output/graphs/hydrographs/16005701_1976.png
+Saving:../data/output/graphs/hydrographs/16003003_2005.png
+Saving:../data/output/graphs/hydrographs/16004403_2000.png
+Saving:../data/output/graphs/hydrographs/16002500_2024.png
+Saving:../data/output/graphs/hydrographs/16005701_1977.png
+Saving:../data/output/graphs/hydrographs/16004006_2010.png
+Saving:../data/output/graphs/hydrographs/16003003_2006.png
+Saving:../data/output/graphs/hydrographs/16004403_2001.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/16004006_2011.png
+Saving:../data/output/graphs/hydrographs/16005701_1978.png
+Saving:../data/output/graphs/hydrographs/16003003_2007.png
+Saving:../data/output/graphs/hydrographs/16004403_2002.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+debug bei functions.R#561: browser()
+Warnmeldungen:
+1: Unknown or uninitialised column: `p_threshold`. 
+2: Unknown or uninitialised column: `p_threshold`. 
+3: Unknown or uninitialised column: `p_threshold`. 
+4: Unknown or uninitialised column: `p_threshold`. 
+5: Unknown or uninitialised column: `p_threshold`. 
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/16006613_2020.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/16006500_1971.png
+Saving:../data/output/graphs/hydrographs/16005701_1979.png
+Saving:../data/output/graphs/hydrographs/16004006_2012.png
+Saving:../data/output/graphs/hydrographs/16003003_2008.png
+Saving:../data/output/graphs/hydrographs/16004403_2003.png
+Saving:../data/output/graphs/hydrographs/16006613_2021.png
+Saving:../data/output/graphs/hydrographs/16006500_1972.png
+Saving:../data/output/graphs/hydrographs/16005701_1980.png
+Saving:../data/output/graphs/hydrographs/16004006_2013.png
+Saving:../data/output/graphs/hydrographs/16003003_2009.png
+Saving:../data/output/graphs/hydrographs/16004403_2004.png
+Saving:../data/output/graphs/hydrographs/16006613_2022.png
+Saving:../data/output/graphs/hydrographs/16006500_1973.png
+Saving:../data/output/graphs/hydrographs/16004006_2014.png
+Saving:../data/output/graphs/hydrographs/16005701_1981.png
+Saving:../data/output/graphs/hydrographs/16003003_2010.png
+Saving:../data/output/graphs/hydrographs/16004403_2005.png
+Saving:../data/output/graphs/hydrographs/16006500_1974.png
+Saving:../data/output/graphs/hydrographs/16006613_2023.png
+Saving:../data/output/graphs/hydrographs/16004006_2015.png
+Saving:../data/output/graphs/hydrographs/16005701_1982.png
+Saving:../data/output/graphs/hydrographs/16003003_2011.png
+Saving:../data/output/graphs/hydrographs/16004403_2006.png
+Saving:../data/output/graphs/hydrographs/16006500_1975.png
+Saving:../data/output/graphs/hydrographs/16006613_2024.png
+Saving:../data/output/graphs/hydrographs/16004006_2016.png
+Saving:../data/output/graphs/hydrographs/16005701_1983.png
+Saving:../data/output/graphs/hydrographs/16003003_2012.png
+Saving:../data/output/graphs/hydrographs/16004403_2007.png
+Saving:../data/output/graphs/hydrographs/16006500_1976.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/16004006_2017.png
+Saving:../data/output/graphs/hydrographs/16003003_2013.png
+Saving:../data/output/graphs/hydrographs/16005701_1984.png
+Saving:../data/output/graphs/hydrographs/16004403_2008.png
+Saving:../data/output/graphs/hydrographs/16006500_1977.png
+Saving:../data/output/graphs/hydrographs/16004006_2018.png
+Saving:../data/output/graphs/hydrographs/16005701_1985.png
+Saving:../data/output/graphs/hydrographs/16004403_2009.png
+Saving:../data/output/graphs/hydrographs/16003003_2014.png
+Saving:../data/output/graphs/hydrographs/16006500_1978.png
+Saving:../data/output/graphs/hydrographs/16004006_2019.png
+Saving:../data/output/graphs/hydrographs/16005701_1986.png
+Saving:../data/output/graphs/hydrographs/16003003_2015.png
+Saving:../data/output/graphs/hydrographs/16004403_2010.png
+Saving:../data/output/graphs/hydrographs/16006500_1979.png
+Saving:../data/output/graphs/hydrographs/16004006_2020.png
+Saving:../data/output/graphs/hydrographs/16005701_1987.png
+Saving:../data/output/graphs/hydrographs/16004403_2011.png
+Saving:../data/output/graphs/hydrographs/16003003_2016.png
+Saving:../data/output/graphs/hydrographs/16006500_1980.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/16004006_2021.png
+Saving:../data/output/graphs/hydrographs/16004403_2012.png
+Saving:../data/output/graphs/hydrographs/16005701_1988.png
+Saving:../data/output/graphs/hydrographs/16003003_2017.png
+Saving:../data/output/graphs/hydrographs/16006500_1981.png
+Saving:../data/output/graphs/hydrographs/16004006_2022.png
+Saving:../data/output/graphs/hydrographs/16004403_2013.png
+Saving:../data/output/graphs/hydrographs/16006500_1982.png
+Saving:../data/output/graphs/hydrographs/16005701_1989.png
+Saving:../data/output/graphs/hydrographs/16003003_2018.png
+Saving:../data/output/graphs/hydrographs/16004006_2023.png
+Saving:../data/output/graphs/hydrographs/16004403_2014.png
+Saving:../data/output/graphs/hydrographs/16006500_1983.png
+Saving:../data/output/graphs/hydrographs/16005701_1990.png
+Saving:../data/output/graphs/hydrographs/16003003_2019.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/16007004_1971.png
+Saving:../data/output/graphs/hydrographs/16004006_2024.png
+Saving:../data/output/graphs/hydrographs/16006500_1984.png
+Saving:../data/output/graphs/hydrographs/16004403_2015.png
+Saving:../data/output/graphs/hydrographs/16005701_1991.png
+Saving:../data/output/graphs/hydrographs/16003003_2020.png
+Saving:../data/output/graphs/hydrographs/16007004_1972.png
+Saving:../data/output/graphs/hydrographs/16006500_1985.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Warnmeldung:
+Removed 1 row containing missing values or values outside the scale range
+(`geom_line()`). 
+Saving:../data/output/graphs/hydrographs/16004403_2016.png
+Saving:../data/output/graphs/hydrographs/16005701_1992.png
+Saving:../data/output/graphs/hydrographs/16003003_2021.png
+Saving:../data/output/graphs/hydrographs/16007004_1973.png
+Saving:../data/output/graphs/hydrographs/16006500_1986.png
+Saving:../data/output/graphs/hydrographs/16004403_2017.png
+Saving:../data/output/graphs/hydrographs/16003003_2022.png
+Saving:../data/output/graphs/hydrographs/16005701_1993.png
+Saving:../data/output/graphs/hydrographs/16007004_1974.png
+Saving:../data/output/graphs/hydrographs/16006500_1987.png
+Saving:../data/output/graphs/hydrographs/16004403_2018.png
+Saving:../data/output/graphs/hydrographs/16003003_2023.png
+Saving:../data/output/graphs/hydrographs/16005701_1994.png
+Saving:../data/output/graphs/hydrographs/16007004_1975.png
+Saving:../data/output/graphs/hydrographs/16006500_1988.png
+Saving:../data/output/graphs/hydrographs/16004403_2019.png
+Saving:../data/output/graphs/hydrographs/16003003_2024.png
+Saving:../data/output/graphs/hydrographs/16005701_1995.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/16007004_1976.png
+Saving:../data/output/graphs/hydrographs/16006500_1989.png
+Saving:../data/output/graphs/hydrographs/16004403_2020.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/16005701_1996.png
+Saving:../data/output/graphs/hydrographs/16007004_1977.png
+Saving:../data/output/graphs/hydrographs/16006500_1990.png
+Saving:../data/output/graphs/hydrographs/16004403_2021.png
+Saving:../data/output/graphs/hydrographs/16005701_1997.png
+Saving:../data/output/graphs/hydrographs/16007004_1978.png
+Saving:../data/output/graphs/hydrographs/16006500_1991.png
+Saving:../data/output/graphs/hydrographs/16004403_2022.png
+Saving:../data/output/graphs/hydrographs/16005701_1998.png
+debug bei functions.R#561: browser()
+Es gab 48 Warnungen (Anzeige mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/16007106_1977.png
+Saving:../data/output/graphs/hydrographs/16007004_1979.png
+Saving:../data/output/graphs/hydrographs/16006500_1992.png
+Saving:../data/output/graphs/hydrographs/16004403_2023.png
+Saving:../data/output/graphs/hydrographs/16005701_1999.png
+Saving:../data/output/graphs/hydrographs/16007106_1978.png
+Saving:../data/output/graphs/hydrographs/16007004_1980.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/16006500_1993.png
+Saving:../data/output/graphs/hydrographs/16004403_2024.png
+Saving:../data/output/graphs/hydrographs/16005701_2000.png
+Saving:../data/output/graphs/hydrographs/16007106_1979.png
+Saving:../data/output/graphs/hydrographs/16007004_1981.png
+Saving:../data/output/graphs/hydrographs/16006500_1994.png
+debug bei functions.R#554: load(paste(in_dir, filename, sep = ""))
+Saving:../data/output/graphs/hydrographs/16007106_1980.png
+Saving:../data/output/graphs/hydrographs/16005701_2001.png
+Saving:../data/output/graphs/hydrographs/16007004_1982.png
+Saving:../data/output/graphs/hydrographs/16006500_1995.png
+Saving:../data/output/graphs/hydrographs/16007106_1981.png
+Saving:../data/output/graphs/hydrographs/16005701_2002.png
+Saving:../data/output/graphs/hydrographs/16006500_1996.png
+Saving:../data/output/graphs/hydrographs/16007004_1983.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/16008007_1971.png
+Saving:../data/output/graphs/hydrographs/16007106_1982.png
+Saving:../data/output/graphs/hydrographs/16005701_2003.png
+Saving:../data/output/graphs/hydrographs/16006500_1997.png
+Saving:../data/output/graphs/hydrographs/16007004_1984.png
+Saving:../data/output/graphs/hydrographs/16007106_1983.png
+Saving:../data/output/graphs/hydrographs/16008007_1972.png
+Saving:../data/output/graphs/hydrographs/16005701_2004.png
+Saving:../data/output/graphs/hydrographs/16006500_1998.png
+debug bei functions.R#558: plots = purrr::map(dplyr::group_split(df, year), create_hydrograph)
+Saving:../data/output/graphs/hydrographs/16007004_1985.png
+Saving:../data/output/graphs/hydrographs/16007106_1984.png
+Saving:../data/output/graphs/hydrographs/16008007_1973.png
+Saving:../data/output/graphs/hydrographs/16006500_1999.png
+Saving:../data/output/graphs/hydrographs/16005701_2005.png
+Saving:../data/output/graphs/hydrographs/16007004_1986.png
+Saving:../data/output/graphs/hydrographs/16007106_1985.png
+Saving:../data/output/graphs/hydrographs/16008007_1974.png
+Saving:../data/output/graphs/hydrographs/16006500_2000.png
+Saving:../data/output/graphs/hydrographs/16007004_1987.png
+Saving:../data/output/graphs/hydrographs/16005701_2006.png
+Saving:../data/output/graphs/hydrographs/16007106_1986.png
+Saving:../data/output/graphs/hydrographs/16008007_1975.png
+Saving:../data/output/graphs/hydrographs/16006500_2001.png
+Saving:../data/output/graphs/hydrographs/16007004_1988.png
+Saving:../data/output/graphs/hydrographs/16005701_2007.png
+Saving:../data/output/graphs/hydrographs/16008007_1976.png
+debug bei functions.R#561: browser()
+Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+debug bei functions.R#562: graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), 
+    ".png", sep = "")
+Saving:../data/output/graphs/hydrographs/16007106_1987.png
+debug bei functions.R#564: purrr::walk2(graphnames, plots, ~{
+    message("Saving:", .x)
+    ggsave(filename = .x, plot = .y, dpi = 400, width = 10, height = 5)
+})
+Saving:../data/output/graphs/hydrographs/16008506_1971.png
+Saving:../data/output/graphs/hydrographs/16006500_2002.png
+Saving:../data/output/graphs/hydrographs/16007004_1989.png
+Saving:../data/output/graphs/hydrographs/16005701_2008.png
+Saving:../data/output/graphs/hydrographs/16007106_1988.png
+Saving:../data/output/graphs/hydrographs/16008007_1977.png
+Saving:../data/output/graphs/hydrographs/16008506_1972.png
+Saving:../data/output/graphs/hydrographs/16006500_2003.png
+Saving:../data/output/graphs/hydrographs/16007004_1990.png
+Saving:../data/output/graphs/hydrographs/16005701_2009.png
+Saving:../data/output/graphs/hydrographs/16007106_1989.png
+Saving:../data/output/graphs/hydrographs/16008007_1978.png
+Saving:../data/output/graphs/hydrographs/16008506_1973.png
+Saving:../data/output/graphs/hydrographs/16006500_2004.png
+Saving:../data/output/graphs/hydrographs/16007004_1991.png
+Saving:../data/output/graphs/hydrographs/16005701_2010.png
+Saving:../data/output/graphs/hydrographs/16007106_1990.png
+Saving:../data/output/graphs/hydrographs/16008007_1979.png
+Saving:../data/output/graphs/hydrographs/16008506_1974.png
+Saving:../data/output/graphs/hydrographs/16006500_2005.png
+Saving:../data/output/graphs/hydrographs/16007004_1992.png
+Saving:../data/output/graphs/hydrographs/16005701_2011.png
+Saving:../data/output/graphs/hydrographs/16007106_1991.png
+Saving:../data/output/graphs/hydrographs/16008007_1980.png
+Saving:../data/output/graphs/hydrographs/16008506_1975.png
+Saving:../data/output/graphs/hydrographs/16006500_2006.png
+Saving:../data/output/graphs/hydrographs/16007004_1993.png
+Saving:../data/output/graphs/hydrographs/16007106_1992.png
+Saving:../data/output/graphs/hydrographs/16005701_2012.png
+Saving:../data/output/graphs/hydrographs/16008007_1981.png
+Saving:../data/output/graphs/hydrographs/16008506_1976.png
+Saving:../data/output/graphs/hydrographs/16006500_2007.png
+Saving:../data/output/graphs/hydrographs/16007004_1994.png
+Saving:../data/output/graphs/hydrographs/16007106_1993.png
+Saving:../data/output/graphs/hydrographs/16008007_1982.png
+Saving:../data/output/graphs/hydrographs/16005701_2013.png
+Saving:../data/output/graphs/hydrographs/16008506_1977.png
+Saving:../data/output/graphs/hydrographs/16006500_2008.png
+Saving:../data/output/graphs/hydrographs/16007004_1995.png
+Saving:../data/output/graphs/hydrographs/16007106_1994.png
+Saving:../data/output/graphs/hydrographs/16008007_1983.png
+Saving:../data/output/graphs/hydrographs/16005701_2014.png
+Saving:../data/output/graphs/hydrographs/16008506_1978.png
+Saving:../data/output/graphs/hydrographs/16006500_2009.png
+Saving:../data/output/graphs/hydrographs/16007004_1996.png
+Saving:../data/output/graphs/hydrographs/16007106_1995.png
+Saving:../data/output/graphs/hydrographs/16008007_1984.png
+Saving:../data/output/graphs/hydrographs/16008506_1979.png
+Saving:../data/output/graphs/hydrographs/16005701_2015.png
+Saving:../data/output/graphs/hydrographs/16006500_2010.png
+Saving:../data/output/graphs/hydrographs/16007106_1996.png
+Saving:../data/output/graphs/hydrographs/16007004_1997.png
+Saving:../data/output/graphs/hydrographs/16008007_1985.png
+Saving:../data/output/graphs/hydrographs/16008506_1980.png
+Saving:../data/output/graphs/hydrographs/16005701_2016.png
+Saving:../data/output/graphs/hydrographs/16006500_2011.png
+Saving:../data/output/graphs/hydrographs/16007106_1997.png
+Saving:../data/output/graphs/hydrographs/16007004_1998.png
+Saving:../data/output/graphs/hydrographs/16008007_1986.png
+Saving:../data/output/graphs/hydrographs/16008506_1981.png
+Saving:../data/output/graphs/hydrographs/16005701_2017.png
+Saving:../data/output/graphs/hydrographs/16006500_2012.png
+Saving:../data/output/graphs/hydrographs/16007106_1998.png
+Saving:../data/output/graphs/hydrographs/16007004_1999.png
+Saving:../data/output/graphs/hydrographs/16008007_1987.png
+Saving:../data/output/graphs/hydrographs/16008506_1982.png
+Saving:../data/output/graphs/hydrographs/16005701_2018.png
+Saving:../data/output/graphs/hydrographs/16006500_2013.png
+Saving:../data/output/graphs/hydrographs/16007106_1999.png
+Saving:../data/output/graphs/hydrographs/16007004_2000.png
+Saving:../data/output/graphs/hydrographs/16008007_1988.png
+Saving:../data/output/graphs/hydrographs/16008506_1983.png
+Saving:../data/output/graphs/hydrographs/16005701_2019.png
+Saving:../data/output/graphs/hydrographs/16006500_2014.png
+Saving:../data/output/graphs/hydrographs/16007106_2000.png
+Saving:../data/output/graphs/hydrographs/16007004_2001.png
+Saving:../data/output/graphs/hydrographs/16008007_1989.png
+Saving:../data/output/graphs/hydrographs/16008506_1984.png
+Saving:../data/output/graphs/hydrographs/16005701_2020.png
+Saving:../data/output/graphs/hydrographs/16006500_2015.png
+Saving:../data/output/graphs/hydrographs/16007106_2001.png
+Saving:../data/output/graphs/hydrographs/16007004_2002.png
+Saving:../data/output/graphs/hydrographs/16008007_1990.png
+Saving:../data/output/graphs/hydrographs/16008506_1985.png
+Saving:../data/output/graphs/hydrographs/16005701_2021.png
+Saving:../data/output/graphs/hydrographs/16007106_2002.png
+Saving:../data/output/graphs/hydrographs/16006500_2016.png
+Saving:../data/output/graphs/hydrographs/16007004_2003.png
+Saving:../data/output/graphs/hydrographs/16008007_1991.png
+Saving:../data/output/graphs/hydrographs/16008506_1986.png
+Saving:../data/output/graphs/hydrographs/16005701_2022.png
+Saving:../data/output/graphs/hydrographs/16007106_2003.png
+Saving:../data/output/graphs/hydrographs/16006500_2017.png
+Saving:../data/output/graphs/hydrographs/16007004_2004.png
+Saving:../data/output/graphs/hydrographs/16008007_1992.png
+Saving:../data/output/graphs/hydrographs/16008506_1987.png
+Saving:../data/output/graphs/hydrographs/16005701_2023.png
+Saving:../data/output/graphs/hydrographs/16007106_2004.png
+Saving:../data/output/graphs/hydrographs/16006500_2018.png
+Saving:../data/output/graphs/hydrographs/16007004_2005.png
+Saving:../data/output/graphs/hydrographs/16008007_1993.png
+Saving:../data/output/graphs/hydrographs/16008506_1988.png
+Saving:../data/output/graphs/hydrographs/16005701_2024.png
+Saving:../data/output/graphs/hydrographs/16007106_2005.png
+Saving:../data/output/graphs/hydrographs/16006500_2019.png
+Saving:../data/output/graphs/hydrographs/16007004_2006.png
+Saving:../data/output/graphs/hydrographs/16008007_1994.png
+Saving:../data/output/graphs/hydrographs/16007106_2006.png
+Saving:../data/output/graphs/hydrographs/16008506_1989.png
+Saving:../data/output/graphs/hydrographs/16006500_2020.png
+Saving:../data/output/graphs/hydrographs/16007004_2007.png
+Saving:../data/output/graphs/hydrographs/16008007_1995.png
+Saving:../data/output/graphs/hydrographs/16007106_2007.png
+Saving:../data/output/graphs/hydrographs/16008506_1990.png
+Saving:../data/output/graphs/hydrographs/16006500_2021.png
+Saving:../data/output/graphs/hydrographs/16007004_2008.png
+Saving:../data/output/graphs/hydrographs/16008007_1996.png
+Saving:../data/output/graphs/hydrographs/16007106_2008.png
+Saving:../data/output/graphs/hydrographs/16008506_1991.png
+Saving:../data/output/graphs/hydrographs/16006500_2024.png
+Saving:../data/output/graphs/hydrographs/16007004_2009.png
+Saving:../data/output/graphs/hydrographs/16008007_1997.png
+Saving:../data/output/graphs/hydrographs/16007106_2009.png
+Saving:../data/output/graphs/hydrographs/16008506_1992.png
+Saving:../data/output/graphs/hydrographs/16007004_2010.png
+Saving:../data/output/graphs/hydrographs/16008007_1998.png
+Saving:../data/output/graphs/hydrographs/16007106_2010.png
+Saving:../data/output/graphs/hydrographs/16008506_1993.png
+Saving:../data/output/graphs/hydrographs/16007004_2011.png
+Saving:../data/output/graphs/hydrographs/16007106_2011.png
+Saving:../data/output/graphs/hydrographs/16008007_1999.png
+Saving:../data/output/graphs/hydrographs/16008506_1994.png
+Saving:../data/output/graphs/hydrographs/16007004_2012.png
+Saving:../data/output/graphs/hydrographs/16008007_2000.png
+Saving:../data/output/graphs/hydrographs/16007106_2012.png
+Saving:../data/output/graphs/hydrographs/16008506_1995.png
+Saving:../data/output/graphs/hydrographs/16007004_2013.png
+Saving:../data/output/graphs/hydrographs/16007106_2013.png
+Saving:../data/output/graphs/hydrographs/16008007_2001.png
+Saving:../data/output/graphs/hydrographs/16008506_1996.png
+Saving:../data/output/graphs/hydrographs/16007004_2014.png
+Saving:../data/output/graphs/hydrographs/16007106_2014.png
+Saving:../data/output/graphs/hydrographs/16008007_2002.png
+Saving:../data/output/graphs/hydrographs/16008506_1997.png
+Saving:../data/output/graphs/hydrographs/16007004_2015.png
+Saving:../data/output/graphs/hydrographs/16007106_2015.png
+Saving:../data/output/graphs/hydrographs/16008007_2003.png
+Saving:../data/output/graphs/hydrographs/16008506_1998.png
+Saving:../data/output/graphs/hydrographs/16007004_2016.png
+Saving:../data/output/graphs/hydrographs/16007106_2016.png
+Saving:../data/output/graphs/hydrographs/16008007_2004.png
+Saving:../data/output/graphs/hydrographs/16008506_1999.png
+Saving:../data/output/graphs/hydrographs/16007004_2017.png
+Saving:../data/output/graphs/hydrographs/16007106_2017.png
+Saving:../data/output/graphs/hydrographs/16008007_2005.png
+Saving:../data/output/graphs/hydrographs/16008506_2000.png
+Saving:../data/output/graphs/hydrographs/16007004_2018.png
+Saving:../data/output/graphs/hydrographs/16007106_2018.png
+Saving:../data/output/graphs/hydrographs/16008007_2006.png
+Saving:../data/output/graphs/hydrographs/16008506_2001.png
+Saving:../data/output/graphs/hydrographs/16007004_2019.png
+Saving:../data/output/graphs/hydrographs/16007106_2019.png
+Saving:../data/output/graphs/hydrographs/16008007_2007.png
+Saving:../data/output/graphs/hydrographs/16008506_2002.png
+Saving:../data/output/graphs/hydrographs/16007004_2020.png
+Saving:../data/output/graphs/hydrographs/16007106_2020.png
+Saving:../data/output/graphs/hydrographs/16008506_2003.png
+Saving:../data/output/graphs/hydrographs/16008007_2008.png
+Saving:../data/output/graphs/hydrographs/16007004_2021.png
+Saving:../data/output/graphs/hydrographs/16007106_2021.png
+Saving:../data/output/graphs/hydrographs/16008506_2004.png
+Saving:../data/output/graphs/hydrographs/16008007_2009.png
+Saving:../data/output/graphs/hydrographs/16007004_2022.png
+Saving:../data/output/graphs/hydrographs/16007106_2022.png
+Saving:../data/output/graphs/hydrographs/16008506_2005.png
+Saving:../data/output/graphs/hydrographs/16008007_2010.png
+Saving:../data/output/graphs/hydrographs/16007004_2023.png
+Saving:../data/output/graphs/hydrographs/16007106_2023.png
+Saving:../data/output/graphs/hydrographs/16008506_2006.png
+Saving:../data/output/graphs/hydrographs/16008007_2011.png
+Saving:../data/output/graphs/hydrographs/16007004_2024.png
+Saving:../data/output/graphs/hydrographs/16007106_2024.png
+Saving:../data/output/graphs/hydrographs/16008506_2007.png
+Saving:../data/output/graphs/hydrographs/16008007_2012.png
+Saving:../data/output/graphs/hydrographs/16008506_2008.png
+Saving:../data/output/graphs/hydrographs/16008007_2013.png
+Saving:../data/output/graphs/hydrographs/16008506_2009.png
+Saving:../data/output/graphs/hydrographs/16008007_2014.png
+Saving:../data/output/graphs/hydrographs/16008506_2010.png
+Saving:../data/output/graphs/hydrographs/16008007_2015.png
+Saving:../data/output/graphs/hydrographs/16008506_2011.png
+Saving:../data/output/graphs/hydrographs/16008007_2016.png
+Saving:../data/output/graphs/hydrographs/16008506_2012.png
+Saving:../data/output/graphs/hydrographs/16008007_2017.png
+Saving:../data/output/graphs/hydrographs/16008506_2013.png
+Saving:../data/output/graphs/hydrographs/16008007_2018.png
+Saving:../data/output/graphs/hydrographs/16008506_2014.png
+Saving:../data/output/graphs/hydrographs/16008007_2019.png
+Saving:../data/output/graphs/hydrographs/16008506_2015.png
+Saving:../data/output/graphs/hydrographs/16008007_2020.png
+Saving:../data/output/graphs/hydrographs/16008506_2016.png
+Saving:../data/output/graphs/hydrographs/16008007_2021.png
+Saving:../data/output/graphs/hydrographs/16008506_2017.png
+Saving:../data/output/graphs/hydrographs/16008007_2022.png
+Saving:../data/output/graphs/hydrographs/16008506_2018.png
+Saving:../data/output/graphs/hydrographs/16008007_2023.png
+Saving:../data/output/graphs/hydrographs/16008506_2019.png
+Saving:../data/output/graphs/hydrographs/16008007_2024.png
+Saving:../data/output/graphs/hydrographs/16008506_2020.png
+Saving:../data/output/graphs/hydrographs/16008506_2021.png
+Saving:../data/output/graphs/hydrographs/16008506_2022.png
+Saving:../data/output/graphs/hydrographs/16008506_2023.png
+Saving:../data/output/graphs/hydrographs/16008506_2024.png
+Warnmeldung:
+Removed 1 row containing missing values or values outside the scale range
+(`geom_line()`). 
