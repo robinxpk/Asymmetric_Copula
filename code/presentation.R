@@ -7,21 +7,21 @@ library(ggplot2)
 # When (re)running the script, should plots be saved
 save_plots = FALSE
 # Selected station
-station = "München" # Isar
-# station = "Hofkirchen" # Donau
+# station = "München" # Isar
+station = "Hofkirchen" # Donau
 # station = "Sylvenstein"
 ref_year = 2024
 # Considered rivers 
 
 # Load data frames
 # Copula df with threshold of choice
-copula_threshold = 0.9
+# copula_threshold = 0.9
 # With: 
 #   1) Reduce to considered rivers
 considered = c("Isar", "Donau")
 #   2) Remove stations with too little observations
 min_num_obs = 30
-cop_df = get_copula_df(p_threshold = copula_threshold) |>  
+cop_df = get_copula_df() |>  
   dplyr::filter(river %in% considered)  # Focus only on desired rivers (i.e. remove this one random small river. lol.)
 # Of which have more than 30 observations
 obs_status = cop_df |> 
@@ -43,11 +43,11 @@ cop_df = cop_df |> dplyr::filter(unit %in% considered_stations$unit)
 pos = cop_df |> dplyr::select(unit, east, north, river) |> unique()
 
 # Copula df with all thresholds
-all_cops = get_copula_df(all = TRUE) |> dplyr::filter(river %in% considered)
+# all_cops = get_copula_df(all = TRUE) |> dplyr::filter(river %in% considered)
 
 # Station specific data
 id = (cop_df |> dplyr::filter(unit == station))[1, "id"]
-load(paste("../data/output/rdata/threshold_dfs/", id, "_t0.75.Rdata", sep = "")) # loads "df"
+load(paste("../data/output/rdata/threshold_dfs/", id, "_t.Rdata", sep = "")) # loads "df"
 ref_yeardf = df |> dplyr::filter(year == ref_year)
 peak_info = cop_df |> dplyr::filter(year == ref_year, unit == station)
 scop_df = cop_df |> dplyr::filter(unit == station)
@@ -70,13 +70,13 @@ paper_tau = data.frame(
 #   This "unclear" is supported by insignificant p-value. Also, consider pseudo-obs. They look like no real dependence at all
 cor_table = cop_df |> dplyr::summarise(
   n = dplyr::n(),
-  tau_vd = cor(volume, duration_min, method = "kendall"),
+  tau_vd = cor(volume, duration_days, method = "kendall"),
   # p_vd = cor.test(volume, duration_min, method = "kendall")$p.value,
   # rej_vd = p_vd < 0.01,
   tau_vp = cor(volume, peak, method = "kendall"),
   # p_vp = cor.test(volume, peak, method = "kendall")$p.value,
   # rej_vp = p_vp < 0.01,
-  tau_dp = cor(duration_min, peak, method = "kendall"),
+  tau_dp = cor(duration_days, peak, method = "kendall"),
   # p_dp = cor.test(duration_min, peak, method = "kendall")$p.value,
   # rej_dp = p_dp < 0.01,
   .by = c(river, unit)
@@ -407,7 +407,6 @@ ggplot(mapping = aes(x = doy, y = discharge)) +
     axis.text.x = element_text(angle = 90),
     axis.title = element_text(size = 20)
   ) + 
-  geom_hline(yintercept = ref_yeardf$threshold[[1]]) + 
   scale_x_continuous(breaks = c(0, 100, 200, 300, 365)) +
   scale_y_continuous(breaks = seq(0, 600, by = 100)) +
   labs(
@@ -420,12 +419,7 @@ if(save_plots) savegg("straight_line_method", width = 10, height = 5)
 # Values seen:
 cop_df |> dplyr::filter(unit == station, year == ref_year) |> 
   dplyr::select(
-    duration_min, peak, volume
-  ) |> 
-  dplyr::mutate(
-    duration_h = duration_min / 60,
-    duration_d = duration_h / 24,
-    .after = duration_min
+    duration_days, peak, volume
   ) |> 
   dplyr::mutate(
     volume_inmio = volume / 1e6
@@ -445,7 +439,7 @@ marginal_peak = ggplot(scop_df, aes(x = peak)) +
   ) + 
   theme_minimal()
 
-marginal_dur = ggplot(scop_df, aes(x = duration_min / 60 / 24)) +
+marginal_dur = ggplot(scop_df, aes(x = duration_days)) +
   geom_histogram(fill = "green", alpha = 0.3, color = "black") +
   labs(
     title = latex2exp::TeX("Munich Station: Duration"),
@@ -468,7 +462,7 @@ pairs = GGally::ggpairs(
   cop_df |> 
     dplyr::filter(unit == station) |> 
     dplyr::mutate(
-      duration_day = duration_min / 60 / 24,
+      duration_day = duration_days,
       volume_mio = volume / 1e6
     ) |> 
     dplyr::select(duration_day, volume_mio, peak), 
@@ -508,7 +502,7 @@ cop_df |>
   dplyr::summarise(
     max_peak = max(peak),
     max_vol = max(volume),
-    max_dur = max(duration_min) / 60 / 24,
+    max_dur = max(duration_days),
     .by = river
   ) |> dplyr::mutate(
     max_peak_tub = max_peak / l_in_bathtub,
@@ -516,8 +510,8 @@ cop_df |>
     max_vol_in_mio_l = max_vol / 1e6
   )
 # Duration of the maximum volume floodings
-cop_df |> dplyr::filter(volume %in% c(6824363400, 1808050500)) |> dplyr::mutate(duration_days = duration_min / 60 / 24)
-cop_df |> dplyr::mutate(duration_days = duration_min / 60 / 24) |> dplyr::filter(duration_days > 87)
+cop_df |> dplyr::filter(volume %in% c(6824363400, 1808050500)) |> dplyr::mutate(duration_days = duration_days)
+cop_df |> dplyr::mutate(duration_days = duration_days) |> dplyr::filter(duration_days > 87)
 
 
 # All Stations - Corr Boxplots --------------------------------------------
@@ -561,9 +555,9 @@ if(save_plots) savegg("tau_boxplots", width = 15, height = 5)
 # Dependence structure by threshold
 all_cops |> dplyr::summarise(
   n = dplyr::n(),
-  tau_vd = cor(volume, duration_min, method = "kendall"),
+  tau_vd = cor(volume, duration_days, method = "kendall"),
   tau_vp = cor(volume, peak, method = "kendall"),
-  tau_dp = cor(duration_min, peak, method = "kendall"),
+  tau_dp = cor(duration_days, peak, method = "kendall"),
   .by = c(river, unit, p_threshold)
 ) |> 
   dplyr::filter(n > 30, river == "Isar") |> 
@@ -796,11 +790,11 @@ syn_df = syn_dfs |> dplyr::bind_rows()
 # Marginal GEV fits
 gev_peak = marginal_fit(scop_df$peak, type = "GEV")
 plot(gev_peak, type = "density")
-gev_vol = marginal_fit(scop_df$volume / 1e6, type = "GEV")
+gev_vol = marginal_fit(scop_df$volume, type = "GEV")
 plot(gev_vol, type = "density")
-gev_dur = marginal_fit(scop_df$duration_min / 60 / 24, type = "GEV")
+gev_dur = marginal_fit(scop_df$duration_days, type = "GEV")
 plot(gev_dur, type = "density")
-summary(scop_df$duration_min / 60 / 24)
+summary(scop_df$duration_days)
 
 # countour and syn data dfs
 splot_df = plot_df |> dplyr::filter(unit == station)
@@ -911,7 +905,7 @@ p7 = get_syn_scatter(
   ssyn_df = ssyn_df, 
   varx_syn = "dur", 
   vary_syn = "peak", 
-  scop_df |> dplyr::mutate(duration_d = duration_min / 24 / 60), 
+  scop_df |> dplyr::mutate(duration_d = duration_days), 
   varx_df = "duration_d", 
   vary_df = "peak",
   x_lab = "Duration (days)",
@@ -931,7 +925,7 @@ p9 = get_syn_scatter(
   ssyn_df = ssyn_df, 
   varx_syn = "dur", 
   vary_syn = "vol", 
-  scop_df |> dplyr::mutate(vol = volume / 1e6, dur_d = duration_min / 24 / 60), 
+  scop_df |> dplyr::mutate(vol = volume / 1e6, dur_d = duration_days), 
   varx_df = "dur_d", 
   vary_df = "vol",
   x_lab = latex2exp::TeX("Duration (days)"),
@@ -1200,8 +1194,8 @@ con_nac_smry = lapply(
   HQ_probs,
   function(hq_prob) get_most_probable_voldur(
       hq_prob = hq_prob,
-      initial_vol = 130,
-      initial_dur = 7,
+      initial_vol = 500,
+      initial_dur = 10,
       gev_vol = gev_vol,
       gev_dur = gev_dur,
       gev_peak = gev_peak,
@@ -1218,8 +1212,8 @@ con_vine_smry = lapply(
   HQ_probs,
   function(hq_prob) get_most_probable_voldur(
       hq_prob = hq_prob,
-      initial_vol = 200,
-      initial_dur = 20,
+      initial_vol = 3000,
+      initial_dur = 40,
       gev_vol = gev_vol,
       gev_dur = gev_dur,   
       gev_peak = gev_peak,
@@ -1237,27 +1231,27 @@ con_smry = rbind(
   con_nac_smry
 ) |> dplyr::mutate(HQ = 1 / hq_prob, .after = hq_prob)
 con_smry
-
-# Check somewhat of bivariate quantile
-#   Sort observed data by volume and duration
-#   Select empirical quantiles of this and plot it to get a feeling of which one is a better fit
-checkpoints = scop_df |> 
-  dplyr::arrange(
-    peak
-    # duration_min, volume
-  ) |> 
-  dplyr::mutate(
-    idx = dplyr::row_number()
-  ) |> 
-  dplyr::filter(
-    idx %in% ceiling((1 - HQ_probs) * nrow(scop_df))
-  ) |> 
-  dplyr::mutate(
-    hq = pmax(round(1 - (idx / nrow(scop_df)), 2), 1 / 500),
-    hq_years = 1 / hq
-  ) |> 
-  dplyr::select(-c(id, east, north, river, n_floodevent))
-checkpoints
+# 
+# # Check somewhat of bivariate quantile
+# #   Sort observed data by volume and duration
+# #   Select empirical quantiles of this and plot it to get a feeling of which one is a better fit
+# checkpoints = scop_df |> 
+#   dplyr::arrange(
+#     # peak
+#     volume
+#   ) |> 
+#   dplyr::mutate(
+#     idx = dplyr::row_number()
+#   ) |> 
+#   dplyr::filter(
+#     idx %in% ceiling((1 - HQ_probs) * nrow(scop_df))
+#   ) |> 
+#   dplyr::mutate(
+#     hq = pmax(round(1 - (idx / nrow(scop_df)), 2), 1 / 500),
+#     hq_years = round(1 / hq, 0)
+#   ) |>
+#   dplyr::select(-c(id, east, north, river))
+# checkpoints
 # My prognosis is sucks giga hard as soon as the quantile method fails
 #     Idea: 1) Flood starts with stark rise in slop in hydrograph
 #             -> Calc slope using triangle and then use quantile slop to define when flood starts
@@ -1268,22 +1262,22 @@ checkpoints
 #                   -> Grab index of peak, Grab indices of start and end of flood --> Habe the 3 indices needed; Basically straight line method, but on the slopes
 #           2) Two flood events are considered the same event if there are only x hours between them 
 
-
-scop_df |> 
-  dplyr::arrange(
-    peak, volume, duration_min
-    # duration_min, volume
-  ) |> 
-  dplyr::select(year, duration_min, peak, volume, dplyr::contains("pobs")) |> 
-  dplyr::mutate(
-    idx = dplyr::row_number(),
-    .before = year
-  ) |> 
-  dplyr::arrange(desc(peak)) |> 
-  ggplot() + 
-  geom_point(aes(y = duration_min, x = volume, color = peak)) + 
-  # geom_point(data = checkpoints, aes(y = duration_min, x = volume), color = "red")
-  geom_text(data = checkpoints, mapping = aes(x = volume, y = duration_min, label = ifelse(is.infinite(1 / hq), 500, round(1 / hq))), color = "red") 
+# 
+# scop_df |> 
+#   dplyr::arrange(
+#     # peak, volume, duration_days
+#     volume, duration_days
+#   ) |> 
+#   dplyr::select(year, duration_days, peak, volume, dplyr::contains("pobs")) |> 
+#   dplyr::mutate(
+#     idx = dplyr::row_number(),
+#     .before = year
+#   ) |> 
+#   dplyr::arrange(desc(peak)) |> 
+#   ggplot() + 
+#   geom_point(aes(y = duration_days, x = volume, color = peak)) + 
+#   # geom_point(data = checkpoints, aes(y = duration_min, x = volume), color = "red")
+#   geom_text(data = checkpoints, mapping = aes(x = volume, y = duration_days, label = ifelse(is.infinite(1 / hq), 500, round(1 / hq))), color = "red") 
 
 # Issue:
 # The copula fit is fine, but the marginal fit is an issue
@@ -1298,12 +1292,13 @@ scop_df |>
 # Another Issue:
 # Our estimation of most probable pair is numerically instable (yet)
 ggplot(con_smry) + 
+  geom_point(data = scop_df, aes(y = duration_days, x = volume, color = peak)) + 
   geom_line(aes(x = vol, y = dur)) +
   geom_point(aes(x = vol, y = dur)) +
   geom_label(aes(x = vol, y = dur, label = 1 / hq_prob), size = 5) +
-  geom_point(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60), color = "red") +
-  geom_text(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60, label = hq_years), color = "red", nudge_y = 2, size = 5) +
-  facet_wrap(~type, scale = "free") + 
+  # geom_point(data = checkpoints, mapping = aes(x = volume , y = duration_days), color = "red") +
+  # geom_text(data = checkpoints, mapping = aes(x = volume, y = duration_days, label = hq_years), color = "red", nudge_y = 2, size = 5) +
+  facet_wrap(~type) + 
   theme(
     title = element_text(size = 20),
     axis.text = element_text(size = 15),
@@ -1337,8 +1332,8 @@ scop_df |>
 
 
 # Beobachtete Daten, um Werte zu checken:
-summary(scop_df$volume / 1e6)
-summary(scop_df$duration_min / 24 / 60)
+summary(scop_df$volume)
+summary(scop_df$duration_days)
 summary(scop_df$peak)
 
 
@@ -1365,24 +1360,34 @@ cons_vine = lapply(
 )  |>
   dplyr::bind_rows()
 
+# Duration has an almost uniform margin which makes sense considering that there is barely any dependence
+# Volume however does move to larger values for an increased peak
+# IMPORTANT: I cannot take average / median / mode of the UNIVARIATE / marginal distributions
+# These do not consider how the other variables moves
+# Thus, I need to find a bivariate solution for this
+ggplot(cons_vine, aes(x = pobs_vol, y = pobs_dur)) + 
+  geom_point(alpha = 0.3) + 
+  facet_wrap(~pobs_peak)
+
 con_vine_smry = cons_vine |>
   dplyr::summarise(
     avg_vol = mean(mio_vol),
     med_vol = median(mio_vol),
-    mod_vol = "",
+    mod_vol = calc_bivariate_mode(x = mio_vol, y = d_dur)["x"],
     avg_dur = mean(d_dur),
     med_dur = median(d_dur),
-    mod_dur = "",
+    mod_dur = calc_bivariate_mode(x = mio_vol, y = d_dur)["y"],
     cop = "vine",
     .by = hq_prob
   )
 con_vine_smry
 ggplot(con_vine_smry) + 
-  geom_line(aes(x = avg_vol, y = avg_dur)) +
-  geom_point(aes(x = avg_vol, y = avg_dur)) +
-  geom_label(aes(x = avg_vol, y = avg_dur, label = 1 / hq_prob), size = 5) + 
-  geom_text(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60, label = ifelse(is.infinite(1 / hq), 500, round(1 / hq))), color = "red", nudge_y = 2, size = 5) +
-  geom_point(data = checkpoints, mapping = aes(x = volume / 1e6, y = duration_min / 24 / 60), color = "red") + 
+  geom_point(data = scop_df, aes(y = duration_days, x = volume, color = peak)) + 
+  geom_line(aes(x = mod_vol, y = mod_dur)) +
+  geom_point(aes(x = mod_vol, y = mod_dur)) +
+  geom_label(aes(x = mod_vol, y = mod_dur, label = 1 / hq_prob), size = 5) + 
+  # geom_text(data = checkpoints, mapping = aes(x = volume, y = duration_days, label = ifelse(is.infinite(1 / hq), 500, round(1 / hq))), color = "red", nudge_y = 2, size = 5) +
+  # geom_point(data = checkpoints, mapping = aes(x = volume, y = duration_days), color = "red") + 
   theme(
     title = element_text(size = 20),
     axis.text = element_text(size = 15),
@@ -1407,7 +1412,7 @@ plot_vp = ggplot(cop_df |> dplyr::filter(unit == "München"), aes(y = volume / 1
   )
 
 # y: Volume, x: Duration
-plot_vd = ggplot(cop_df |> dplyr::filter(unit == "München"), aes(y = volume / 1e6, x = duration_min / 60 / 24)) +
+plot_vd = ggplot(cop_df |> dplyr::filter(unit == "München"), aes(y = volume / 1e6, x = duration_days)) +
   geom_point() + 
   labs(
     title = "Munich: Volume - Duration",
@@ -1416,7 +1421,7 @@ plot_vd = ggplot(cop_df |> dplyr::filter(unit == "München"), aes(y = volume / 1
   )
 
 # y: Peak, x: Duration
-plot_pd = ggplot(cop_df |> dplyr::filter(unit == "München"), aes(y = peak, x = duration_min / 60 / 24)) +
+plot_pd = ggplot(cop_df |> dplyr::filter(unit == "München"), aes(y = peak, x = duration_days)) +
   geom_point() + 
   labs(
     title = "Munich: Peak - Duration",
@@ -1439,7 +1444,7 @@ plot_vp = ggplot(cop_df |> dplyr::filter(unit == "Mittenwald"), aes(y = volume /
   )
 
 # y: Volume, x: Duration
-plot_vd = ggplot(cop_df |> dplyr::filter(unit == "Mittenwald"), aes(y = volume / 1e6, x = duration_min / 60 / 24)) +
+plot_vd = ggplot(cop_df |> dplyr::filter(unit == "Mittenwald"), aes(y = volume / 1e6, x = duration_days)) +
   geom_point() + 
   labs(
     title = "Mittenwald: Volume - Duration",
@@ -1448,7 +1453,7 @@ plot_vd = ggplot(cop_df |> dplyr::filter(unit == "Mittenwald"), aes(y = volume /
   )
 
 # y: Peak, x: Duration
-plot_pd = ggplot(cop_df |> dplyr::filter(unit == "Mittenwald"), aes(y = peak, x = duration_min / 60 / 24)) +
+plot_pd = ggplot(cop_df |> dplyr::filter(unit == "Mittenwald"), aes(y = peak, x = duration_days)) +
   geom_point() + 
   labs(
     title = "Mittenwald: Peak - Duration",

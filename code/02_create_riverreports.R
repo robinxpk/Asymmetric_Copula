@@ -1,15 +1,18 @@
 # Load data into this file and then use the riverreport template to create a report for every river
 source("functions.R")
 # Load all copula data
-cop_df = get_copula_df()
-# Extend by pseudo observations
-cop_df = cop_df |> 
-  dplyr::mutate(
-    pobs_dur = copula::pobs(duration_min),
-    pobs_peak = copula::pobs(peak),
-    pobs_vol= copula::pobs(volume),
-    .by = unit
-  ) 
+copula_threshold = 0.75
+# With: 
+#   1) Reduce to considered rivers
+considered = c("Isar", "Donau")
+#   2) Remove stations with too little observations
+min_num_obs = 30
+cop_df = get_copula_df(p_threshold = copula_threshold) |>  
+  dplyr::filter(river %in% considered) |>   # Focus only on desired rivers (i.e. remove this one random small river. lol.)
+  filter_cop_df(min_num_obs)
+
+
+
 
 # Rivers contained in the copula df
 cop_df = filter_infeasible_stations(cop_df)

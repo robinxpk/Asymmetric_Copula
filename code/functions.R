@@ -3,26 +3,26 @@ library(patchwork)
 
 # Load Data ---------------------------------------------------------------
 get_copula_df = function(
-    p_threshold = NULL,
-    in_dir = "../data/output/rdata/copula_dfs/", 
-    all = FALSE
+    # p_threshold = NULL,
+    in_dir = "../data/output/rdata/copula_dfs/"
+    # all = FALSE
   ){
   "
   Read all copula dfs and join them to one large copula df
   "
-  if (is.null(p_threshold)) assertthat::assert_that(all == TRUE) # If not all dataframes, then p_threhsold must be given
-  if (!is.null(p_threshold)) assertthat::assert_that(all != TRUE) # If all dataframes, then no p_threshold must be given
+  # if (is.null(p_threshold)) assertthat::assert_that(all == TRUE) # If not all dataframes, then p_threhsold must be given
+  # if (!is.null(p_threshold)) assertthat::assert_that(all != TRUE) # If all dataframes, then no p_threshold must be given
   
   pattern = "*.Rdata"
-  if (!all) pattern = paste("_", p_threshold, "_copula.Rdata", sep = "")
+  # if (!all) pattern = paste("_", p_threshold, "_copula.Rdata", sep = "")
   filenames = paste(in_dir, list.files(in_dir, pattern = pattern), sep = "")
   
   cop_df = purrr::map_dfr(filenames, load_rdata)
   
   cop_df = cop_df |> 
     dplyr::mutate(
-      pobs_dur = copula::pobs(duration_min),
       pobs_peak = copula::pobs(peak),
+      pobs_dur = copula::pobs(duration_days),
       pobs_vol= copula::pobs(volume),
       .by = unit
     ) 
@@ -1240,3 +1240,18 @@ filter_cop_df = function(cop_df, n_minobs){
   return(cop_df |> dplyr::filter(unit %in% considered_stations$unit))
 }
 
+
+
+calc_bivariate_mode = function(x, y) {
+  df = cbind(x, y)
+  
+  # Kernel density estimation
+  dens = MASS::kde2d(df[,1], df[,2], n = 1000)
+  
+  ix_max = which(dens$z == max(dens$z), arr.ind = TRUE)
+  mode_x = dens$x[ix_max[1]]
+  mode_y = dens$y[ix_max[2]]
+  
+  mode_point = c(x = mode_x, y = mode_y)
+  return(mode_point)
+}
