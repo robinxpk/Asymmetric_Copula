@@ -51,7 +51,7 @@ load_rdata = function(filepath){
 }
 
 
-## load_data-------------------------------------------------------------------------
+#   # load_data-------------------------------------------------------------------------
 # GKD Data:
 # See: https://www.gkd.bayern.de/en/rivers/discharge/tables
 # bzw.: https://www.gkd.bayern.de/en/downloadcenter/wizard?
@@ -558,7 +558,6 @@ create_and_save_hydrographs <- function(
     plots = df |> dplyr::group_split(year) |> purrr::map(create_hydrograph) 
     
     # Assign graph names to each output graph
-    browser()
     graphnames = paste0(out_dir, df$id[[1]], "_", unique(df$year), ".png", sep = "")
     # We have a list of graphs and a list of names. Use both and the ggsave function to save the graphs in the output dir
     purrr::walk2(
@@ -865,6 +864,48 @@ create_dfs = function(
 
 
 
+# Data Analysis -----------------------------------------------------------
+get_slope_df = function(file_path = "../data/slopes/considered_slopes.csv", sep = ","){
+  slopes = read.csv2(file_path, sep = sep) |> 
+    dplyr::select(id, Slope_Percent) |> 
+    dplyr::rename(slope = Slope_Percent) |> 
+    dplyr::mutate(
+      id = as.character(id), 
+      slope = as.numeric(slope),
+      slope_cat = factor(
+        dplyr::case_when(
+          slope <= 5 ~ "s",
+          slope <= 10 ~ "m",
+          slope <= 20 ~ "l",
+          slope > 20 ~ "xl",
+          TRUE ~ "ERROR"
+        ),
+        levels = c("s", "m", "l", "xl"),
+        ordered = TRUE
+      )
+    )
+  return(slopes)
+}
+
+add_slope_col = function(df, slopes, key = "id"){
+  joint = df |> dplyr::left_join(slopes, by = key)
+  return(joint)
+}
+
+add_tau_order_col = function(df){
+  df$tau_order = unlist(
+    lapply(
+      1:nrow(df), 
+      function(i) with(df, get_tau_order(tau_vec = c(tau_vd = tau_vd[i], tau_vp = tau_vp[i], tau_dp = tau_dp[i])))
+    )
+  )
+  return(df)
+}
+
+get_tau_order = function(tau_vec){
+  return(paste0(names(sort(tau_vec)), collapse = "<"))
+}
+
 # Rendering River Templates -----------------------------------------------
 render_rivertemplate = function(
     df,
@@ -885,21 +926,21 @@ render_rivertemplate = function(
 
 analyse_dependence = function(df){
   
-  vol_dur = ggplot(df, aes(x = volume, y = duration_min)) + 
+  vol_dur = ggplot(df, aes(x = volume, y = duration_days)) + 
     geom_point()
   
   vol_peak = ggplot(df, aes(x = volume, y = peak)) + 
     geom_point()
   
-  dur_peak = ggplot(df, aes(x = duration_min, y = peak)) + 
+  dur_peak = ggplot(df, aes(x = duration_days, y = peak)) + 
     geom_point()
   
   combined_plot = (vol_dur | vol_peak | dur_peak) 
   print(combined_plot)
   
-  print(paste("Vol-Dur: ", cor(df$volume, df$duration_min, method = "kendall")))
+  print(paste("Vol-Dur: ", cor(df$volume, df$duration_days, method = "kendall")))
   print(paste("Vol-Peak:", cor(df$volume, df$peak, method = "kendall")))
-  print(paste("Dur-Peak:", cor(df$duration_min, df$peak, method = "kendall")))
+  print(paste("Dur-Peak:", cor(df$duration_days, df$peak, method = "kendall")))
 }
 
 # Simulation --------------------------------------------------------------
@@ -1922,9 +1963,9 @@ rcond_vine_draws = function(HQ_prob, vine, n_syn = 1000, debug = FALSE){
   )
 }
 
-cond_marginal_dens = function(vol_dur_vec, peak, marginal_vol, marginal_dur, marginal_peak, mdl, mdl_type, min = F, factor = 1e3){
-  vol = vol_dur_vec[1]
-  dur = vol_dur_vec[2]
+cond_marginal_dens = function(vol_dur_vec, peak, marginal_vol, marginal_dur, marginal_peak, mdl, mdl_type, min = F, factor = 1e1){
+  vol = vol_dur_vec["vol"]
+  dur = vol_dur_vec["dur"]
   
   uMatrix = cbind(
     pmarginal(dur, marginal_dur),
@@ -1933,10 +1974,20 @@ cond_marginal_dens = function(vol_dur_vec, peak, marginal_vol, marginal_dur, mar
   )
   colnames(uMatrix) = c("pobs_dur", "pobs_vol", "pobs_peak")
   
+  # if ((uMatrix[1, "pobs_peak"] > 0.8) * (min == TRUE)) browser()
+  
   if (mdl_type == "nac"){
-    copula_density = HAC::dHAC(X = uMatrix, hac = mdl)
+    copula_density = HAC::dHAC(X = as.matrix(uMatrix), hac = mdl) # No idea why, but this "as.matrix" is still required. Damn annoying package...
   } else if (mdl_type == "vine") {
-    copula_density = VineCopula::RVinePDF(uMatrix, mdl)
+    pobs_dur = uMatrix[1, "pobs_dur"]
+    pobs_peak = uMatrix[1, "pobs_peak"]
+    pobs_vol = uMatrix[1, "pobs_vol"]
+    dens_dp = VineCopula::BiCopPDF(u1 = pobs_dur, u2 = pobs_peak, family = vine$family[3, 1], par = vine$par[3, 1])
+    dens_pv = VineCopula::BiCopPDF(u1 = pobs_peak, u2 = pobs_vol, family = vine$family[3, 2], par = vine$par[3, 2])
+    dens_cond_dv = VineCopula::BiCopPDF(u1 = pobs_dur, u2 = pobs_vol, family = vine$family[2, 1], par = vine$par[2, 1]) 
+    
+    copula_density = dens_dp * dens_pv * dens_cond_dv
+    # copula_density = VineCopula::RVinePDF(uMatrix, mdl)
   }
   
   # f(vol, dur | peak) = c(vol, dur, peak) f(vol) f(dur)
@@ -1946,18 +1997,93 @@ cond_marginal_dens = function(vol_dur_vec, peak, marginal_vol, marginal_dur, mar
   return(conditional_marginal_density)
 }
 
+joint_copula_dens = function(pobs_vol_dur_vec, pobs_peak, mdl, mdl_type){
+  pobs_vol = pobs_vol_dur_vec[1]$vol
+  pobs_dur = pobs_vol_dur_vec[2]$dur
+  
+  # browser()
+  uMatrix = cbind(pobs_dur, pobs_vol, pobs_peak)
+  colnames(uMatrix) = c("pobs_dur", "pobs_vol", "pobs_peak")
+  
+  if (mdl_type == "nac"){
+    return(HAC::dHAC(X = uMatrix, hac = mdl))
+  } else if (mdl_type == "vine") {
+    # "conditional copula density is just joint itself": p.34: https://www.columbia.edu/~rf2283/Conference/1Fundamentals%20(1)Seagers.pdf
+    dens_dp = VineCopula::BiCopPDF(u1 = pobs_dur, u2 = pobs_peak, family = vine$family[3, 1], par = vine$par[3, 1])
+    dens_pv = VineCopula::BiCopPDF(u1 = pobs_peak, u2 = pobs_vol, family = vine$family[3, 2], par = vine$par[3, 2])
+    dens_cond_dv = VineCopula::BiCopPDF(u1 = pobs_dur, u2 = pobs_vol, family = vine$family[2, 1], par = vine$par[2, 1]) 
+    return(dens_dp * dens_pv * dens_cond_dv)
+  }
+}
+
 get_most_probable_voldur = function(
     hq_prob, 
     mdl, mdl_type,
     gev_vol, gev_dur, gev_peak, 
-    initial_vol = 0, initial_dur = 0,
+    grid_size = 10, grid_pobs_min = 0.01, grid_pobs_max = 0.999,
     optimizer = "L-BFGS-B", lower = 1e-5,
     trace = 1
     ){
+  # 1) Create a grid to
+    # 1a) Plot the contours of the conditional density
+    # 1b) Select an initial value for the algorithm (i.e. that grid-point for which the density is max)
+  # 2) Run the optimization algorithm using the previously found grid-maximizer as initial value
+  # grid_df = get_grid(min = .01, max = .999, size = grid_size) |> as.data.frame() |> dplyr::rename(vol = x, dur = y)
+  # browser()
+  marginal_grid_df = get_grid(
+    min_x = qmarginal(grid_pobs_min, gev_vol), 
+    max_x = qmarginal(grid_pobs_max, gev_vol), 
+    name_x = "vol",
+    min_y = qmarginal(grid_pobs_min, gev_dur),
+    max_y = qmarginal(grid_pobs_max, gev_dur),
+    name_y = "dur",
+    size = grid_size
+  )
+  marginal_grid_df$z = lapply(
+    1:nrow(marginal_grid_df),
+    function(i) cond_marginal_dens(
+      vol_dur_vec = marginal_grid_df[i, ],
+      peak = qmarginal(1 - hq_prob, gev_peak),
+      marginal_vol = gev_vol,
+      marginal_dur = gev_dur,
+      marginal_peak = gev_peak,
+      mdl = mdl,
+      mdl_type = mdl_type
+    )
+  ) |> unlist() 
+  marginal_grid_df = marginal_grid_df |> dplyr::mutate(z = (z - mean(z)) / sd(z))
+  
+  copula_grid_df = get_grid(
+    min_x = grid_pobs_min, min_y = grid_pobs_min,
+    max_x = grid_pobs_max, max_y = grid_pobs_max,
+    size = grid_size,
+    name_x = "vol", name_y = "dur"
+  )
+  copula_grid_df$z = lapply(
+    1:nrow(copula_grid_df),
+    function(i) joint_copula_dens(
+      pobs_vol_dur_vec = copula_grid_df[i, ],
+      pobs_peak = 1 - hq_prob,
+      mdl = mdl,
+      mdl_type = mdl_type
+    )
+  ) |> unlist() 
+  copula_grid_df = copula_grid_df |> dplyr::mutate(z = (z - mean(z)) / sd(z))
+  
+  idx = which.max(copula_grid_df$z)
+  initial_vol_pobs = .5 # .5 seems to be a value from where every point is still accessible
+  # initial_vol_pobs = 1 - hq_prob # After some while, the optimization cannot follow and the initial point remains
+  # initial_vol_pobs = copula_grid_df[idx, "vol"] # Would work find BUT copual is the JOINT copula, NOT the conditional!!
+  initial_dur_pobs = .5
+  # initial_dur_pobs = 1 - hq_prob
+  # initial_dur_pobs = copula_grid_df[idx, "dur"] # Same reason as before
+  initial_vol = qmarginal(initial_vol_pobs, gev_vol)
+  initial_dur = qmarginal(initial_dur_pobs, gev_dur)
+  
   # Find most probable combination of vol and dur given a peak value
   # by maximizing the conditional density (using numerical approach)
   out = optim(
-    par = c(initial_vol, initial_dur), # Initial values
+    par = c(vol = initial_vol, dur = initial_dur), # Initial values
     fn = cond_marginal_dens,
     peak = qmarginal(1 - hq_prob, gev_peak),
     marginal_vol = gev_vol,
@@ -1967,19 +2093,50 @@ get_most_probable_voldur = function(
     mdl_type = mdl_type,
     min = T,
     method = optimizer,
-    # hessian = T,
+    hessian = T,
     lower = lower,
     control = list(
       trace = trace,
-      maxit = 1e6,
-      factr = 1e2
+      maxit = 1e6
     )
   )
   vol = out$par[1]
   dur = out$par[2]
+  
+  # Density contours
+  marginal_contours = ggplot(marginal_grid_df, aes(x = vol, y = dur, z = z)) +
+      geom_contour_filled() +
+      geom_point(data = data.frame(vol = initial_vol, dur = initial_dur, z = 0)) +
+      geom_point(data = data.frame(vol = vol, dur = dur, z = 0), color = "red") + 
+      theme(legend.position = "none")
+  
+  copula_contours = ggplot(copula_grid_df, aes(x = vol, y = dur, z = z)) +
+      geom_contour_filled() +
+      geom_point(data = data.frame(vol = initial_vol_pobs, dur = initial_dur_pobs, z = 0)) +
+      geom_point(data = data.frame(vol = pmarginal(vol, gev_vol), dur = pmarginal(dur, gev_dur), z = 0), color = "red") 
+      # theme(legend.position = "none")
+  
+  contours = copula_contours | marginal_contours 
+  plot(
+    contours + plot_annotation(
+      title = paste("Density Plots for HQ", 1/hq_prob, " [", hq_prob, "]", sep = ""),
+      subtitle = "Joint Copula Density (left); Marginal Density (right)"
+    )
+  )
+  
   return(
     data.frame(vol = vol, dur = dur, hq_prob = hq_prob)
   )
+}
+
+get_grid = function(min_x = 0.01, max_x = 0.99, min_y = 0.01, max_y = 0.999, size = 50, name_x = "x", name_y = "y"){
+  x = seq(from = min_x, to = max_x, length.out = size)
+  y = seq(from = min_y, to = max_y, length.out = size)
+  xygrid = expand.grid(x = x, y = y) |> 
+    as.data.frame() 
+  colnames(xygrid) = c(name_x, name_y)
+  
+  return(xygrid)
 }
 
 grab_taildeps = function(station, vines, cop_df){

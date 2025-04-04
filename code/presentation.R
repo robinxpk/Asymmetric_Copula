@@ -7,7 +7,8 @@ library(ggplot2)
 # When (re)running the script, should plots be saved
 save_plots = FALSE
 # Selected station
-station = "München" # Isar
+# station = "München" # Isar
+station = "Bad Tölz KW" # Isar
 # station = "Hofkirchen" # Donau
 # station = "Sylvenstein"
 ref_year = 2024
@@ -98,7 +99,7 @@ n_syn = 1000
 scop_df = cop_df |> dplyr::filter(unit == station)
 
 # Probabilities for HQs
-HQs = c(2, 5, 10, 20, 50, 100, 200, 500) # Return periods
+HQs = c(2, 5, 10, 20, 50, 100) # Return periods
 HQ_probs = 1/HQs # Corresponding probability for return period
 
 # Our considered got drastically reduced, for the presentation at least. So reduce rivers for now
@@ -768,9 +769,7 @@ nacs = fit_nacs(cop_df, all_units)
 vines = fit_vines(cop_df, all_units)
 
 # Density plot df
-x = seq(from = 0.01, to = 0.99, length.out = 50)
-y = seq(from = 0.01, to = 0.99, length.out = 50)
-density_grid = expand.grid(x = x, y = y)
+density_grid = get_grid(min_x = 0.01, max_x = 0.99, min_y = 0.01, max_y = 0.99, size = 50)
 plot_dfs = lapply(
   all_units,
   function(name) get_density_values(vines[[name]], density_grid, name)
@@ -787,13 +786,35 @@ syn_df = syn_dfs |> dplyr::bind_rows()
 ### Station specfic
 
 # Marginal GEV fits
+# GEV fit
 gev_peak = marginal_fit(scop_df$peak, type = "GEV")
 plot(gev_peak, type = "density")
+# KDE fit
+kde_peak = kde1d::kde1d(scop_df$peak, xmin = 0, deg = 2)
+ggplot(scop_df, aes(x = peak)) + 
+  geom_histogram(aes(y = after_stat(density))) + 
+  # geom_density() + 
+  stat_function(fun = function(a) kde1d::dkde1d(a, kde_peak), color = "red")
+
+# GEV fit
 gev_vol = marginal_fit(scop_df$volume, type = "GEV")
 plot(gev_vol, type = "density")
+# KDE fit
+kde_vol = kde1d::kde1d(scop_df$volume, xmin = 0, deg = 2)
+ggplot(scop_df, aes(x = volume)) + 
+  geom_histogram(aes(y = after_stat(density))) + 
+  # geom_density() + 
+  stat_function(fun = function(a) kde1d::dkde1d(a, kde_vol), color = "red")
+
+# GEV fit
 gev_dur = marginal_fit(scop_df$duration_days, type = "GEV")
 plot(gev_dur, type = "density")
-summary(scop_df$duration_days)
+# KDE fit
+kde_dur = kde1d::kde1d(scop_df$duration_days, xmin = 0, deg = 0)
+ggplot(scop_df, aes(x = duration_days)) + 
+  geom_histogram(aes(y = after_stat(density))) + 
+  # geom_density() + 
+  stat_function(fun = function(a) kde1d::dkde1d(a, kde_dur), color = "red")
 
 # countour and syn data dfs
 splot_df = plot_df |> dplyr::filter(unit == station)
@@ -1182,6 +1203,12 @@ data.frame(
 if (save_plots) savegg("univariateReturnPeriodsPeak", width = 10, height = 5)
 
 
+
+# As of right now, I think the issue is that given a certain peak, the pobs_values are already 0.99
+# i.e. cannot really be increased any further. It is difficult to increase this from here... 
+#   But thats why I think HQ2 is still a good fit (and maybe HQ5), but for any other fit, the copula converges too fast to 1 
+#   which gives a value already close to 0.99 resulting in both values not really moving any more
+
 # IMPORTANT: This analysis is STATION specific
 # Marginals:
 
@@ -1193,8 +1220,7 @@ con_nac_smry = lapply(
   HQ_probs,
   function(hq_prob) get_most_probable_voldur(
       hq_prob = hq_prob,
-      initial_vol = 500,
-      initial_dur = 10,
+      grid_size = 30,
       gev_vol = gev_vol,
       gev_dur = gev_dur,
       gev_peak = gev_peak,
@@ -1211,8 +1237,7 @@ con_vine_smry = lapply(
   HQ_probs,
   function(hq_prob) get_most_probable_voldur(
       hq_prob = hq_prob,
-      initial_vol = 200,
-      initial_dur = 40,
+      grid_size = 30,
       gev_vol = gev_vol,
       gev_dur = gev_dur,   
       gev_peak = gev_peak,
@@ -1230,27 +1255,6 @@ con_smry = rbind(
   con_nac_smry
 ) |> dplyr::mutate(HQ = 1 / hq_prob, .after = hq_prob)
 con_smry
-# 
-# # Check somewhat of bivariate quantile
-# #   Sort observed data by volume and duration
-# #   Select empirical quantiles of this and plot it to get a feeling of which one is a better fit
-# checkpoints = scop_df |> 
-#   dplyr::arrange(
-#     # peak
-#     volume
-#   ) |> 
-#   dplyr::mutate(
-#     idx = dplyr::row_number()
-#   ) |> 
-#   dplyr::filter(
-#     idx %in% ceiling((1 - HQ_probs) * nrow(scop_df))
-#   ) |> 
-#   dplyr::mutate(
-#     hq = pmax(round(1 - (idx / nrow(scop_df)), 2), 1 / 500),
-#     hq_years = round(1 / hq, 0)
-#   ) |>
-#   dplyr::select(-c(id, east, north, river))
-# checkpoints
 # My prognosis is sucks giga hard as soon as the quantile method fails
 #     Idea: 1) Flood starts with stark rise in slop in hydrograph
 #             -> Calc slope using triangle and then use quantile slop to define when flood starts
@@ -1260,24 +1264,6 @@ con_smry
 #                   Use indices to translate slop data at point with discharge values at point; 
 #                   -> Grab index of peak, Grab indices of start and end of flood --> Habe the 3 indices needed; Basically straight line method, but on the slopes
 #           2) Two flood events are considered the same event if there are only x hours between them 
-
-# 
-# scop_df |> 
-#   dplyr::arrange(
-#     # peak, volume, duration_days
-#     volume, duration_days
-#   ) |> 
-#   dplyr::select(year, duration_days, peak, volume, dplyr::contains("pobs")) |> 
-#   dplyr::mutate(
-#     idx = dplyr::row_number(),
-#     .before = year
-#   ) |> 
-#   dplyr::arrange(desc(peak)) |> 
-#   ggplot() + 
-#   geom_point(aes(y = duration_days, x = volume, color = peak)) + 
-#   # geom_point(data = checkpoints, aes(y = duration_min, x = volume), color = "red")
-#   geom_text(data = checkpoints, mapping = aes(x = volume, y = duration_days, label = ifelse(is.infinite(1 / hq), 500, round(1 / hq))), color = "red") 
-
 # Issue:
 # The copula fit is fine, but the marginal fit is an issue
 # I underestimate duration for pretty much all stations. Reason ist seen in the syn data points after using marginal to re-transform
