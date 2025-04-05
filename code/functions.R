@@ -1928,7 +1928,11 @@ fit_vines = function(
   vines = lapply(
     all_units,
     function(name) {
-      mat = cop_df |> dplyr::filter(unit == name) |> dplyr::select(contains("pobs")) |> as.matrix() 
+      mat = cop_df |> 
+        dplyr::filter(unit == name) |> 
+        dplyr::select(contains("pobs")) |> 
+        dplyr::select("pobs_dur", "pobs_peak", "pobs_vol") |> # Ensure the order is as expected
+        as.matrix() 
       
       vine = VineCopula::RVineCopSelect(data = mat, Matrix = assumed_vine_structure, familyset = c(3, 4, 5))
     }
@@ -1982,9 +1986,18 @@ cond_marginal_dens = function(vol_dur_vec, peak, marginal_vol, marginal_dur, mar
     pobs_dur = uMatrix[1, "pobs_dur"]
     pobs_peak = uMatrix[1, "pobs_peak"]
     pobs_vol = uMatrix[1, "pobs_vol"]
-    dens_dp = VineCopula::BiCopPDF(u1 = pobs_dur, u2 = pobs_peak, family = vine$family[3, 1], par = vine$par[3, 1])
-    dens_pv = VineCopula::BiCopPDF(u1 = pobs_peak, u2 = pobs_vol, family = vine$family[3, 2], par = vine$par[3, 2])
-    dens_cond_dv = VineCopula::BiCopPDF(u1 = pobs_dur, u2 = pobs_vol, family = vine$family[2, 1], par = vine$par[2, 1]) 
+    
+    bicop_dp = VineCopula::BiCop(family = mdl$family[3, 1], par = mdl$par[3, 1])
+    bicop_pv = VineCopula::BiCop(family = mdl$family[3, 2], par = mdl$par[3, 2])
+    
+    dens_dp = VineCopula::BiCopPDF(u1 = pobs_dur, u2 = pobs_peak, family = mdl$family[3, 1], par = mdl$par[3, 1])
+    dens_pv = VineCopula::BiCopPDF(u1 = pobs_peak, u2 = pobs_vol, family = mdl$family[3, 2], par = mdl$par[3, 2])
+    dens_cond_dv = VineCopula::BiCopPDF(
+      u1 = VineCopula::BiCopHfunc2(u1 = pobs_dur, u2 = pobs_peak, obj = bicop_dp),  
+      u2 = VineCopula::BiCopHfunc2(u1 = pobs_vol, u2 = pobs_peak, obj = bicop_pv), 
+      family = mdl$family[2, 1], 
+      par = mdl$par[2, 1]
+    ) 
     
     copula_density = dens_dp * dens_pv * dens_cond_dv
     # copula_density = VineCopula::RVinePDF(uMatrix, mdl)
@@ -1997,22 +2010,40 @@ cond_marginal_dens = function(vol_dur_vec, peak, marginal_vol, marginal_dur, mar
   return(conditional_marginal_density)
 }
 
-joint_copula_dens = function(pobs_vol_dur_vec, pobs_peak, mdl, mdl_type){
-  pobs_vol = pobs_vol_dur_vec[1]$vol
-  pobs_dur = pobs_vol_dur_vec[2]$dur
+cond_copula_dens = function(pobs_vol_dur_vec, pobs_peak, mdl, mdl_type){
+  uncon_pobs_vol = pobs_vol_dur_vec[1]$vol
+  uncon_pobs_dur = pobs_vol_dur_vec[2]$dur
   
-  # browser()
-  uMatrix = cbind(pobs_dur, pobs_vol, pobs_peak)
+  if (mdl_type == "nac"){
+    # copula::cCopula()
+    
+    cond_pobs_dur = uncon_pobs_dur
+    cond_pobs_vol = uncon_pobs_vol
+  } else if (mdl_type == "vine"){
+    bicop_dp = VineCopula::BiCop(family = mdl$family[3, 1], par = mdl$par[3, 1])
+    bicop_pv = VineCopula::BiCop(family = mdl$family[3, 2], par = mdl$par[3, 2])
+    bicop_cond_dv = VineCopula::BiCop(family = mdl$family[2, 1], par = mdl$par[2, 1]) 
+    
+    cond_pobs_dur = VineCopula::BiCopHfunc2(u1 = uncon_pobs_dur, u2 = pobs_peak, obj = bicop_dp)
+    cond_pobs_vol = VineCopula::BiCopHfunc2(u1 = uncon_pobs_vol, u2 = pobs_peak, obj = bicop_pv)
+  }
+  
+  uMatrix = cbind(cond_pobs_dur, cond_pobs_vol, pobs_peak)
   colnames(uMatrix) = c("pobs_dur", "pobs_vol", "pobs_peak")
   
   if (mdl_type == "nac"){
     return(HAC::dHAC(X = uMatrix, hac = mdl))
   } else if (mdl_type == "vine") {
     # "conditional copula density is just joint itself": p.34: https://www.columbia.edu/~rf2283/Conference/1Fundamentals%20(1)Seagers.pdf
-    dens_dp = VineCopula::BiCopPDF(u1 = pobs_dur, u2 = pobs_peak, family = vine$family[3, 1], par = vine$par[3, 1])
-    dens_pv = VineCopula::BiCopPDF(u1 = pobs_peak, u2 = pobs_vol, family = vine$family[3, 2], par = vine$par[3, 2])
-    dens_cond_dv = VineCopula::BiCopPDF(u1 = pobs_dur, u2 = pobs_vol, family = vine$family[2, 1], par = vine$par[2, 1]) 
-    return(dens_dp * dens_pv * dens_cond_dv)
+    # dens_dp = VineCopula::BiCopPDF(u1 = pobs_dur, u2 = pobs_peak, family = mdl$family[3, 1], par = mdl$par[3, 1])
+    dens_dp = VineCopula::BiCopPDF(u1 = uncon_pobs_dur, u2 = pobs_peak, obj = bicop_dp)
+    # dens_pv = VineCopula::BiCopPDF(u1 = pobs_peak, u2 = pobs_vol, family = mdl$family[3, 2], par = mdl$par[3, 2])
+    dens_pv = VineCopula::BiCopPDF(u1 = pobs_peak, u2 = uncon_pobs_vol, obj = bicop_pv)
+    # dens_cond_dv = VineCopula::BiCopPDF(u1 = pobs_dur, u2 = pobs_vol, family = mdl$family[2, 1], par = mdl$par[2, 1]) 
+    # dens_cond_dv = VineCopula::BiCopPDF(u1 = cond_pobs_dur, u2 = cond_pobs_vol, obj = bicop_cond_dv)
+    dens_cond_dv = VineCopula::BiCopPDF(u1 = uncon_pobs_dur, u2 = uncon_pobs_vol, obj = bicop_cond_dv)
+    return(dens_cond_dv)
+    # return(dens_dp * dens_pv * dens_cond_dv)
   }
 }
 
@@ -2029,7 +2060,6 @@ get_most_probable_voldur = function(
     # 1b) Select an initial value for the algorithm (i.e. that grid-point for which the density is max)
   # 2) Run the optimization algorithm using the previously found grid-maximizer as initial value
   # grid_df = get_grid(min = .01, max = .999, size = grid_size) |> as.data.frame() |> dplyr::rename(vol = x, dur = y)
-  # browser()
   marginal_grid_df = get_grid(
     min_x = qmarginal(grid_pobs_min, gev_vol), 
     max_x = qmarginal(grid_pobs_max, gev_vol), 
@@ -2061,7 +2091,7 @@ get_most_probable_voldur = function(
   )
   copula_grid_df$z = lapply(
     1:nrow(copula_grid_df),
-    function(i) joint_copula_dens(
+    function(i) cond_copula_dens(
       pobs_vol_dur_vec = copula_grid_df[i, ],
       pobs_peak = 1 - hq_prob,
       mdl = mdl,
@@ -2111,11 +2141,24 @@ get_most_probable_voldur = function(
       geom_point(data = data.frame(vol = vol, dur = dur, z = 0), color = "red") + 
       theme(legend.position = "none")
   
+  # browser()
+  # bicop_dp = VineCopula::BiCop(family = mdl$family[3, 1], par = mdl$par[3, 1])
+  # bicop_pv = VineCopula::BiCop(family = mdl$family[3, 2], par = mdl$par[3, 2])
+  # 
+  # cond_pobs_dur = VineCopula::BiCopHfunc2(u1 = pmarginal(dur, gev_dur), u2 = hq_prob, obj = bicop_dp)
+  # cond_pobs_vol = VineCopula::BiCopHfunc2(u1 = pmarginal(vol, gev_vol), u2 = hq_prob, obj = bicop_pv)
+  # 
   copula_contours = ggplot(copula_grid_df, aes(x = vol, y = dur, z = z)) +
       geom_contour_filled() +
       geom_point(data = data.frame(vol = initial_vol_pobs, dur = initial_dur_pobs, z = 0)) +
-      geom_point(data = data.frame(vol = pmarginal(vol, gev_vol), dur = pmarginal(dur, gev_dur), z = 0), color = "red") 
-      # theme(legend.position = "none")
+      geom_point(
+        data = data.frame(
+          # vol = cond_pobs_vol, 
+          vol = pmarginal(dur, gev_vol),
+          # dur = cond_pobs_dur,
+          dur = pmarginal(dur, gev_dur),
+          z = 0
+        ), color = "red")
   
   contours = copula_contours | marginal_contours 
   plot(

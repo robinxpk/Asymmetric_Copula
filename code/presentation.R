@@ -8,8 +8,8 @@ library(ggplot2)
 save_plots = FALSE
 # Selected station
 # station = "München" # Isar
-# station = "Bad Tölz KW" # Isar
-station = "Hofkirchen" # Donau; Seems to show comparison NAC and Vine pretty well. Due to the limitation in NAC, the joint dependence structure in the vine seems a lot more narrow. i.e. the certainty connected to this estimation is way too large I think. Can I add something like a CI?
+station = "Bad Tölz KW" # Isar
+# station = "Hofkirchen" # Donau; Seems to show comparison NAC and Vine pretty well. Due to the limitation in NAC, the joint dependence structure in the vine seems a lot more narrow. i.e. the certainty connected to this estimation is way too large I think. Can I add something like a CI?
   # Because not only that the NAC prediction is not the best as seen from data comparison, NAC will also missjudge the uncertainty in the prediction due to the overestimated dependence strength
   # ALSO due to the limitation, the shape of the uncertainty is limited. This is because only d-1 unique copulas are used
   # I expect this effect to be dominant in Donau stations, and only small for Isar stations because for Isar stations, the dependence structure seems to be somewhat similar in two variables making NACs maybe applicable. Still, just use vines. Please. Skrew NACs.
@@ -1296,6 +1296,20 @@ lapply(
 #   Good example: Hofkirchen
 # Another Issue:
 # Our estimation of most probable pair is numerically instable (yet)
+
+# I think the issue for some of these models is that the highest peak in the data is not necessarily 
+#   Connected to the largest volume / duration. Thus, some data "tries" to stick to the bottom part
+#   That is, the larger the peak, the smaller the duration and the larger the volume
+#   Model works with that: The larger the peak, the more larger the volume while the duration does not really increase
+    # Reason: Our flood detection is not optimal and some peaks may be large and we determine the flood event to be over too soon (or at least the flood detection is debateable)
+# But in general, the data suggests that the LARGER the peak, the SHORT the flood while volume increases. 
+#   That is, some stations suggest a very low dependence / or even negative between peak and duration
+#   This is captured by our model. 
+#   Issue is tho that the model thereby captures our shortcoming in the flood detection and not necessarily the actual fact that floods with large peak do tend to be shorter in duration and higher in volume
+# Also visible: NACs tend to enforce a larger slope in the data
+#   Reason: The dependence strcture between peak and duration is overestimated! Thus, the larger the peak, the more the duration increases even tho that is totally not the case
+#   This is an important take away!! Because that means a SIMILAR amount of volume has to be dealt with in a SHORTER amount of time
+#   That is, NACs suggest a smaller average discharge than vines do! That is, vines show that with NACs we underestimate the flood's force (?)
 ggplot(con_smry) + 
   geom_point(data = scop_df, aes(y = duration_days, x = volume, color = peak)) + 
   geom_line(aes(x = vol, y = dur)) +
