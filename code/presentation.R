@@ -8,8 +8,11 @@ library(ggplot2)
 save_plots = FALSE
 # Selected station
 # station = "München" # Isar
-station = "Bad Tölz KW" # Isar
-# station = "Hofkirchen" # Donau
+# station = "Bad Tölz KW" # Isar
+station = "Hofkirchen" # Donau; Seems to show comparison NAC and Vine pretty well. Due to the limitation in NAC, the joint dependence structure in the vine seems a lot more narrow. i.e. the certainty connected to this estimation is way too large I think. Can I add something like a CI?
+  # Because not only that the NAC prediction is not the best as seen from data comparison, NAC will also missjudge the uncertainty in the prediction due to the overestimated dependence strength
+  # ALSO due to the limitation, the shape of the uncertainty is limited. This is because only d-1 unique copulas are used
+  # I expect this effect to be dominant in Donau stations, and only small for Isar stations because for Isar stations, the dependence structure seems to be somewhat similar in two variables making NACs maybe applicable. Still, just use vines. Please. Skrew NACs.
 # station = "Sylvenstein"
 ref_year = 2024
 # Considered rivers 
@@ -1255,6 +1258,23 @@ con_smry = rbind(
   con_nac_smry
 ) |> dplyr::mutate(HQ = 1 / hq_prob, .after = hq_prob)
 con_smry
+
+lapply(
+  1:nrow(con_smry),
+  function(i) get_marginal_hdi(
+    vol_opt = con_smry[i, "vol"], 
+    dur_opt = con_smry[i, "dur"], 
+    hq_prob = con_smry[i, "hq_prob"], 
+    init_vol_min = quantile(scop_df$volume, probs = 0.1),
+    init_vol_max = quantile(scop_df$volume, probs = 0.9),
+    init_dur_min = quantile(scop_df$duration_days, probs = 0.1),
+    init_dur_max = quantile(scop_df$duration_days, probs = 0.9),
+    var_matrix = cov(scop_df |> dplyr::select(volume, duration_days)),
+    mdl = vines[[station]], 
+    mdl_type = con_smry[i, "type"],
+    gev_vol = gev_vol, gev_dur = gev_dur, gev_peak = gev_peak 
+  )
+) |> cbind()
 # My prognosis is sucks giga hard as soon as the quantile method fails
 #     Idea: 1) Flood starts with stark rise in slop in hydrograph
 #             -> Calc slope using triangle and then use quantile slop to define when flood starts
@@ -1324,7 +1344,7 @@ summary(scop_df$peak)
 
 cop_df |> 
   dplyr::summarise(
-    vol_quant50 = quantile(volume, 0.5) / 1e6,
+    vol_quant50 = quantile(volume, 0.5),
     .by = c(river, unit)
   ) 
 

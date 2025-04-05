@@ -2071,7 +2071,7 @@ get_most_probable_voldur = function(
   copula_grid_df = copula_grid_df |> dplyr::mutate(z = (z - mean(z)) / sd(z))
   
   idx = which.max(copula_grid_df$z)
-  initial_vol_pobs = .5 # .5 seems to be a value from where every point is still accessible
+  initial_vol_pobs = .5
   # initial_vol_pobs = 1 - hq_prob # After some while, the optimization cannot follow and the initial point remains
   # initial_vol_pobs = copula_grid_df[idx, "vol"] # Would work find BUT copual is the JOINT copula, NOT the conditional!!
   initial_dur_pobs = .5
@@ -2093,11 +2093,12 @@ get_most_probable_voldur = function(
     mdl_type = mdl_type,
     min = T,
     method = optimizer,
-    hessian = T,
+    # hessian = T,
     lower = lower,
     control = list(
       trace = trace,
-      maxit = 1e6
+      maxit = 1e6,
+      factr = 1e1
     )
   )
   vol = out$par[1]
@@ -2137,6 +2138,106 @@ get_grid = function(min_x = 0.01, max_x = 0.99, min_y = 0.01, max_y = 0.999, siz
   colnames(xygrid) = c(name_x, name_y)
   
   return(xygrid)
+}
+
+get_marginal_hdi = function(
+    vol_opt, dur_opt, hq_prob, 
+    init_vol_min, init_vol_max,
+    init_dur_min, init_dur_max,
+    var_matrix,
+    mdl, mdl_type,
+    gev_vol, gev_dur, gev_peak,
+    grid_pobs_min = 0.01, grid_pobs_max = 0.999, grid_size = 30
+    ){
+  # Get HDI for the most likely points
+  # Densities are non-symmetric. Maybe I can use similar approach as in PCA? But that does not consider the conditional nature here, no? 
+  # F this, just calc the symmetric one. That is way simpler. Or radius matrix times eigenvectors to kind of distort the shape?
+  
+  
+  eigen_decomp = eigen(var_matrix)
+  scale = -1 * sqrt(eigen_decomp$values)
+  eigen_v = eigen_decomp$vectors
+  eigen_df = data.frame(
+        vol = c(vol_opt, vol_opt),
+        dur = c(dur_opt, dur_opt),
+        eigen_vec_vol = c(eigen_v[1, 1], eigen_v[1, 2]),
+        eigen_vec_dur = c(eigen_v[2, 1], eigen_v[2, 2]),
+        scale = c(scale[1], scale[2]),
+        z = c(0, 0)
+      ) |> 
+    dplyr::mutate(
+      vol_end = vol_opt + scale * eigen_vec_vol,
+      dur_end = dur_opt + scale * eigen_vec_dur
+    )
+  
+  # Current Density Plot and Fit of Eigenvector approach
+  marginal_grid_df = get_grid(
+    min_x = qmarginal(grid_pobs_min, gev_vol), 
+    max_x = qmarginal(grid_pobs_max, gev_vol), 
+    name_x = "vol",
+    min_y = qmarginal(grid_pobs_min, gev_dur),
+    max_y = qmarginal(grid_pobs_max, gev_dur),
+    name_y = "dur",
+    size = grid_size
+  )
+  marginal_grid_df$z = lapply(
+    1:nrow(marginal_grid_df),
+    function(i) cond_marginal_dens(
+      vol_dur_vec = marginal_grid_df[i, ],
+      peak = qmarginal(1 - hq_prob, gev_peak),
+      marginal_vol = gev_vol,
+      marginal_dur = gev_dur,
+      marginal_peak = gev_peak,
+      mdl = mdl,
+      mdl_type = mdl_type
+    )
+  ) |> unlist() 
+  marginal_grid_df = marginal_grid_df |> dplyr::mutate(z = (z - mean(z)) / sd(z))
+  
+  ggplot(marginal_grid_df, aes(x = vol, y = dur, z = z)) +
+    geom_contour_filled() +
+    geom_point(data = data.frame(vol = vol_opt, dur = dur_opt, z = 0), color = "black") + 
+    geom_segment(
+      data = eigen_df,
+      aes(x = vol, xend = vol_end, y = dur, yend = dur_end),
+      linewidth = 1
+    ) + 
+    theme(legend.position = "none") 
+  
+  
+  
+  browser()
+  min_vol = init_vol_min
+  max_vol = init_vol_max
+  min_dur = init_dur_min
+  max_dur = init_dur_max
+  
+  iters = 1
+  searching = TRUE
+  while (searching) {
+    if (iters > 1000) searching = FALSE # To ensure I somewhen finish
+    
+    auc = cubature::adaptIntegrate(
+      f = function(x) cond_marginal_dens(
+        vol_dur_vec = c(vol = x[[1]], dur = x[[2]]),
+        peak = qmarginal(1 - hq_prob, gev_peak),
+        marginal_vol = gev_vol,
+        marginal_dur = gev_dur,
+        marginal_peak = gev_peak,
+        mdl = mdl,
+        mdl_type = mdl_type
+        ),
+      lowerLimit = c(min_vol, min_dur),
+      upperLimit = c(max_vol, max_dur)
+    )$integral
+    # if (auc >= 0.95) searching = FALSE
+    if (TRUE) searching = FALSE
+    
+    
+    iters = iters + 1
+  }
+  
+  return(data.frame(min_vol = min_vol, max_vol = max_vol, min_dur = min_dur, max_dur = max_dur, auc = auc, iters = iters, scale_factor = scale_factor))
 }
 
 grab_taildeps = function(station, vines, cop_df){
