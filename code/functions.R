@@ -2081,12 +2081,17 @@ get_most_probable_voldur = function(
       mdl_type = mdl_type
     )
   ) |> unlist() 
+  
+  # lol. Rectangle CI:
+  ci_df = get_ci_from_grid_df(marginal_grid_df)
+  
   marginal_grid_df = marginal_grid_df |> dplyr::mutate(z = (z - mean(z)) / sd(z))
   
   copula_grid_df = get_grid(
     min_x = grid_pobs_min, min_y = grid_pobs_min,
     max_x = grid_pobs_max, max_y = grid_pobs_max,
-    size = grid_size,
+    # size = grid_size,
+    size = 10,
     name_x = "vol", name_y = "dur"
   )
   copula_grid_df$z = lapply(
@@ -2136,11 +2141,11 @@ get_most_probable_voldur = function(
   
   # Density contours
   marginal_contours = ggplot(marginal_grid_df, aes(x = vol, y = dur, z = z)) +
-      geom_contour_filled() +
-      geom_point(data = data.frame(vol = initial_vol, dur = initial_dur, z = 0)) +
-      geom_point(data = data.frame(vol = vol, dur = dur, z = 0), color = "red") + 
-      theme(legend.position = "none")
-  
+    geom_contour_filled() +
+    geom_point(data = data.frame(vol = initial_vol, dur = initial_dur, z = 0)) +
+    geom_point(data = data.frame(vol = vol, dur = dur, z = 0), color = "red") + 
+    annotate(geom = "rect", xmin = ci_df$lower_vol, xmax = ci_df$upper_vol, ymin = ci_df$lower_dur, ymax = ci_df$upper_dur, fill = "blue", alpha = 0, color = "black", fill = NA) +
+    theme(legend.position = "none")
   # browser()
   # bicop_dp = VineCopula::BiCop(family = mdl$family[3, 1], par = mdl$par[3, 1])
   # bicop_pv = VineCopula::BiCop(family = mdl$family[3, 2], par = mdl$par[3, 2])
@@ -2169,7 +2174,48 @@ get_most_probable_voldur = function(
   )
   
   return(
-    data.frame(vol = vol, dur = dur, hq_prob = hq_prob)
+    data.frame(vol = vol, dur = dur, hq_prob = hq_prob, ci_df)
+  )
+}
+
+get_ci_from_grid_df = function(df, conf_level = 0.05){
+  # Grid points
+  vols = sort(unique(df$vol))
+  durs = sort(unique(df$dur))
+  
+  # Grid spacing
+  dvol = diff(vols)[1]
+  ddur = diff(durs)[1]
+  
+  # Full Grid
+  z_grid = matrix(df$z, nrow = length(durs), ncol = length(vols), byrow = FALSE)
+  colnames(z_grid) = vols
+  rownames(z_grid) = durs
+  
+  # Marginal densities at each grid point
+  f_dur = rowSums(z_grid) * dvol # See next row for explain
+  f_vol = colSums(z_grid) * ddur # Sum over (duration (height) * difference between durations (width)) --> "Integrate" out the OTHER variable
+  
+  # Marginal CDFs at each grid point
+  F_dur = cumsum(f_dur) * ddur # "Integrate" out the variable itself
+  F_vol = cumsum(f_vol) * dvol
+  
+  lower_dur = F_dur[F_dur <= conf_level / 2 ] |> tail(1)
+  upper_dur = F_dur[F_dur >= 1 - conf_level / 2] |> head(1)
+  lower_vol = F_vol[F_vol <= conf_level / 2] |> tail(1)
+  upper_vol = F_vol[F_vol >= 1 - conf_level / 2] |> head(1)
+  
+  return(
+    data.frame(
+      lower_dur = lower_dur |> names() |> as.numeric(),
+      lower_dur_p = lower_dur[[1]],
+      upper_dur = upper_dur |> names() |> as.numeric(),
+      upper_dur_p = upper_dur[[1]],
+      lower_vol = lower_vol |> names() |> as.numeric(),
+      lower_vol_p = lower_vol[[1]],
+      upper_vol = upper_vol |> names() |> as.numeric(),
+      upper_vol_p = upper_vol[[1]]
+    )
   )
 }
 
@@ -2369,4 +2415,19 @@ calc_bivariate_mode = function(x, y) {
   
   mode_point = c(x = mode_x, y = mode_y)
   return(mode_point)
+}
+
+add_hq_cat_col = function(df, hqs){
+  df$hq_cat = min(hqs$hq)
+  
+  for (hq_idx in seq(from = length(hqs$hq), to = 1, by = -1)){
+    current_hq = hqs$hq[hq_idx]
+    hq_idx = hqs |> dplyr::filter(hq == current_hq) |> dplyr::select(idx) |> unlist()
+    
+    df = df |> dplyr::mutate(
+      hq_cat = ifelse(idx <= hq_idx, current_hq, hq_cat)
+    )
+  }
+  df$hq_cat = as.factor(df$hq_cat)
+  return(df)
 }

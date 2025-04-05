@@ -8,8 +8,8 @@ library(ggplot2)
 save_plots = FALSE
 # Selected station
 # station = "München" # Isar
-station = "Bad Tölz KW" # Isar
-# station = "Hofkirchen" # Donau; Seems to show comparison NAC and Vine pretty well. Due to the limitation in NAC, the joint dependence structure in the vine seems a lot more narrow. i.e. the certainty connected to this estimation is way too large I think. Can I add something like a CI?
+# station = "Bad Tölz KW" # Isar
+station = "Hofkirchen" # Donau; Seems to show comparison NAC and Vine pretty well. Due to the limitation in NAC, the joint dependence structure in the vine seems a lot more narrow. i.e. the certainty connected to this estimation is way too large I think. Can I add something like a CI?
   # Because not only that the NAC prediction is not the best as seen from data comparison, NAC will also missjudge the uncertainty in the prediction due to the overestimated dependence strength
   # ALSO due to the limitation, the shape of the uncertainty is limited. This is because only d-1 unique copulas are used
   # I expect this effect to be dominant in Donau stations, and only small for Isar stations because for Isar stations, the dependence structure seems to be somewhat similar in two variables making NACs maybe applicable. Still, just use vines. Please. Skrew NACs.
@@ -1234,7 +1234,6 @@ con_nac_smry = lapply(
 ) |> 
   dplyr::bind_rows() |> 
   dplyr::mutate(type = "nac")
-con_nac_smry
 
 con_vine_smry = lapply(
   HQ_probs,
@@ -1251,7 +1250,6 @@ con_vine_smry = lapply(
 ) |> 
   dplyr::bind_rows() |> 
   dplyr::mutate(type = "vine")
-con_vine_smry
 
 con_smry = rbind(
   con_vine_smry,
@@ -1310,13 +1308,21 @@ lapply(
 #   Reason: The dependence strcture between peak and duration is overestimated! Thus, the larger the peak, the more the duration increases even tho that is totally not the case
 #   This is an important take away!! Because that means a SIMILAR amount of volume has to be dealt with in a SHORTER amount of time
 #   That is, NACs suggest a smaller average discharge than vines do! That is, vines show that with NACs we underestimate the flood's force (?)
+empirical_hqs = scop_df |> dplyr::arrange(peak) |> 
+  dplyr::mutate(idx = dplyr::row_number()) |> 
+  dplyr::filter(idx %in% c(nrow(scop_df) - floor(HQ_probs * nrow(scop_df)))) |> dplyr::select(year, id, idx)
+empirical_hqs$hq = HQs
+scop_df = scop_df |> dplyr::arrange(peak) |> 
+  dplyr::mutate(idx = dplyr::row_number()) |> 
+  add_hq_cat_col(empirical_hqs) |> 
+  dplyr::arrange(year)
+
 ggplot(con_smry) + 
-  geom_point(data = scop_df, aes(y = duration_days, x = volume, color = peak)) + 
+  geom_point(data = scop_df, aes(y = duration_days, x = volume, color = hq_cat, shape = hq_cat), size = 3) + 
   geom_line(aes(x = vol, y = dur)) +
   geom_point(aes(x = vol, y = dur)) +
   geom_label(aes(x = vol, y = dur, label = 1 / hq_prob), size = 5) +
-  # geom_point(data = checkpoints, mapping = aes(x = volume , y = duration_days), color = "red") +
-  # geom_text(data = checkpoints, mapping = aes(x = volume, y = duration_days, label = hq_years), color = "red", nudge_y = 2, size = 5) +
+  geom_rect(data = con_smry, aes(xmin = lower_vol, xmax = upper_vol, ymin = lower_dur, ymax = upper_dur, color = as.factor(HQ)), alpha = 0) + 
   facet_wrap(~type) + 
   theme(
     title = element_text(size = 20),
@@ -1328,7 +1334,8 @@ ggplot(con_smry) +
     title = paste(station, "station - Most Likely Conditional Vol - Dur Pairs"),
     x = latex2exp::TeX("Volume (Mio. $m^3$)"),
     y = "Duration (days)"
-  )
+  ) + 
+  ggthemes::scale_color_colorblind()
 if (save_plots) savegg(paste("500HQ", station), width = 10, height = 5)
 # Vines capture underlying data way better than NACs. 
 # According to NACs, our data contains multiple flood events that were more severe than a 
