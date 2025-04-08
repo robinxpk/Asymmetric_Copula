@@ -1,0 +1,70 @@
+\documentclass[11pt,a4paper,onecolumn,oneside]{article}
+
+\begin{document}
+\section{Question}%
+\label{sec:Question}
+I would like to visualize the equivalence between copula density and marginal density:
+Based on a trivariate distribution, I would like to visualize the bivariate conditional distribution on the marginal and the copula level. I am uncertain if my theoretical understanding is fully correct because I fail to correctly visualize the copula distribution.
+
+\subsection{Marginal Conditional Distribution}
+\label{subsec:Marginal Distribution}
+The easy part is the conditional marginal distribution. It is simply given by:
+\[
+	f(x_1, x_2 |x_3) = c(u_1, u_2, u_3) f(x_1) f(x_2)
+.\] 
+
+\subsection{Copula Conditional Distribution}
+\label{subsec:Copula Conditional Distribution}
+Here is where I am a bit confused. First, I establish the following:
+\begin{itemize}
+	\item Conditional copula\[
+			C_{12|3}(u_1|u_3, u_2|u_3) = \frac{d}{du_3}C_{123}(u_1, u_2, u_3)
+	.\] 
+	\item Conditional copula density \[
+			\frac{d^2C_{12|3}}{du_1 du_2} = c_{12|3}(u_1|u_3, u_2|u_3) = c_{123}(u_1, u_2, u_3)
+	.\] 
+%	\item Univariate marginal density: \[
+%	c(u_3) = c_3 = \int_{{0}}^{{1}} {\int_{{0}}^{{1}} {c(u_1, u_2, u_3)} \: d{u_2} {}} \: d{u_1} {} = \frac{dC(1, 1, u_3)}{du_3} = 1
+%	.\] 
+%	This holds by definition (uniform margins of the copula).
+\end{itemize}
+(See source p. 21 and table p.23)\\
+Mathematically, I understand the equivalence between joint copula density and conditional copula density: The conditional copula given the conditional probabilities is equivalent to the joint copula given unconditional probabilities, right?\\
+
+How does this fit into the deconstruction used by Vine copulas? 
+\[
+	c(u_1, u_2, u_3) = c_{13}(u_1, u_2) c_{23}(u_2, u_3) c_{12|3}(u_1|u_3, u_3|u_3)
+.\] 
+Using the fact that $c_{12|3} = c_{123}$, we would have $c_{12} \cdot c_{23} = 1$ which seems wrong. \\
+Also, regarding my initial goal: 
+Using contour plots, I expected the joint and the conditional copula density to look the same due to their equality. And I also expected the maximizer of the marginal conditional bivariate density to be the maximizer of the copula densities. Neither is the case. 
+
+That is, I expected $x_1^*, x_2^* = argmax_{x_1, x_2} f(x_1, x_2 | x_3)$ to also maximize the conditional copula density after the following transformation:
+
+\textit{Maximizer of joint density in $x_1$ dimension}
+\[
+	u_1^* = F(x_1^*) 
+.\] 
+\textit{Maximizer of conditional density in $x_1$ dimension}
+\[
+	u_1^* | u_3 = h^{-1}_{1|3}(u_1^*|u_3)  .\] 
+
+Where the h-function is given by:
+\[
+	h_{1|3}(u_1, u_3) = \frac{d}{du_3} C_{13}(u_1, u_3) 
+.\] 
+Vice versa for $u_2$. 
+Also, if the above would hold, and joint copula density is equal to conditional copula density, would the maximizers not be equal, too? i.e. $u_1^* = u_1^*|u_3$?
+
+So my questions are:
+\begin{itemize}
+	\item Is my understanding of the mathematical equivalence correct? (The conditional copula given the conditional
+probabilities is equivalent to the joint copula given unconditional probabili-
+ties)
+\item Why are their contours not identical if they are identical in value? 
+\item How does this fit into the vine deconstruction?  ($c(u_1, u_2, u_3) = c_{13}(u_1, u_2) c_{23}(u_2, u_3) c_{12|3}(u_1|u_3, u_3|u_3)
+$)
+\item Are my thoughts regarding the maximizers wrong? 
+\end{itemize}
+
+\end{document}

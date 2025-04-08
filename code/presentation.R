@@ -1239,7 +1239,7 @@ con_vine_smry = lapply(
   HQ_probs,
   function(hq_prob) get_most_probable_voldur(
       hq_prob = hq_prob,
-      grid_size = 30,
+      grid_size = 50,
       gev_vol = gev_vol,
       gev_dur = gev_dur,   
       gev_peak = gev_peak,
@@ -1257,22 +1257,22 @@ con_smry = rbind(
 ) |> dplyr::mutate(HQ = 1 / hq_prob, .after = hq_prob)
 con_smry
 
-lapply(
-  1:nrow(con_smry),
-  function(i) get_marginal_hdi(
-    vol_opt = con_smry[i, "vol"], 
-    dur_opt = con_smry[i, "dur"], 
-    hq_prob = con_smry[i, "hq_prob"], 
-    init_vol_min = quantile(scop_df$volume, probs = 0.1),
-    init_vol_max = quantile(scop_df$volume, probs = 0.9),
-    init_dur_min = quantile(scop_df$duration_days, probs = 0.1),
-    init_dur_max = quantile(scop_df$duration_days, probs = 0.9),
-    var_matrix = cov(scop_df |> dplyr::select(volume, duration_days)),
-    mdl = vines[[station]], 
-    mdl_type = con_smry[i, "type"],
-    gev_vol = gev_vol, gev_dur = gev_dur, gev_peak = gev_peak 
-  )
-) |> cbind()
+# lapply(
+#   1:nrow(con_smry),
+#   function(i) get_marginal_hdi(
+#     vol_opt = con_smry[i, "vol"], 
+#     dur_opt = con_smry[i, "dur"], 
+#     hq_prob = con_smry[i, "hq_prob"], 
+#     init_vol_min = quantile(scop_df$volume, probs = 0.1),
+#     init_vol_max = quantile(scop_df$volume, probs = 0.9),
+#     init_dur_min = quantile(scop_df$duration_days, probs = 0.1),
+#     init_dur_max = quantile(scop_df$duration_days, probs = 0.9),
+#     var_matrix = cov(scop_df |> dplyr::select(volume, duration_days)),
+#     mdl = vines[[station]], 
+#     mdl_type = con_smry[i, "type"],
+#     gev_vol = gev_vol, gev_dur = gev_dur, gev_peak = gev_peak 
+#   )
+# ) |> cbind()
 # My prognosis is sucks giga hard as soon as the quantile method fails
 #     Idea: 1) Flood starts with stark rise in slop in hydrograph
 #             -> Calc slope using triangle and then use quantile slop to define when flood starts

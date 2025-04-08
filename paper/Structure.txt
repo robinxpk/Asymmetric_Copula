@@ -1,0 +1,72 @@
+SEE: Student Reports Guide
+
+> Cover Page
+	- Name of course
+	- Topic of project
+	- Name of author
+	- Date
+> Table Of Contents
+	- Listing of all sections (including subsections if existent), appendix and list of references
+	! On second page of report (@Gribisch: ist first page cover page?)
+1. Introduction 
+	> Motivation
+	> Short description of content and objective of the project
+	> Short explanation of statistical methods used
+		( maybe something like: Pearon's correlation coefficient measueres linear correlation between continuous vars and will be used to examine xy)
+	> Brief presentation of key findings
+	> Overview of each section
+2. Problem:
+	> Description of data
+		- Background and type of data collection 
+		- Concise description of the variables of interest and sample size
+		- Short descriptive analysis of data
+		( how was the data collected / what do variables mean)
+		ALSO: descriptiv data analysis WITH GRAPHS
+	> Description of the project's objectives (content and statistical goals)
+3. Methods
+	> Description / explanation of statistical methods that are used  
+	> Discussion of the underlying assumptions and justification of assumption or discussion of how they can be verified
+		- Discuss underlying assumptions generally and how the assumption are justified or verified 
+		in the general case of xy (beeing the specific case for the paper)
+	> Indicate clearly the software (packages) AND what they do! 
+4. Statistical Analysis
+	> DETAILED description of the results, presented with help of TABLES and ILLUSTRATIONS
+	> Interpretation of the results with reference to initial objective 
+5. Summary
+	> Brief recap of the objevtive of the project
+	> Brief presentation of the most important results
+	> Discusstion of the results (possible conclusions / warnings against misinterpretation)
+	> Outlook (open questinos / reference to possible further analysis or research -> put into research context)
+!!!!! Introduction and Summary should be independently readable !!!!!!!
+> Appendix 
+	- Additional tables and illustrations which are not essential for understanding the content / core of report
+> List of References
+	- List of all journal articles and books that have been referenced
+	FOR EXAMPLE, SEE: Student Reports Guide
+
+Structure: 
+> ALL SECTIONS and SUBSECTIONS habe to be numbered. 
+	- ONLY 2 layers (Section + Subsection) 
+> Table of Contents and the List of References are displayed without an associated number (or letter) 
+	@Gribisch: Seitenzahl? Oder was?
+> ALL FIGURES must be given CAPTION and LEGEND
+> Figures and Tables are numbered: 
+	Figure 1.1 Explanation of figure 
+	Table 1.1 Content of table
+> Each figure and table must be referenced at least once in the text --> OTHERWISE IT DOESNT HELP WITH EXPLAINING THE TOPIC
+> Figure / Table appear on same page or the following page of their first reference NOT EARLIER
+> Figures and Tables have to be self-explanatory
+	-> Label the axes
+	-> Legend
+!!!! nicht alles durchgelesen; im Bereich Structure 2 gibt es noch mehr!
+
+Layout and Scope: 
+> sufficient correction margin on all four edges
+> 1.5-point line spacing
+> Font: 12pt Times New Roman
+> 8-12pages (not including cover page, table of contents, appendic and list of references)
+> Page numbers!
+> Relevant tables and figures have to be included in the main text
+	
+		
+

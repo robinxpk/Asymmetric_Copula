@@ -72,10 +72,29 @@ plot_theme = theme(
 
 
 #   # Slopes -----------------------------------------------------------------
-ggplot(cor_table, aes(x = tau_vp)) + 
-  geom_boxplot(aes(fill = slope_cat)) + 
-  facet_wrap(~river)
-table(slopes$slope_cat)
+cor_table |> 
+  tidyr::pivot_longer(
+    cols = c(tau_vd, tau_vp, tau_dp),
+    names_to = "tau",
+    values_to = "val"
+  ) |> 
+  dplyr::mutate(
+    tau = dplyr::case_when(
+      tau == "tau_dp" ~ "Duration - Peak",
+      tau == "tau_vd" ~ "Volume - Duration",
+      tau == "tau_vp" ~ "Volume - Peak"
+    ),
+    tau = as.factor(tau)
+  ) |> 
+ggplot(aes(y = val)) + 
+  geom_boxplot(aes(fill = tau)) + 
+  facet_grid(slope_cat~river)
+
+
+ggplot(cor_table) + 
+  geom_boxplot(aes(y = slope, fill = tau_order)) + 
+  facet_grid(slope_cat~river)
+
 
 # Slope by river
 ggplot(cor_table, aes(x = slope, fill = river)) + 
